@@ -1,72 +1,68 @@
 # Theseus
-A tree style questing mod allowing creators to set completable quests for their users.
 
-> Theseus is an independent fork and continuation of Heracles for Minecraft 26.2 on NeoForge.
-> It is not affiliated with or supported by the original Heracles maintainers.
+Theseus is a tree-style quest mod for Minecraft 26.2 on NeoForge. It is an
+independent fork of Heracles. It is not affiliated with or supported by the
+original Heracles maintainers.
 
-Also see [Odysseus](https://github.com/terrarium-earth/odysseus), a Project Odyssey tool for converting FTB and HQM quest packs to the original Heracles format.
+## Run from source
 
-## NeoForge 26.2 fork
+Install a Java 25 JDK and select it as the Minecraft instance's Java
+executable. Check the terminal version with `java -version`; it must report
+25. The Gradle build declares Java 25 as its toolchain, and Gradle can download
+that toolchain if it is not installed.
 
-This branch targets Minecraft 26.2 on NeoForge. It requires a
-Java 25 toolchain; Gradle can provision one automatically.
+```sh
+java -version
+./gradlew clean build
+```
 
-```shell
-./gradlew build
+The release jar is `build/libs/theseus-neoforge-26.2-1.0.0.jar`. The separate
+`-sources.jar` is not a game mod. To start a development client, run:
+
+```sh
 ./gradlew runClient
 ```
 
-The 26.2-neoforge branch contains a playable NeoForge-native quest core. Start a
-world and press `H` (or run `/theseus open`) to view quests. A six-quest demo
-pack is installed automatically when `run/config/theseus/quests` is empty.
+## Use in game
+
+Press **H** or run `/theseus open` to open the quest screen. A six-quest demo
+pack is copied to `config/theseus/quests` when that folder has no quest files.
+Use the editor as an operator or a player with game-master permissions.
 
 Useful commands:
 
 ```text
-/theseus                  Show status
-/theseus open             Open the quest screen
-/theseus demo             Complete the bundled dummy task
-/theseus dummy <value>    Complete a matching dummy task
-/theseus claim <quest>    Claim a completed quest's rewards
-/theseus submit <quest> <task>  Submit manual item, XP, or check tasks
-/theseus reload           Reload quest JSON (game masters)
-/theseus reset            Reset your progress (game masters)
+/theseus                         Show status
+/theseus open                    Open the quest screen
+/theseus demo                    Complete the demo task
+/theseus dummy <value>           Complete a matching dummy task
+/theseus claim <quest>           Claim a completed quest's rewards
+/theseus submit <quest> <task>   Submit a manual task
+/theseus reset                   Reset your progress
+/theseus reload                  Reload quest JSON (game masters)
+/theseus validate                Report quest issues (game masters)
 ```
 
-The quest browser uses Olympus and renders group-specific node positions,
-dependency paths, visibility states, panning, and zoom. The domain model retains
-quest settings, every group placement, dependencies, typed task/reward maps, and
-unrecognized JSON so content can round-trip while support expands.
+The editor stores quest definitions on the server. Player progress is saved
+with the world. The quest screen is built into Theseus; Hermes is not required.
 
-The extensible task engine executes dummy/check, item, advancement, recipe,
-statistic, structure, XP, entity-kill, block/entity/item interaction, item-use,
-dimension, biome, and location tasks. Item and XP tasks support automatic,
-consuming, and manual collection modes. Registry values accept exact IDs, tags,
-and lists; item components and legacy NBT/player checks use recursive subset
-matching. Location predicates support dimension, biome, and coordinate bounds.
-Other mods can add handlers during initialization through
-`QuestRuntime.registerTaskHandler(...)`; standalone engines can be composed with
-`TaskEngine.builder()` or `TaskEngine.defaultBuilder()`.
+## Documentation
 
-Item and experience rewards are supported. Progress is saved per world and
-synchronized to the client with native NeoForge payloads. The quest screen is
-local to Theseus, so Hermes is not required.
+- [Authoring quests](docs/AUTHORING.md)
+- [Compatibility and intentional changes](docs/COMPATIBILITY.md)
+- [Import, clipboard, and export](docs/IMPORT-CLIPBOARD-EXPORT.md)
+- [Add-on extension guide](docs/EXTENSIONS.md)
+- [Diagnostics reference](docs/DIAGNOSTICS.md)
+- [Backup and recovery](docs/BACKUP-RECOVERY.md)
+- [Known limitations](docs/LIMITATIONS.md)
+- [Manual smoke test](smoke-test/README.md)
 
-## For Mod Developers
-<hr>
+## Mod developers
 
-Be sure to add our maven to your `build.gradle`:
-```gradle
-repositories {
-    maven { url = "https://maven.teamresourceful.com/repository/maven-public/" }
-    <--- other repositories here --->
-}
-```
-You can then add our mod as a dependency:
+The project does not configure a Maven publishing repository. Use the release
+jar as a mod in a NeoForge development instance. The public extension points
+and a registration example are in the [add-on guide](docs/EXTENSIONS.md).
 
-```gradle
-dependencies {
-    <--- Other dependencies here --->
-    modImplementation "me.johardt.theseus:theseus-${modloader}-${mc_version}:${theseus_version}"
-}
-```
+Odysseus is a separate Project Odyssey tool for converting FTB and HQM quest
+packs to the original Heracles format. Conversion to Theseus may need manual
+changes.

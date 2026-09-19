@@ -5,7 +5,7 @@
       "item": "minecraft:diamond"
     },
     "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
-    "title": "Beta 5 smoke test",
+    "title": "Theseus 1.0.0 smoke test",
     "subtitle": "Valid multi-file import",
     "description": [
       "Complete this quest to verify the editor, importer, and runtime sync.",
@@ -45,7 +45,7 @@
     "message": {
       "type": "theseus:command",
       "title": "Smoke-test message",
-      "command": "say Theseus Beta 5 smoke test complete"
+      "command": "say Theseus 1.0.0 smoke test complete"
     }
   }
 }

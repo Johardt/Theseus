@@ -1,8 +1,14 @@
-# Beta 5 smoke-test kit
+# Theseus 1.0.0 smoke-test kit
 
 This directory is a disposable fixture pack for a real NeoForge client/server
 run. It is intentionally outside `examples/` and is not copied into a shipped
 mod or the dev profile automatically.
+
+## Requirements
+
+Use Java 25, Minecraft 26.2, and NeoForge 26.2.0.86 or newer. Resourceful Lib
+5.0 or newer is required. The release jar includes Olympus. Use the same Theseus
+jar on the client and server.
 
 ## 1. Build and start a real packaged run
 
@@ -15,12 +21,13 @@ instance (client and, for the dedicated-server pass below, server):
 
 The artifact is:
 
-`build/libs/theseus-neoforge-26.2-1.0.0-beta5.jar`
+`build/libs/theseus-neoforge-26.2-1.0.0.jar`
 
-Copy that JAR into the instance's `mods/` directory, launch NeoForge, create a
-test world, and continue with the steps below. In a packaged instance the
-runtime quest directory is `<instance>/config/theseus/quests`; the fixtures
-can stay anywhere on your desktop because the picker reads them directly.
+Copy that JAR and Resourceful Lib into the instance's `mods/` directory,
+launch NeoForge, create a test world, and continue with the steps below. In a
+packaged instance the runtime quest directory is
+`<instance>/config/theseus/quests`; the fixtures can stay anywhere on your
+desktop because the picker reads them directly.
 
 ## 2. Build and start a clean dev run
 
