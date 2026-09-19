@@ -1,97 +1,135 @@
-name: Publish Release
+name: Build and release
+
 on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
-  publish-release:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - name: Check out source
+        uses: actions/checkout@v7
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: Set up Java 25
+        uses: actions/setup-java@v6
         with:
-          distribution: 'temurin'
-          java-version: 17
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
 
-      - name: Setup Gradle Caches
-        uses: actions/cache@v3
+      - name: Build and run checks
+        run: ./gradlew --no-daemon clean check build
+
+      - name: Select release jar
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^modVersion=//p' gradle.properties | tail -n 1)"
+          MINECRAFT_VERSION="$(sed -n 's/^minecraftVersion=//p' gradle.properties | tail -n 1)"
+          JAR="build/libs/theseus-neoforge-${MINECRAFT_VERSION}-${VERSION}.jar"
+          test -f "$JAR"
+          echo "jar_path=$JAR" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release jar for verification
+        uses: actions/upload-artifact@v7
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: ${{ runner.os }}-gradle
+          name: theseus-neoforge-jar
+          path: ${{ steps.package.outputs.jar_path }}
+          if-no-files-found: error
+          retention-days: 7
 
-      - name: Setup Gradle Wrapper
-        run: chmod +x gradlew
+  publish-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v7
 
-      - name: Get Version and Platform
-        id: properties
-        uses: christian-draeger/read-properties@1.1.1
+      - name: Download built jar
+        uses: actions/download-artifact@v8
         with:
-          path: "./gradle.properties"
-          properties: "version enabledPlatforms minecraftVersion"
+          name: theseus-neoforge-jar
+          path: release-artifact
 
-      - name: Publish Release
-        run: ./gradlew publish --info
+      - name: Verify version, loader metadata, and jar contents
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^modVersion=//p' gradle.properties | tail -n 1)"
+          MINECRAFT_VERSION="$(sed -n 's/^minecraftVersion=//p' gradle.properties | tail -n 1)"
+          NEOFORGE_VERSION="$(sed -n 's/^neoForgeVersion=//p' gradle.properties | tail -n 1)"
+          JAR="release-artifact/theseus-neoforge-${MINECRAFT_VERSION}-${VERSION}.jar"
+
+          if [[ "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match modVersion $VERSION" >&2
+            exit 1
+          fi
+          test -f "$JAR"
+
+          python3 - "$JAR" "$VERSION" "$MINECRAFT_VERSION" "$NEOFORGE_VERSION" <<'PY'
+          import sys
+          import tomllib
+          import zipfile
+
+          jar_path, version, minecraft, neoforge = sys.argv[1:]
+          required = {
+              "META-INF/neoforge.mods.toml",
+              "me/johardt/theseus/Theseus.class",
+              "assets/theseus/lang/en_us.json",
+              "config/theseus/groups.txt",
+              "config/theseus/quests/getting_started/welcome.json",
+              "config/theseus/quests/getting_started/compatibility.json",
+          }
+
+          with zipfile.ZipFile(jar_path) as archive:
+              names = set(archive.namelist())
+              missing = sorted(required - names)
+              if missing:
+                  raise SystemExit("Jar is missing required contents: " + ", ".join(missing))
+
+              metadata = tomllib.loads(archive.read("META-INF/neoforge.mods.toml").decode("utf-8"))
+              if metadata.get("modLoader") != "javafml":
+                  raise SystemExit("Jar does not declare the JavaFML loader")
+              if not metadata.get("loaderVersion", "").startswith("[4,"):
+                  raise SystemExit("Jar has an unexpected loader version range")
+
+              mod = next((entry for entry in metadata.get("mods", []) if entry.get("modId") == "theseus"), None)
+              if mod is None or mod.get("version") != version:
+                  raise SystemExit("Jar mod ID or version does not match gradle.properties")
+
+              dependencies = metadata.get("dependencies", {}).get("theseus", [])
+              by_id = {entry.get("modId"): entry for entry in dependencies}
+              if by_id.get("minecraft", {}).get("versionRange") != f"[{minecraft}]":
+                  raise SystemExit("Jar Minecraft dependency does not match gradle.properties")
+          if by_id.get("neoforge", {}).get("versionRange") != f"[{neoforge},)":
+              raise SystemExit("Jar NeoForge dependency does not match gradle.properties")
+          if by_id.get("resourcefullib", {}).get("type") != "required":
+              raise SystemExit("Jar does not declare Resourceful Lib as required")
+
+          print(f"Verified {jar_path}: Theseus {version}, Minecraft {minecraft}, NeoForge {neoforge}")
+          PY
+
+          echo "jar_path=$JAR" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
         env:
-          MAVEN_USER: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASS: ${{ secrets.MAVEN_PASSWORD }}
-
-      - name: Upload Forge Releases (Curse/Modrinth/Github)
-        id: forge_release
-        if: contains(steps.properties.outputs.enabledPlatforms, 'forge')
-        uses: Kir-Antipov/mc-publish@v3.3.0
-        with:
-          curseforge-id: ${{ vars.CURSE_ID }}
-          curseforge-token: ${{ secrets.CURSE_TOKEN }}
-
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
-          files: ./forge/build/libs/!(*-@(dev|sources|dev-shadow)).jar
-          name: "[Forge] Theseus ${{ steps.properties.outputs.version }}"
-          version: ${{ steps.properties.outputs.version }}
-          version-type: release
-          changelog-file: changelog.md
-          loaders: forge
-          game-versions: ${{ steps.properties.outputs.minecraftVersion }}
-          version-resolver: exact
-
-          dependencies: |
-            resourceful-lib | depends | *
-
-      - name: Upload Fabric Releases (Curse/Modrinth/Github)
-        id: fabric_release
-        if: contains(steps.properties.outputs.enabledPlatforms, 'fabric')
-        uses: Kir-Antipov/mc-publish@v3.3.0
-        with:
-          curseforge-id: ${{ vars.CURSE_ID }}
-          curseforge-token: ${{ secrets.CURSE_TOKEN }}
-
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
-          files: ./fabric/build/libs/!(*-@(dev|sources|dev-shadow)).jar
-          name: "[Fabric] Theseus ${{ steps.properties.outputs.version }}"
-          version: ${{ steps.properties.outputs.version }}
-          version-type: release
-          changelog-file: changelog.md
-          loaders: fabric
-          game-versions: ${{ steps.properties.outputs.minecraftVersion }}
-          version-resolver: exact
-
-          dependencies: |
-            fabric-api | depends | *
-            resourceful-lib | depends | *
-
-      - name: Generate Discord Embed
-        run: ./gradlew injectEmbed
-        env:
-          FORGE_RELEASE_URL: ${{ steps.forge_release.outputs.modrinth-url }}
-          FABRIC_RELEASE_URL: ${{ steps.fabric_release.outputs.modrinth-url }}
-
-      - name: Upload Discord Embed
-        uses: tsickert/discord-webhook@v5.3.0
-        with:
-          webhook-url: ${{ secrets.WEBHOOK_URL }}
-          raw-data: ./build/embed.json
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.verify.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            "${{ steps.verify.outputs.jar_path }}" \
+            --title "Theseus $VERSION for NeoForge" \
+            --generate-notes
