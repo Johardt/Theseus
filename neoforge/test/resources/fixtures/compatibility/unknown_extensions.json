@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "type": "example:animated_icon",
+      "frames": ["one", "two"],
+      "extension_icon_data": { "keep": true }
+    },
+    "title": "Unknown data survives",
+    "groups": { "Main": { "position": [5, 6], "extension_group_data": "keep" } },
+    "extension_display_data": { "keep": [1, 2, 3] }
+  },
+  "tasks": {
+    "extension_task": {
+      "type": "example:custom_task",
+      "title": "Extension task",
+      "payload": { "marker": "unknown-task-preserved" },
+      "extension_task_field": true
+    }
+  },
+  "rewards": {
+    "extension_reward": {
+      "type": "example:custom_reward",
+      "title": "Extension reward",
+      "payload": { "marker": "unknown-reward-preserved" }
+    }
+  },
+  "extension_root_data": { "version": 3, "preserve": true }
+}

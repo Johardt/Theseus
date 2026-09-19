@@ -1,0 +1,65 @@
+{
+  "display": {
+    "icon": "minecraft:emerald",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "title": { "text": "Legacy field spellings" },
+    "subtitle": "Still readable in Theseus 1.0",
+    "description": "Keep this line\nand this line",
+    "groups": {
+      "Main": {
+        "position": [12, -8],
+        "legacy_group_extension": { "keep": true }
+      }
+    },
+    "legacy_display_extension": "retain"
+  },
+  "dependencies": "welcome",
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlock_notification": true,
+    "show_dependency_arrow": false,
+    "repeatable": true,
+    "auto_claim_rewards": false,
+    "legacy_setting_extension": 7
+  },
+  "tasks": {
+    "check": {
+      "type": "theseus:check",
+      "title": "Match player data",
+      "nbt": { "abilities": { "mayfly": true } },
+      "legacy_task_extension": { "keep": "check" }
+    },
+    "logs": {
+      "type": "theseus:item",
+      "item": { "tag": "minecraft:logs" },
+      "nbt": {},
+      "manual": false,
+      "amount": 2
+    },
+    "old_biome": {
+      "type": "theseus:biome",
+      "biome": "minecraft:desert"
+    },
+    "old_advancement": {
+      "type": "theseus:advancement",
+      "advancement": "minecraft:story/mine_stone"
+    },
+    "old_recipe": {
+      "type": "theseus:recipe",
+      "recipe": "minecraft:crafting_table"
+    }
+  },
+  "rewards": {
+    "old_item": {
+      "type": "theseus:item",
+      "item": "minecraft:bread"
+    },
+    "old_xp": {
+      "type": "theseus:xp",
+      "xptype": "points",
+      "amount": 5
+    }
+  },
+  "legacy_root_extension": ["retain", 1]
+}

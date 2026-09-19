@@ -5,8 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskEngineTest {
     @Test
@@ -46,6 +49,68 @@ class TaskEngineTest {
         TaskEngine.Result result = engine.apply(task, 1, new CustomSignal(2));
 
         assertEquals(new TaskEngine.Result(3, 0), result);
+    }
+
+    @Test
+    void everyDirectBuiltInHandlerHasAWorkingExecutionCase() {
+        TaskEngine engine = TaskEngine.defaults();
+        Map<String, HandlerCase> cases = new LinkedHashMap<>();
+        cases.put("theseus:dummy", new HandlerCase(
+            "{\"type\":\"theseus:dummy\",\"value\":\"go\"}",
+            new TaskEngine.Signal.Manual("go"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:check", new HandlerCase(
+            "{\"type\":\"theseus:check\",\"components\":{\"ready\":true}}",
+            new TaskEngine.Signal.Check(JsonParser.parseString("{\"ready\":true}").getAsJsonObject(), true), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:item", new HandlerCase(
+            "{\"type\":\"theseus:item\",\"item\":\"minecraft:oak_log\",\"amount\":1}",
+            new TaskEngine.Signal.Inventory("minecraft:oak_log", 1, false), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:advancement", new HandlerCase(
+            "{\"type\":\"theseus:advancement\",\"advancements\":[\"minecraft:story/mine_stone\"]}",
+            new TaskEngine.Signal.AdvancementGranted("minecraft:story/mine_stone"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:recipe", new HandlerCase(
+            "{\"type\":\"theseus:recipe\",\"recipes\":[\"minecraft:crafting_table\"]}",
+            new TaskEngine.Signal.RecipeUnlocked("minecraft:crafting_table"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:stat", new HandlerCase(
+            "{\"type\":\"theseus:stat\",\"stat\":\"minecraft:jump\",\"target\":1}",
+            new TaskEngine.Signal.Statistic("minecraft:jump", 1), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:structure", new HandlerCase(
+            "{\"type\":\"theseus:structure\",\"structures\":\"minecraft:village\"}",
+            new TaskEngine.Signal.Structures(Set.of(TaskEngine.Signal.RegistryEntry.simple("minecraft:village"))), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:xp", new HandlerCase(
+            "{\"type\":\"theseus:xp\",\"amount\":1}",
+            new TaskEngine.Signal.Experience(1, 1, false), new TaskEngine.Result(1, 1)));
+        cases.put("theseus:kill_entity", new HandlerCase(
+            "{\"type\":\"theseus:kill_entity\",\"entity\":\"minecraft:zombie\",\"amount\":1}",
+            new TaskEngine.Signal.EntityKilled("minecraft:zombie"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:block_interaction", new HandlerCase(
+            "{\"type\":\"theseus:block_interaction\",\"block\":\"minecraft:stone\"}",
+            new TaskEngine.Signal.BlockInteracted("minecraft:stone"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:entity_interaction", new HandlerCase(
+            "{\"type\":\"theseus:entity_interaction\",\"entity\":\"minecraft:villager\"}",
+            new TaskEngine.Signal.EntityInteracted("minecraft:villager"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:item_interaction", new HandlerCase(
+            "{\"type\":\"theseus:item_interaction\",\"item\":\"minecraft:stick\"}",
+            new TaskEngine.Signal.ItemInteracted("minecraft:stick"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:item_use", new HandlerCase(
+            "{\"type\":\"theseus:item_use\",\"item\":\"minecraft:bow\"}",
+            new TaskEngine.Signal.ItemUsed("minecraft:bow"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:biome", new HandlerCase(
+            "{\"type\":\"theseus:biome\",\"biomes\":\"minecraft:desert\"}",
+            new TaskEngine.Signal.WorldState("minecraft:overworld", "minecraft:desert", 0, 64, 0), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:changed_dimension", new HandlerCase(
+            "{\"type\":\"theseus:changed_dimension\",\"from\":\"minecraft:overworld\",\"to\":\"minecraft:the_nether\"}",
+            new TaskEngine.Signal.DimensionChanged("minecraft:overworld", "minecraft:the_nether"), new TaskEngine.Result(1, 0)));
+        cases.put("theseus:location", new HandlerCase(
+            "{\"type\":\"theseus:location\",\"predicate\":{\"dimension\":\"minecraft:overworld\",\"position\":{\"x\":{\"min\":0,\"max\":10}}}}",
+            new TaskEngine.Signal.WorldState("minecraft:overworld", "minecraft:plains", 5, 64, 0), new TaskEngine.Result(1, 0)));
+
+        assertEquals(engine.types(), cases.keySet());
+        cases.forEach((type, handlerCase) -> assertEquals(
+            handlerCase.expected(),
+            engine.apply(task(handlerCase.taskJson()), 0, handlerCase.signal()),
+            type
+        ));
+        assertTrue(engine.types().stream().noneMatch("theseus:composite"::equals));
     }
 
     @Test
@@ -224,6 +289,8 @@ class TaskEngineTest {
             {"display":{"groups":{"Main":{"position":[0,0]}}},"tasks":{"task":%s}}
             """.formatted(json)).getAsJsonObject()).tasks().get("task");
     }
+
+    private record HandlerCase(String taskJson, TaskEngine.Signal signal, TaskEngine.Result expected) {}
 
     private record CustomSignal(int amount) implements TaskEngine.Signal {}
 }

@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-final class MinecraftTestBootstrap {
+public final class MinecraftTestBootstrap {
     private static boolean bootstrapped;
 
     private MinecraftTestBootstrap() {}
 
-    static synchronized void ensureBootstrapped() {
+    public static synchronized void ensureBootstrapped() {
         if (bootstrapped) return;
         try {
             Class<?> unsafeType = Class.forName("sun.misc.Unsafe");

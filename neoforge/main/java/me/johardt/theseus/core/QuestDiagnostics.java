@@ -17,8 +17,6 @@ import java.util.function.Predicate;
  */
 public final class QuestDiagnostics {
     public static final int MAX_NESTING_DEPTH = 32;
-    private static final EditorTypeRegistry EDITOR_TYPES = EditorTypeRegistry.defaults();
-
     private QuestDiagnostics() {}
 
     public static List<Diagnostic> validate(String questId, JsonObject root) {
@@ -36,10 +34,10 @@ public final class QuestDiagnostics {
         requireObject(root, "tasks", questId, results);
         requireObject(root, "rewards", questId, results);
         JsonObject display = object(root, "display");
-        if (display.has("title") && (!display.get("title").isJsonPrimitive() || display.get("title").getAsString().trim().isEmpty())) {
-            results.add(error("missing_title", questId, "display.title", "Quest title must not be empty", "Enter a title."));
-        } else if (!display.has("title")) {
+        if (!display.has("title")) {
             results.add(error("missing_title", questId, "display.title", "Quest title is required", "Add a display.title field."));
+        } else if (!validTitle(display.get("title"))) {
+            results.add(error("missing_title", questId, "display.title", "Quest title must not be empty", "Enter a title."));
         }
         if (display.has("icon")) validateIcon(questId, display.get("icon"), "display.icon", validItem, results);
         validateIconSize(questId, display, results);
@@ -186,7 +184,7 @@ public final class QuestDiagnostics {
             if (!entry.getValue().isJsonObject()) return;
             JsonObject value = entry.getValue().getAsJsonObject();
             String type = string(value, "type", "");
-            EditorTypeRegistry.Descriptor descriptor = EDITOR_TYPES.resolve(kind, type);
+            EditorTypeRegistry.Descriptor descriptor = EditorTypeRegistry.registered().resolve(kind, type);
             if (!descriptor.editable()) {
                 results.add(new Diagnostic(
                     Severity.WARNING,
@@ -251,6 +249,21 @@ public final class QuestDiagnostics {
     }
 
     private static JsonObject object(JsonObject root, String key) { return root.has(key) && root.get(key).isJsonObject() ? root.getAsJsonObject(key) : new JsonObject(); }
+    private static boolean validTitle(JsonElement title) {
+        if (title == null || title.isJsonNull()) return false;
+        if (title.isJsonPrimitive()) {
+            return title.getAsJsonPrimitive().isString() && !title.getAsString().trim().isEmpty();
+        }
+        if (!title.isJsonObject()) return false;
+        JsonObject component = title.getAsJsonObject();
+        JsonElement text = component.get("text");
+        if (text != null && text.isJsonPrimitive()) {
+            return text.getAsJsonPrimitive().isString() && !text.getAsString().trim().isEmpty();
+        }
+        JsonElement translate = component.get("translate");
+        return translate != null && translate.isJsonPrimitive()
+            && translate.getAsJsonPrimitive().isString() && !translate.getAsString().trim().isEmpty();
+    }
     private static void requireObject(JsonObject root, String key, String questId, List<Diagnostic> results) {
         if (!root.has(key)) results.add(error("missing_" + key, questId, key, "Required field '" + key + "' is missing", "Add a JSON object for '" + key + "'."));
         else if (!root.get(key).isJsonObject()) results.add(error("invalid_" + key, questId, key, "Field '" + key + "' must be an object", "Replace it with a JSON object."));

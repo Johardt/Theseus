@@ -1,0 +1,14 @@
+{
+  "display": {
+    "icon": { "type": "heracles:item", "item": "minecraft:compass" },
+    "icon_background": "heracles:textures/gui/quest_backgrounds/default.png",
+    "title": "Pre-rename identifiers",
+    "groups": { "Main": { "position": [0, 0] } }
+  },
+  "tasks": {
+    "old_task": { "type": "heracles:dummy", "value": "old" }
+  },
+  "rewards": {
+    "old_reward": { "type": "heracles:item", "item": "minecraft:bread" }
+  }
+}

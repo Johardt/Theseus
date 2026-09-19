@@ -5066,8 +5066,9 @@ public final class QuestScreen extends Screen {
             .rewards()
             .values()) {
             boolean rewardClaimed = quest.claimedRewards.contains(reward.id());
+            boolean rewardTypeAvailable = isRewardTypeAvailable(reward);
             int border =
-                reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED
+                reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED && !rewardTypeAvailable
                     ? 0xFFE57373
                     : rewardClaimed
                       ? 0xFF55D86A
@@ -5092,8 +5093,9 @@ public final class QuestScreen extends Screen {
             );
             String detail = rewardClaimed ? "Claimed" : switch (reward.kind()) {
                 case SELECTABLE -> "Choose up to " + reward.amount();
-                case UNSUPPORTED -> "Not supported by this fork: " +
-                    reward.type();
+                case UNSUPPORTED -> rewardTypeAvailable
+                    ? "Add-on reward: " + reward.type()
+                    : "Not supported by this server: " + reward.type();
                 default -> "Amount: " + reward.amount();
             };
             drawClippedDetailText(
@@ -5102,7 +5104,7 @@ public final class QuestScreen extends Screen {
                 x + 30,
                 y + 22,
                 textWidth,
-                reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED
+                reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED && !rewardTypeAvailable
                     ? 0xFFFFA0A0
                     : 0xFFB8C0CC
             );
@@ -5617,9 +5619,7 @@ public final class QuestScreen extends Screen {
             .rewards()
             .values()) {
             if (quest.claimedRewards.contains(reward.id())) continue;
-            if (
-                reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED
-            ) return false;
+            if (!isRewardTypeAvailable(reward)) return false;
             if (reward.kind() == QuestDefinition.RewardKind.SELECTABLE) {
                 Set<String> selected = rewardSelections.getOrDefault(
                     quest.definition.id() + "|" + reward.id(),
@@ -5635,8 +5635,7 @@ public final class QuestScreen extends Screen {
                         .anyMatch(
                             choice ->
                                 choice == null ||
-                                choice.kind() ==
-                                    QuestDefinition.RewardKind.UNSUPPORTED ||
+                                !isRewardTypeAvailable(choice) ||
                                 choice.kind() ==
                                     QuestDefinition.RewardKind.SELECTABLE
                         )
@@ -5653,14 +5652,18 @@ public final class QuestScreen extends Screen {
                 .rewards()
                 .values()
                 .stream()
-                .anyMatch(
-                    reward ->
-                        reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED
-                )
+                .anyMatch(reward -> !isRewardTypeAvailable(reward))
         ) {
-            return "This quest contains a reward type that is not supported by this fork";
+            return "This quest contains a reward type that is not supported by this server";
         }
         return "Select the required quest reward before claiming";
+    }
+
+    private boolean isRewardTypeAvailable(QuestDefinition.Reward reward) {
+        if (reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED
+            && !serverRewardTypes.contains(reward.type())) return false;
+        return reward.kind() != QuestDefinition.RewardKind.SELECTABLE
+            || reward.rewards().values().stream().allMatch(this::isRewardTypeAvailable);
     }
 
     private static TaskRef findSubmittable(

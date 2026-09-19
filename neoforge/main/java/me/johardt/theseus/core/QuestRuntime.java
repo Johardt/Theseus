@@ -32,9 +32,12 @@ public final class QuestRuntime {
         .setPrettyPrinting()
         .create();
     private static final TaskEngine.Builder TASKS = TaskEngine.defaultBuilder();
+    private static final RewardEngine.Builder REWARDS = RewardEngine.builder();
     private static boolean taskHandlersLocked;
+    private static boolean rewardHandlersLocked;
 
     private final TaskEngine taskEngine;
+    private final RewardEngine rewardEngine;
     private final ProgressStore progressStore;
     private final QuestWorld world;
     private final QuestSync questSync;
@@ -43,6 +46,16 @@ public final class QuestRuntime {
         new HashMap<>();
     private final Set<UUID> suppressNotifications = new java.util.HashSet<>();
 
+    /** Builds a runtime from handlers registered with QuestRuntime before server startup. */
+    public QuestRuntime(
+        QuestCatalog catalog,
+        ProgressStore progressStore,
+        QuestWorld world,
+        QuestSync questSync
+    ) {
+        this(catalog, TASKS.build(), REWARDS.build(), progressStore, world, questSync);
+    }
+
     public QuestRuntime(
         QuestCatalog catalog,
         TaskEngine taskEngine,
@@ -50,8 +63,20 @@ public final class QuestRuntime {
         QuestWorld world,
         QuestSync questSync
     ) {
+        this(catalog, taskEngine, REWARDS.build(), progressStore, world, questSync);
+    }
+
+    public QuestRuntime(
+        QuestCatalog catalog,
+        TaskEngine taskEngine,
+        RewardEngine rewardEngine,
+        ProgressStore progressStore,
+        QuestWorld world,
+        QuestSync questSync
+    ) {
         this.catalog = java.util.Objects.requireNonNull(catalog, "catalog");
         this.taskEngine = java.util.Objects.requireNonNull(taskEngine, "taskEngine");
+        this.rewardEngine = java.util.Objects.requireNonNull(rewardEngine, "rewardEngine");
         this.progressStore = java.util.Objects.requireNonNull(progressStore, "progressStore");
         this.world = java.util.Objects.requireNonNull(world, "world");
         this.questSync = java.util.Objects.requireNonNull(questSync, "questSync");
@@ -59,6 +84,7 @@ public final class QuestRuntime {
 
     public static QuestRuntime create(MinecraftServer server) {
         taskHandlersLocked = true;
+        RewardEngine rewards = lockRewardHandlers();
         ServerQuestWorld world = new ServerQuestWorld(
             server,
             FMLPaths.CONFIGDIR.get()
@@ -66,6 +92,7 @@ public final class QuestRuntime {
         QuestRuntime runtime = new QuestRuntime(
             world.loadCatalog(),
             TASKS.build(),
+            rewards,
             new FileProgressStore(
                 server
                     .getWorldPath(LevelResource.ROOT)
@@ -87,6 +114,22 @@ public final class QuestRuntime {
             "Task handlers must be registered before the server starts"
         );
         TASKS.register(type, handler);
+    }
+
+    /** Registers an additional reward executor. Call during mod initialization, before a server starts. */
+    public static synchronized void registerRewardHandler(
+        String type,
+        RewardEngine.Handler handler
+    ) {
+        if (rewardHandlersLocked) throw new IllegalStateException(
+            "Reward handlers must be registered before the server starts"
+        );
+        REWARDS.register(type, handler);
+    }
+
+    private static synchronized RewardEngine lockRewardHandlers() {
+        rewardHandlersLocked = true;
+        return REWARDS.build();
     }
 
     public void close() {
@@ -1403,7 +1446,7 @@ public final class QuestRuntime {
                         canClaimReward(player, choice, List.of())
                     );
                 });
-            case UNSUPPORTED -> false;
+            case UNSUPPORTED -> rewardEngine.canClaim(reward, player, world);
         };
     }
 
@@ -1461,9 +1504,10 @@ public final class QuestRuntime {
                 .forEach(choice ->
                     grantReward(player, choice, List.of(), granted)
                 );
-            case UNSUPPORTED -> throw new IllegalStateException(
-                "Unsupported reward passed validation: " + reward.type()
-            );
+            case UNSUPPORTED -> {
+                String detail = rewardEngine.grant(reward, player, world);
+                if (!detail.isBlank()) granted.add(detail);
+            }
         }
     }
 
@@ -1701,13 +1745,15 @@ public final class QuestRuntime {
     private String snapshot(ServerPlayer player, String chapter) {
         JsonObject root = new JsonObject();
         JsonObject editorTypes = new JsonObject();
-        java.util.Set<String> taskTypes = new java.util.LinkedHashSet<>(TaskEngine.defaults().types());
+        java.util.Set<String> taskTypes = new java.util.LinkedHashSet<>(taskEngine.types());
         // Composite tasks are evaluated structurally by QuestRuntime, not by a TaskEngine handler.
         taskTypes.add("theseus:composite");
         editorTypes.add("tasks", GSON.toJsonTree(taskTypes));
-        editorTypes.add("rewards", GSON.toJsonTree(List.of(
+        java.util.Set<String> rewardTypes = new java.util.LinkedHashSet<>(List.of(
             "theseus:xp", "theseus:item", "theseus:loottable", "theseus:command", "theseus:selectable"
-        )));
+        ));
+        rewardTypes.addAll(rewardEngine.types());
+        editorTypes.add("rewards", GSON.toJsonTree(rewardTypes));
         editorTypes.add("icons", GSON.toJsonTree(QuestIconTypes.types()));
         root.add("__editor_types", editorTypes);
         JsonObject chapters = new JsonObject();

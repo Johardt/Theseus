@@ -108,7 +108,7 @@ public record QuestDefinition(
             validateIdentifier(type, taskPath + ".type", issues);
             TaskKind kind = TaskKind.from(type);
             if (kind == TaskKind.UNSUPPORTED) {
-                issues.add(new ValidationIssue(Severity.WARNING, taskPath + ".type", "Unsupported task type " + type));
+                issues.add(new ValidationIssue(Severity.WARNING, taskPath + ".type", "Task type is not handled by the built-in engine; it needs an add-on handler: " + type));
             }
             String targetKey = kind == TaskKind.STAT ? "target" : "amount";
             int target = kind.isCounting() || kind == TaskKind.COMPOSITE
@@ -154,7 +154,7 @@ public record QuestDefinition(
             validateIdentifier(type, rewardPath + ".type", issues);
             RewardKind kind = RewardKind.from(type);
             if (kind == RewardKind.UNSUPPORTED) {
-                issues.add(new ValidationIssue(Severity.WARNING, rewardPath + ".type", "Unsupported reward type " + type));
+                issues.add(new ValidationIssue(Severity.WARNING, rewardPath + ".type", "Reward type is not handled by the built-in executor; it needs an add-on handler: " + type));
             }
             RewardValue value = rewardValue(kind, json, issues, rewardPath);
             Map<String, Reward> choices = kind == RewardKind.SELECTABLE

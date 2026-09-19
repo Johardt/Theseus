@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": { "type": "theseus:item", "item": "minecraft:compass" },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 24,
+    "title": "Built-in contract coverage",
+    "subtitle": "Each built-in type appears in this document",
+    "description": ["Contract fixture", "Round trips preserve these fields."],
+    "groups": { "Main": { "position": [0, 0] } }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "dummy": { "type": "theseus:dummy", "value": "complete" },
+    "item": { "type": "theseus:item", "item": "minecraft:oak_log", "amount": 2, "collection": "automatic" },
+    "check": { "type": "theseus:check", "components": { "ready": true } },
+    "advancement": { "type": "theseus:advancement", "advancements": ["minecraft:story/mine_stone"] },
+    "xp": { "type": "theseus:xp", "amount": 3, "xpType": "points", "collectionType": "automatic" },
+    "kill_entity": { "type": "theseus:kill_entity", "entity": "minecraft:zombie", "amount": 2 },
+    "item_interaction": { "type": "theseus:item_interaction", "item": "minecraft:stick" },
+    "item_use": { "type": "theseus:item_use", "item": "minecraft:bow" },
+    "block_interaction": { "type": "theseus:block_interaction", "block": "minecraft:crafting_table" },
+    "entity_interaction": { "type": "theseus:entity_interaction", "entity": "minecraft:villager" },
+    "changed_dimension": { "type": "theseus:changed_dimension", "from": "minecraft:overworld", "to": "minecraft:the_nether" },
+    "biome": { "type": "theseus:biome", "biomes": "minecraft:desert" },
+    "location": { "type": "theseus:location", "predicate": { "dimension": "minecraft:overworld", "position": { "x": { "min": 0, "max": 10 }, "y": { "min": 60 }, "z": { "max": 0 } } } },
+    "recipe": { "type": "theseus:recipe", "recipes": ["minecraft:crafting_table"] },
+    "stat": { "type": "theseus:stat", "stat": "minecraft:jump", "target": 3 },
+    "structure": { "type": "theseus:structure", "structures": "#minecraft:village" },
+    "composite": {
+      "type": "theseus:composite",
+      "amount": 1,
+      "tasks": {
+        "child_dummy": { "type": "theseus:dummy", "value": "nested" },
+        "child_check": { "type": "theseus:check" }
+      }
+    }
+  },
+  "rewards": {
+    "xp": { "type": "theseus:xp", "xptype": "points", "amount": 5 },
+    "item": { "type": "theseus:item", "item": { "id": "minecraft:diamond", "count": 2 } },
+    "loot": { "type": "theseus:loottable", "loot_table": "minecraft:chests/simple_dungeon" },
+    "command": { "type": "theseus:command", "command": "say Contract reward" },
+    "choice": {
+      "type": "theseus:selectable",
+      "amount": 1,
+      "rewards": {
+        "selected_item": { "type": "theseus:item", "item": { "id": "minecraft:emerald", "count": 1 } },
+        "unselected_xp": { "type": "theseus:xp", "xptype": "level", "amount": 2 }
+      }
+    }
+  }
+}
