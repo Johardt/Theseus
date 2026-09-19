@@ -35,8 +35,7 @@ public final class QuestDocumentStore {
         .setPrettyPrinting()
         .create();
     private static final List<String> DEMO_QUESTS = List.of(
-        "welcome.json", "gather_logs.json", "craft_table.json", "combat.json", "nether_trip.json", "compatibility.json",
-        "reward_showcase.json"
+        "welcome.json", "gather_logs.json", "craft_table.json", "combat.json", "nether_trip.json", "compatibility.json"
     );
 
     private final Path theseusDirectory;

@@ -4,11 +4,5 @@
     "iconEnabled": true,
     "background": "",
     "backgroundOpacity": 100
-  },
-  "Compatibility Lab": {
-    "icon": "minecraft:chest",
-    "iconEnabled": true,
-    "background": "",
-    "backgroundOpacity": 100
   }
 }

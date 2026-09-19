@@ -12,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestDefinitionCompatibilityTest {
     @Test
-    void bundledRewardShowcaseIsValid() throws Exception {
+    void bundledWorldlyKnowledgeQuestIsValid() throws Exception {
         String json;
-        try (var stream = getClass().getResourceAsStream("/config/theseus/quests/getting_started/reward_showcase.json")) {
+        try (var stream = getClass().getResourceAsStream("/config/theseus/quests/getting_started/compatibility.json")) {
             json = new String(java.util.Objects.requireNonNull(stream).readAllBytes(), StandardCharsets.UTF_8);
         }
         QuestDefinition quest = parse(json);
