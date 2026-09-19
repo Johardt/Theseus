@@ -82,6 +82,9 @@ public final class QuestScreen extends Screen {
     private static final int HEADER_CANVAS_GAP = 9;
     private static final int HEADER_ACTION_WIDTH = 78;
     private static final int HEADER_ACTION_GAP = 7;
+    private static final int EDITOR_LIST_ACTION_WIDTH = 19;
+    private static final int EDITOR_LIST_ACTION_HEIGHT = 20;
+    private static final int EDITOR_LIST_ACTION_ICON_SIZE = 11;
     private static final int CHAPTER_LIST_TOP = 34;
     private static final int CHAPTER_ROW_HEIGHT = 23;
     private static final int CHAPTER_ROW_CONTENT_HEIGHT = 20;
@@ -539,7 +542,7 @@ public final class QuestScreen extends Screen {
             HeaderLayout header = headerLayout();
             if (!diagnostics.isEmpty()) {
                 addRenderableWidget(Widgets.button(widget -> {
-                    widget.withPosition(header.diagnosticsX(), header.actionY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
+                    widget.withPosition(header.diagnosticsX(), header.diagnosticsY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
                     widget.withRenderer(WidgetRenderers.text(Component.literal("Diagnostics")));
                     widget.withCallback(() -> {
                         modalHost.open(QuestModalHost.Modal.DIAGNOSTICS);
@@ -549,8 +552,8 @@ public final class QuestScreen extends Screen {
                     widget.withTooltip(Component.literal("View validation diagnostics"));
                 }));
             }
-            if (mode.isAuthoring()) addRenderableWidget(Widgets.button(widget -> {
-                    widget.withPosition(header.importX(), header.actionY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
+            if (mode.isAuthoring() && !authoring.open) addRenderableWidget(Widgets.button(widget -> {
+                    widget.withPosition(header.importX(), header.importY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
                     widget.withRenderer(WidgetRenderers.text(Component.literal("Import")));
                     widget.withCallback(this::openNativeFilePicker);
                     widget.withTooltip(Component.literal("Choose one or more quest JSON files"));
@@ -587,7 +590,7 @@ public final class QuestScreen extends Screen {
             ));
         }
         addGraphNavigationWidgets(headerLayout());
-        if (mode.isAuthoring()) {
+        if (mode.isAuthoring() && !authoring.open) {
             int toolX = sidebarWidth + 24;
             for (EditorTool tool : EditorTool.values()) {
                 addRenderableWidget(editorButton(
@@ -730,14 +733,17 @@ public final class QuestScreen extends Screen {
         int fitX = helpX - 27;
         int gridX = fitX - 27;
         int snapX = gridX - 27;
-        int nextActionX = mode.isAuthoring() ? snapX : fitX;
+        boolean editorDockOpen = authoring.open;
+        int nextActionX = editorDockOpen
+            ? helpX
+            : mode.isAuthoring() ? snapX : fitX;
         int diagnosticsX = -1;
         int importX = -1;
         if (!diagnostics.isEmpty()) {
             nextActionX -= HEADER_ACTION_GAP + HEADER_ACTION_WIDTH;
             diagnosticsX = nextActionX;
         }
-        if (mode.isAuthoring()) {
+        if (mode.isAuthoring() && !editorDockOpen) {
             nextActionX -= HEADER_ACTION_GAP + HEADER_ACTION_WIDTH;
             importX = nextActionX;
         }
@@ -748,11 +754,19 @@ public final class QuestScreen extends Screen {
             : toolLeft;
         boolean actionsOnSecondRow = (importX >= 0 || diagnosticsX >= 0)
             && nextActionX < toolRight + HEADER_ACTION_GAP;
-        int actionRow = actionsOnSecondRow ? 1 : 0;
+        int actionRow = !editorDockOpen && actionsOnSecondRow ? 1 : 0;
+        int diagnosticsRow = diagnosticsX < 0
+            ? -1
+            : editorDockOpen && diagnosticsX < toolRight + HEADER_ACTION_GAP
+                ? 1
+                : actionRow;
+        int importRow = importX < 0 ? -1 : actionRow;
         int statusRow = !editorMessage.isEmpty() && !authoring.open
             ? actionRow + 1
             : -1;
         int rows = Math.max(1, Math.max(actionRow + 1, statusRow + 1));
+        if (diagnosticsRow >= 0) rows = Math.max(rows, diagnosticsRow + 1);
+        if (importRow >= 0) rows = Math.max(rows, importRow + 1);
         int canvasTop = HEADER_ROW_Y
             + rows * HEADER_ROW_HEIGHT
             + (rows - 1) * HEADER_ROW_GAP
@@ -766,6 +780,12 @@ public final class QuestScreen extends Screen {
             importX,
             diagnosticsX,
             HEADER_ROW_Y + actionRow * (HEADER_ROW_HEIGHT + HEADER_ROW_GAP),
+            importRow < 0
+                ? -1
+                : HEADER_ROW_Y + importRow * (HEADER_ROW_HEIGHT + HEADER_ROW_GAP),
+            diagnosticsRow < 0
+                ? -1
+                : HEADER_ROW_Y + diagnosticsRow * (HEADER_ROW_HEIGHT + HEADER_ROW_GAP),
             statusRow < 0
                 ? -1
                 : HEADER_ROW_Y + statusRow * (HEADER_ROW_HEIGHT + HEADER_ROW_GAP),
@@ -784,12 +804,12 @@ public final class QuestScreen extends Screen {
             widget.withCallback(() -> openDisplayMenu(header.helpX(), header.actionY() + HEADER_ROW_HEIGHT));
             widget.withTooltip(Component.translatable("screen.theseus.display_menu.tooltip"));
         }));
-        addRenderableWidget(Widgets.button(widget -> {
-            widget.withPosition(header.fitX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("F")));
-            widget.withCallback(this::fitGraphToContent);
-            widget.withTooltip(Component.literal("Fit visible quests in the graph"));
-        }));
+        if (!authoring.open) addRenderableWidget(Widgets.button(widget -> {
+                widget.withPosition(header.fitX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
+                widget.withRenderer(WidgetRenderers.text(Component.literal("F")));
+                widget.withCallback(this::fitGraphToContent);
+                widget.withTooltip(Component.literal("Fit visible quests in the graph"));
+            }));
         if (!TheseusClientOptions.disableMinimap()
             && minimapHidden
             && !detailsOpen
@@ -819,7 +839,7 @@ public final class QuestScreen extends Screen {
                 }));
             }
         }
-        if (mode.isAuthoring()) {
+        if (mode.isAuthoring() && !authoring.open) {
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(header.gridX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
                 boolean visible = TheseusClientOptions.showGrid();
@@ -1010,11 +1030,11 @@ public final class QuestScreen extends Screen {
 
     private WidgetRenderer<Button> listActionRenderer(String action) {
         return WidgetRenderers.center(
-            13,
-            15,
+            EDITOR_LIST_ACTION_ICON_SIZE,
+            EDITOR_LIST_ACTION_ICON_SIZE,
             WidgetRenderers.sprite(new WidgetSprites(
-                sprite("lists/buttons/" + action + "/normal"),
-                sprite("lists/buttons/" + action + "/hovered")
+                sprite("heading/editor/" + action),
+                sprite("heading/editor/" + action)
             ))
         );
     }
@@ -1462,13 +1482,10 @@ public final class QuestScreen extends Screen {
     private int addMarkdownSpriteAction(int x, int y, String tooltip, String icon, Runnable action) {
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(x, y).withSize(MARKDOWN_ACTION_SIZE, MARKDOWN_ACTION_SIZE);
+            widget.withTexture(null);
             Identifier normal = sprite("editor/" + icon + "/normal");
             Identifier hovered = sprite("editor/" + icon + "/hovered");
-            widget.withRenderer(WidgetRenderers.center(
-                16,
-                16,
-                WidgetRenderers.sprite(new WidgetSprites(normal, hovered))
-            ));
+            widget.withRenderer(WidgetRenderers.sprite(new WidgetSprites(normal, hovered)));
             widget.withCallback(action);
             widget.withTooltip(Component.literal(tooltip));
         }));
@@ -1676,9 +1693,11 @@ public final class QuestScreen extends Screen {
         for (int index = createTaskScroll; index < end; index++) {
             int taskIndex = index;
             int cardY = y + (index - createTaskScroll) * 48;
+            int actionY = cardY + (42 - EDITOR_LIST_ACTION_HEIGHT) / 2;
+            int deleteX = x + width - EDITOR_LIST_ACTION_WIDTH - 8;
+            int editX = deleteX - 4 - EDITOR_LIST_ACTION_WIDTH;
             Button edit = Widgets.button(widget -> {
-                widget.withPosition(x + width - 59, cardY + 9).withSize(23, 24);
-                widget.withTexture(null);
+                widget.withPosition(editX, actionY).withSize(EDITOR_LIST_ACTION_WIDTH, EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(listActionRenderer("edit"));
                 widget.withCallback(() -> openTaskEditor(taskIndex));
                 widget.active = isTaskEditable(authoring.tasks.get(taskIndex));
@@ -1686,8 +1705,7 @@ public final class QuestScreen extends Screen {
             });
             addRenderableWidget(edit);
             Button delete = Widgets.button(widget -> {
-                widget.withPosition(x + width - 31, cardY + 9).withSize(23, 24);
-                widget.withTexture(null);
+                widget.withPosition(deleteX, actionY).withSize(EDITOR_LIST_ACTION_WIDTH, EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(listActionRenderer("delete"));
                 widget.withCallback(() -> {
                     authoring.taskDeleteConfirmation = taskIndex;
@@ -1721,17 +1739,18 @@ public final class QuestScreen extends Screen {
         for (int index = createRewardScroll; index < end; index++) {
             int rewardIndex = index;
             int cardY = y + (index - createRewardScroll) * 48;
+            int actionY = cardY + (42 - EDITOR_LIST_ACTION_HEIGHT) / 2;
+            int deleteX = x + width - EDITOR_LIST_ACTION_WIDTH - 8;
+            int editX = deleteX - 4 - EDITOR_LIST_ACTION_WIDTH;
             addRenderableWidget(Widgets.button(widget -> {
-                widget.withPosition(x + width - 59, cardY + 9).withSize(23, 24);
-                widget.withTexture(null);
+                widget.withPosition(editX, actionY).withSize(EDITOR_LIST_ACTION_WIDTH, EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(listActionRenderer("edit"));
                 widget.withCallback(() -> openRewardEditor(rewardIndex));
                 widget.active = isRewardEditable(authoring.rewards.get(rewardIndex));
                 widget.withTooltip(Component.literal(widget.active ? "Edit reward" : unavailableReason(EditorTypeRegistry.Kind.REWARD, authoring.rewards.get(rewardIndex).type)));
             }));
             addRenderableWidget(Widgets.button(widget -> {
-                widget.withPosition(x + width - 31, cardY + 9).withSize(23, 24);
-                widget.withTexture(null);
+                widget.withPosition(deleteX, actionY).withSize(EDITOR_LIST_ACTION_WIDTH, EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(listActionRenderer("delete"));
                 widget.withCallback(() -> {
                     authoring.rewards.remove(rewardIndex);
@@ -2912,7 +2931,13 @@ public final class QuestScreen extends Screen {
             canvas, graphViewport.state(), mouseX, mouseY
         );
         drawLinkPreview(graphics, mouseWorld.x(), mouseWorld.y());
-        drawQuestNodes(graphics, surface, mouseWorld.x(), mouseWorld.y());
+        drawQuestNodes(
+            graphics,
+            surface,
+            mouseWorld.x(),
+            mouseWorld.y(),
+            !detailsDockContains(mouseX, mouseY)
+        );
         drawCreateQuestPreview(graphics);
         graphics.pose().popMatrix();
         graphics.disableScissor();
@@ -3966,18 +3991,21 @@ public final class QuestScreen extends Screen {
         QuestSurfaceLayout.Layout surface
     ) {
         for (ClientQuest quest : visibleQuests()) {
-            QuestSurfaceLayout.Node child = surface.find(quest.definition.id()).orElse(null);
+            QuestSurfaceLayout.Node child = dependencyNode(surface, quest.definition.id());
+            boolean showArrow = quest.definition.settings().showDependencyArrow();
+            if (authoring.open && authoring.editingExisting
+                && quest.definition.id().equals(authoring.originalId)) {
+                showArrow = authoring.showDependencyArrow;
+            }
             if (
                 child == null ||
-                !quest.definition.settings().showDependencyArrow()
+                !showArrow
             ) continue;
             for (String dependency : quest.definition.dependencies()) {
-                QuestSurfaceLayout.Node parent = surface.find(dependency).orElse(null);
+                QuestSurfaceLayout.Node parent = dependencyNode(surface, dependency);
                 if (parent == null) continue;
-                QuestGraphLayout.Point parentPoint = questCenter(questById(dependency));
-                QuestGraphLayout.Point childPoint = questCenter(quest);
-                PathPoint parentCenter = new PathPoint(parentPoint.x(), parentPoint.y());
-                PathPoint childCenter = new PathPoint(childPoint.x(), childPoint.y());
+                PathPoint parentCenter = new PathPoint(parent.centerX(), parent.centerY());
+                PathPoint childCenter = new PathPoint(child.centerX(), child.centerY());
                 // Nodes render after connectors, so center-to-center paths disappear cleanly beneath the frames.
                 PathPoint start = parentCenter;
                 PathPoint tip = childCenter;
@@ -3988,6 +4016,18 @@ public final class QuestScreen extends Screen {
                 drawTexturedPath(graphics, start, tip, quest.unlocked);
             }
         }
+    }
+
+    private QuestSurfaceLayout.Node dependencyNode(
+        QuestSurfaceLayout.Layout surface,
+        String questId
+    ) {
+        QuestSurfaceLayout.Node node = surface.find(questId).orElse(null);
+        if (node != null) return node;
+        if (authoring.open && authoring.editingExisting && questId.equals(authoring.originalId)) {
+            return authoringNodeLayout();
+        }
+        return null;
     }
 
     private void drawLinkPreview(
@@ -4011,7 +4051,8 @@ public final class QuestScreen extends Screen {
         GuiGraphicsExtractor graphics,
         QuestSurfaceLayout.Layout surface,
         double mouseX,
-        double mouseY
+        double mouseY,
+        boolean hoverEnabled
     ) {
         for (ClientQuest quest : visibleQuests()) {
             if (authoring.editingExisting && authoring.open && quest.definition.id().equals(authoring.originalId)) continue;
@@ -4021,7 +4062,7 @@ public final class QuestScreen extends Screen {
             QuestBackground background = questBackground(quest.definition);
             int frame = quest.claimed ? 3 : quest.complete ? 2 : quest.unlocked ? 1 : 0;
             drawQuestBackground(graphics, node, background.texture, frame, 0xFFFFFFFF);
-            if (node.contains(mouseX, mouseY)) {
+            if (hoverEnabled && node.contains(mouseX, mouseY)) {
                 drawQuestBackground(graphics, node, background.texture, 4, 0xFFFFFFFF);
             }
             int nodeX = (int) Math.round(bounds.x());
@@ -5972,6 +6013,43 @@ public final class QuestScreen extends Screen {
             false,
             this::openTutorial
         ));
+        if (authoring.open) {
+            entries.add(QuestContextMenu.Entry.separator());
+            entries.add(QuestContextMenu.Entry.item(
+                "Import quests",
+                "",
+                true,
+                false,
+                this::openNativeFilePicker
+            ));
+            entries.add(QuestContextMenu.Entry.item(
+                "Fit graph to content",
+                "Home",
+                true,
+                false,
+                this::fitGraphToContent
+            ));
+            entries.add(QuestContextMenu.Entry.item(
+                TheseusClientOptions.showGrid() ? "Hide grid" : "Show grid",
+                "",
+                true,
+                false,
+                () -> {
+                    TheseusClientOptions.setShowGrid(!TheseusClientOptions.showGrid());
+                    rebuildWidgets();
+                }
+            ));
+            entries.add(QuestContextMenu.Entry.item(
+                TheseusClientOptions.snapToGrid() ? "Disable snap to grid" : "Enable snap to grid",
+                "",
+                true,
+                false,
+                () -> {
+                    TheseusClientOptions.setSnapToGrid(!TheseusClientOptions.snapToGrid());
+                    rebuildWidgets();
+                }
+            ));
+        }
         showContextMenu(mouseX, mouseY, entries);
     }
 
@@ -7269,18 +7347,25 @@ public final class QuestScreen extends Screen {
             }
             return true;
         }
-        if (authoring.open && createQuestTab == DetailTab.TASKS &&
-            mouseX >= width - detailsWidth()) {
-            createTaskScroll = Math.max(
-                0,
-                Math.min(maxCreateTaskScroll(), createTaskScroll - (int) Math.signum(scrollY))
-            );
-            rebuildWidgets();
-            return true;
-        }
-        if (authoring.open && createQuestTab == DetailTab.REWARDS && mouseX >= width - detailsWidth()) {
-            createRewardScroll = Math.max(0, Math.min(maxCreateRewardScroll(), createRewardScroll - (int) Math.signum(scrollY)));
-            rebuildWidgets();
+        if (authoring.open && detailsDockContains(mouseX, mouseY)) {
+            if (createQuestTab == DetailTab.TASKS) {
+                createTaskScroll = Math.max(
+                    0,
+                    Math.min(maxCreateTaskScroll(), createTaskScroll - (int) Math.signum(scrollY))
+                );
+                rebuildWidgets();
+            } else if (createQuestTab == DetailTab.REWARDS) {
+                createRewardScroll = Math.max(
+                    0,
+                    Math.min(maxCreateRewardScroll(), createRewardScroll - (int) Math.signum(scrollY))
+                );
+                rebuildWidgets();
+            } else if (createQuestTab == DetailTab.OVERVIEW) {
+                super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+                if (draftOverviewScrollContainer != null) {
+                    draftOverviewScrollY = draftOverviewScrollContainer.getYScroll();
+                }
+            }
             return true;
         }
         if (detailsOpen && mouseX >= width - detailsWidth()) {
@@ -7425,6 +7510,8 @@ public final class QuestScreen extends Screen {
         int importX,
         int diagnosticsX,
         int actionY,
+        int importY,
+        int diagnosticsY,
         int statusY,
         int canvasTop
     ) {}
