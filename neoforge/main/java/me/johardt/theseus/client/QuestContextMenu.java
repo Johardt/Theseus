@@ -15,6 +15,7 @@ public final class QuestContextMenu {
     public static final int KEY_DOWN = InputConstants.KEY_DOWN;
     public static final int KEY_RETURN = InputConstants.KEY_RETURN;
     public static final int KEY_NUMPAD_ENTER = InputConstants.KEY_NUMPADENTER;
+    public static final int KEY_TAB = InputConstants.KEY_TAB;
     public static final int ROW_HEIGHT = 20;
     public static final int SEPARATOR_HEIGHT = 7;
     public static final int PADDING = 4;
@@ -98,13 +99,18 @@ public final class QuestContextMenu {
 
     /** Handles navigation and consumes all keyboard input while the menu is open. */
     public Result keyPressed(int keyCode) {
+        return keyPressed(keyCode, false);
+    }
+
+    /** Handles navigation and consumes all keyboard input while the menu is open. */
+    public Result keyPressed(int keyCode, boolean shiftDown) {
         if (!open) return Result.IGNORED;
         if (keyCode == KEY_ESCAPE) {
             dismiss();
             return Result.DISMISSED;
         }
-        if (keyCode == KEY_UP || keyCode == KEY_DOWN) {
-            moveSelection(keyCode == KEY_DOWN ? 1 : -1);
+        if (keyCode == KEY_UP || keyCode == KEY_DOWN || keyCode == KEY_TAB) {
+            moveSelection(keyCode == KEY_DOWN || (keyCode == KEY_TAB && !shiftDown) ? 1 : -1);
             return Result.CONSUMED;
         }
         if (keyCode == KEY_RETURN || keyCode == KEY_NUMPAD_ENTER) {

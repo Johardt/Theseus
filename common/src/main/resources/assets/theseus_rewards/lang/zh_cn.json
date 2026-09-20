@@ -3,25 +3,20 @@
     "reward.theseus.progress.desc.incomplete.plural": "%s个可领取奖励",
     "reward.theseus.progress.desc.locked": "没有可领取奖励",
     "reward.theseus.progress.desc.complete": "所有奖励已领取",
-
     "gui.theseus.rewards.unlocks_quest.title": "解锁%s",
     "gui.theseus.rewards.unlocks_quest.desc": "授予您执行新任务的权限",
-
     "rewards.theseus.xp": "☠ 经验",
     "reward.theseus.xp.title.singular": "获得：经验",
     "reward.theseus.xp.title.plural": "获得：经验",
     "reward.theseus.xp.desc.singular": "获得%s经验%s",
     "reward.theseus.xp.desc.plural": "获得%s经验%s",
-
     "reward.theseus.xp.type.point": "值",
     "reward.theseus.xp.type.level": "等级",
-
     "rewards.theseus.item": "🧪 物品",
     "reward.theseus.item.title.singular": "获得：%s",
     "reward.theseus.item.title.plural": "获得：%s",
     "reward.theseus.item.desc.singular": "获得%sx%s",
     "reward.theseus.item.desc.plural": "获得%sx%s",
-
     "rewards.theseus.loottable": "↔ 战利品表",
     "reward.theseus.loottable.title.singular": "获得随机战利品",
     "reward.theseus.loottable.desc.singular": "来自%s",
@@ -29,15 +24,17 @@
     "setting.theseus.loottable.title": "标题覆盖：",
     "setting.theseus.loottable.icon": "图标覆盖：",
     "setting.theseus.loottable.loottable": "战利品表：",
-
-    "rewards.theseus.select": "❓ 选择",
+    "rewards.theseus.selectable": "❓ 选择",
     "reward.theseus.select.title.singular": "选择奖励",
     "reward.theseus.select.title.plural": "选择奖励",
     "reward.theseus.select.desc.singular": "点击按钮选择%s个奖励",
     "reward.theseus.select.desc.plural": "单击按钮选择%s个奖励",
     "reward.theseus.select.modal.title.singular": "选择%s个奖励",
     "reward.theseus.select.modal.title.plural": "选择%s个奖励",
-
+    "setting.theseus.selectable.title": "Title Override:",
+    "setting.theseus.selectable.icon": "Icon Override:",
+    "setting.theseus.selectable.amount": "Amount Selectable:",
+    "setting.theseus.selectable.rewards": "Selectable Rewards:",
     "rewards.theseus.command": "/ 命令",
     "reward.theseus.command.title.singular": "执行命令",
     "reward.theseus.command.desc.singular": "%s…",

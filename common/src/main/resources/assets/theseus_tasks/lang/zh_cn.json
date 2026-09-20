@@ -2,11 +2,9 @@
     "task.theseus.progress.desc.incomplete.singular": "剩余%s个任务项",
     "task.theseus.progress.desc.incomplete.plural": "剩余%s个任务项",
     "task.theseus.progress.desc.complete": "所有任务项已完成",
-
     "task.theseus.require_quest.title": "完成另一个任务",
     "task.theseus.require_quest.desc": "完成“%s”",
-
-    "tasks.theseus.kill_entity": "\uD83D\uDDE1 击杀实体",
+    "tasks.theseus.kill_entity": "🗡 击杀实体",
     "task.theseus.kill_entity.title.singular": "击杀：%s",
     "task.theseus.kill_entity.title.plural": "击杀：%s",
     "task.theseus.kill_entity.desc.singular": "击杀 %sx %s",
@@ -15,7 +13,6 @@
     "setting.theseus.kill_entity.icon": "图标覆盖：",
     "setting.theseus.kill_entity.entity": "要击杀的实体：",
     "setting.theseus.kill_entity.amount": "击杀数量：",
-
     "tasks.theseus.item": "🧪 获取物品",
     "task.theseus.item.title.singular": "获取：%s",
     "task.theseus.item.title.plural": "提交：%s",
@@ -33,7 +30,6 @@
     "setting.theseus.item.item": "物品：",
     "setting.theseus.item.amount": "数量：",
     "setting.theseus.item.collection_type": "收集类型：",
-
     "tasks.theseus.advancement": "✔ 进度",
     "task.theseus.advancement.title.singular": "完成进度",
     "task.theseus.advancement.title.plural": "完成进度",
@@ -42,7 +38,6 @@
     "setting.theseus.advancement.title": "标题覆盖：",
     "setting.theseus.advancement.icon": "图标覆盖：",
     "setting.theseus.advancement.advancement": "进度：",
-
     "tasks.theseus.recipe": "🪓 配方",
     "task.theseus.recipe.title.singular": "制作一个配方",
     "task.theseus.recipe.title.plural": "制作一个配方",
@@ -51,35 +46,30 @@
     "setting.theseus.recipe.title": "标题覆盖：",
     "setting.theseus.recipe.icon": "图标覆盖：",
     "setting.theseus.recipe.recipe": "配方：",
-
     "tasks.theseus.structure": "⌂ 结构",
     "task.theseus.structure.title.singular": "进入任意%s",
     "task.theseus.structure.desc.singular": "寻找结构",
     "setting.theseus.structure.title": "标题覆盖：",
     "setting.theseus.structure.icon": "图标覆盖：",
     "setting.theseus.structure.structure": "结构：",
-
     "tasks.theseus.biome": "☀ 生物群系",
     "task.theseus.biome.title.singular": "输进入任何%s生物群系",
     "task.theseus.biome.desc.singular": "访问生物群落",
     "setting.theseus.biome.title": "标题覆盖：",
     "setting.theseus.biome.icon": "图标覆盖：",
     "setting.theseus.biome.biome": "生物群落：",
-
     "tasks.theseus.block_interaction": "⛏ 方块交互",
     "task.theseus.block_interaction.title.singular": "交互：%s",
     "task.theseus.block_interaction.desc.singular": "使用[%s]进行交互",
     "setting.theseus.block_interaction.title": "标题覆盖：",
     "setting.theseus.block_interaction.icon": "图标覆盖：",
     "setting.theseus.block_interaction.block": "方块：",
-
     "tasks.theseus.entity_interaction": "🪓 实体交互",
     "task.theseus.entity_interaction.title.singular": "交互：%s",
     "task.theseus.entity_interaction.desc.singular": "使用[%s]进行交互",
     "setting.theseus.entity_interaction.title": "标题覆盖：",
     "setting.theseus.entity_interaction.icon": "图标覆盖：",
     "setting.theseus.entity_interaction.entity": "实体：",
-
     "tasks.theseus.xp": "⭐ 经验",
     "task.theseus.xp.title.singular": "收集经验",
     "task.theseus.xp.title.plural": "提交经验",
@@ -92,14 +82,12 @@
     "setting.theseus.xp.type": "经验类型：",
     "setting.theseus.xp.amount": "经验数量：",
     "setting.theseus.xp.collection_type": "收集类型：",
-
     "tasks.theseus.item_interaction": "🎣 物品交互",
     "task.theseus.item_interaction.title.singular": "交互：%s",
     "task.theseus.item_interaction.desc.singular": "使用[%s]进行交互",
     "setting.theseus.item_interaction.title": "标题覆盖：",
     "setting.theseus.item_interaction.icon": "图标覆盖：",
     "setting.theseus.item_interaction.item": "物品：",
-
     "tasks.theseus.changed_dimension": "🌊 改变维度",
     "task.theseus.changed_dimension.title.singular": "维度之间的旅行",
     "task.theseus.changed_dimension.desc.singular": "从%s到%s",
@@ -107,24 +95,20 @@
     "setting.theseus.changed_dimension.icon": "图标覆盖：",
     "setting.theseus.changed_dimension.from": "从：",
     "setting.theseus.changed_dimension.to": "到：",
-
     "tasks.theseus.composite": "❓ 复合",
     "task.theseus.composite.title.singular": "完成其中1个任务项",
     "task.theseus.composite.title.plural": "完成%s个任务项",
-
     "tasks.theseus.check": "☑ 检查",
     "task.theseus.check.title.singular": "复选框",
     "task.theseus.check.desc.singular": "单击检查按钮完成",
     "setting.theseus.check.title": "标题覆盖：",
     "setting.theseus.check.icon": "图标覆盖：",
     "setting.theseus.check.id": "检查ID（可以共享）：",
-
     "tasks.theseus.dummy": "☃ 虚拟",
     "setting.theseus.dummy.title": "标题： ",
     "setting.theseus.dummy.icon": "图标： ",
     "setting.theseus.dummy.id": "虚拟 ID（可共享）：",
     "setting.theseus.dummy.description": "描述：",
-
     "tasks.theseus.stat": "💪 统计数据",
     "task.theseus.stat.title.singular": "增加%s统计数据",
     "task.theseus.stat.desc.singular": "达到%s的%s统计数据",

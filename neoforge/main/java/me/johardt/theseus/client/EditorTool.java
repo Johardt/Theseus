@@ -1,18 +1,18 @@
 package me.johardt.theseus.client;
 
 enum EditorTool {
-    SELECT("move", "Move or select quest", "S"),
-    HAND("drag", "Pan quest tree", "H"),
-    ADD("add", "Add quest", "A"),
-    LINK("link", "Link dependency; Shift-click the dependent to remove", "L");
+    SELECT("move", "gui.theseus.editor.tool.select", "S"),
+    HAND("drag", "gui.theseus.editor.tool.pan", "H"),
+    ADD("add", "gui.theseus.editor.tool.add", "A"),
+    LINK("link", "gui.theseus.editor.tool.link", "L");
 
     final String icon;
-    final String tooltip;
+    final String tooltipKey;
     final String shortcut;
 
-    EditorTool(String icon, String tooltip, String shortcut) {
+    EditorTool(String icon, String tooltipKey, String shortcut) {
         this.icon = icon;
-        this.tooltip = tooltip;
+        this.tooltipKey = tooltipKey;
         this.shortcut = shortcut;
     }
 }

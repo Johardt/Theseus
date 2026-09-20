@@ -14,51 +14,53 @@ import me.johardt.theseus.client.TheseusClientOptions;
 @ConfigInfo(
     icon = "settings",
     title = "Theseus Options",
-    description = "Client-side display and editor preferences for Theseus."
+    titleTranslation = "config.theseus.options.title",
+    description = "Client-side display and editor preferences for Theseus.",
+    descriptionTranslation = "config.theseus.options.description"
 )
 public final class ResourcefulClientOptions {
-    @ConfigEntry(id = "maxEditorHistory")
+    @ConfigEntry(id = "maxEditorHistory", translation = "config.theseus.option.max_editor_history")
     @ConfigOption.Range(min = 10, max = 1000)
     public static Observable<Integer> maxEditorHistory = Observable.of(
         TheseusClientOptions.DEFAULT_MAX_EDITOR_HISTORY
     );
 
-    @ConfigEntry(id = "defaultMinimapMode")
+    @ConfigEntry(id = "defaultMinimapMode", translation = "config.theseus.option.default_minimap_mode")
     public static Observable<TheseusClientOptions.MinimapMode> defaultMinimapMode = Observable.of(
         TheseusClientOptions.MinimapMode.UNDOCKED
     );
 
-    @ConfigEntry(id = "disableMinimap")
+    @ConfigEntry(id = "disableMinimap", translation = "config.theseus.option.disable_minimap")
     public static Observable<Boolean> disableMinimap = Observable.of(false);
 
-    @ConfigEntry(id = "minimapX")
+    @ConfigEntry(id = "minimapX", translation = "config.theseus.option.minimap_x")
     @ConfigOption.Range(min = 0, max = 1)
     @ConfigOption.Slider
     public static Observable<Double> minimapX = Observable.of(1.0);
 
-    @ConfigEntry(id = "minimapY")
+    @ConfigEntry(id = "minimapY", translation = "config.theseus.option.minimap_y")
     @ConfigOption.Range(min = 0, max = 1)
     @ConfigOption.Slider
     public static Observable<Double> minimapY = Observable.of(1.0);
 
-    @ConfigEntry(id = "showGrid")
+    @ConfigEntry(id = "showGrid", translation = "config.theseus.option.show_grid")
     public static Observable<Boolean> showGrid = Observable.of(false);
 
-    @ConfigEntry(id = "snapToGrid")
+    @ConfigEntry(id = "snapToGrid", translation = "config.theseus.option.snap_to_grid")
     public static Observable<Boolean> snapToGrid = Observable.of(false);
 
-    @ConfigEntry(id = "trackerAnchor")
+    @ConfigEntry(id = "trackerAnchor", translation = "config.theseus.option.tracker_anchor")
     public static Observable<TheseusClientOptions.TrackerAnchor> trackerAnchor = Observable.of(
         TheseusClientOptions.TrackerAnchor.TOP_LEFT
     );
 
-    @ConfigEntry(id = "tutorialAutoShow")
+    @ConfigEntry(id = "tutorialAutoShow", translation = "config.theseus.option.tutorial_auto_show")
     public static Observable<Boolean> tutorialAutoShow = Observable.of(true);
 
-    @ConfigEntry(id = "tutorialSeen")
+    @ConfigEntry(id = "tutorialSeen", translation = "config.theseus.option.tutorial_seen")
     public static Observable<Boolean> tutorialSeen = Observable.of(false);
 
-    @ConfigEntry(id = "trackerCollapsed")
+    @ConfigEntry(id = "trackerCollapsed", translation = "config.theseus.option.tracker_collapsed")
     public static Observable<Boolean> trackerCollapsed = Observable.of(false);
 
     private static Configurator configurator;

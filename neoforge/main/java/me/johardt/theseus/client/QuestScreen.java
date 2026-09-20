@@ -40,6 +40,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -196,10 +198,12 @@ public final class QuestScreen extends Screen {
     private int detailContentTop;
     private int detailContentBottom;
     private int taskChooserScroll;
+    private int taskChooserSelectedIndex;
     private int createTaskScroll;
     private String rawInspectorTitle = "Raw JSON";
     private String rawInspectorJson = "{}";
     private int rewardChooserScroll;
+    private int rewardChooserSelectedIndex;
     private int createRewardScroll;
     private Picker picker = Picker.NONE;
     private PickerTarget pickerTarget = PickerTarget.QUEST_ICON;
@@ -254,12 +258,87 @@ public final class QuestScreen extends Screen {
     private String pendingQuestFileId;
     private QuestModalHost.ProgressResetTarget progressResetTarget;
 
+    @Override
+    protected void updateNarrationState(NarrationElementOutput output) {
+        super.updateNarrationState(output);
+        if (contextMenu != null && contextMenu.isOpen()) {
+            int selected = contextMenu.selectedIndex();
+            if (selected >= 0 && selected < contextMenu.entries().size()) {
+                output.add(NarratedElementType.TITLE, Component.translatable(
+                    "gui.theseus.editor.menu_selection",
+                    contextMenu.entries().get(selected).label()
+                ));
+                output.add(NarratedElementType.USAGE, Component.translatable("gui.theseus.editor.menu_keyboard_usage"));
+            }
+        } else if (modalHost.isTaskChooserOpen() || modalHost.isNestedTaskChooserOpen()) {
+            TaskChoice choice = TASK_CHOICES.get(Math.clamp(taskChooserSelectedIndex, 0, TASK_CHOICES.size() - 1));
+            output.add(NarratedElementType.TITLE, Component.translatable(
+                "gui.theseus.editor.chooser_selection",
+                editorTypeLabel(EditorTypeRegistry.Kind.TASK, choice.type, choice.label)
+            ));
+            output.add(NarratedElementType.USAGE, Component.translatable("gui.theseus.editor.chooser_keyboard_usage"));
+        } else if (modalHost.isRewardChooserOpen() || modalHost.isNestedRewardChooserOpen()) {
+            List<RewardChoice> choices = modalHost.isNestedRewardChooserOpen()
+                ? REWARD_CHOICES.stream().filter(choice -> !choice.type.equals("theseus:selectable")).toList()
+                : REWARD_CHOICES;
+            RewardChoice choice = choices.get(Math.clamp(rewardChooserSelectedIndex, 0, choices.size() - 1));
+            output.add(NarratedElementType.TITLE, Component.translatable(
+                "gui.theseus.editor.chooser_selection",
+                editorTypeLabel(EditorTypeRegistry.Kind.REWARD, choice.type, choice.label)
+            ));
+            output.add(NarratedElementType.USAGE, Component.translatable("gui.theseus.editor.chooser_keyboard_usage"));
+        } else if (graphFocused && selected() != null) {
+            ClientQuest quest = selected();
+            output.add(NarratedElementType.TITLE, Component.translatable(
+                "gui.theseus.quest.graph_selection",
+                quest.definition.title(),
+                status(quest)
+            ));
+            output.add(NarratedElementType.USAGE, Component.translatable(
+                mode.isAuthoring()
+                    ? "gui.theseus.quest.graph_editor_keyboard_usage"
+                    : "gui.theseus.quest.graph_keyboard_usage"
+            ));
+        }
+    }
+
+    private static Component editorText(String translationKey) {
+        return Component.translatable(translationKey);
+    }
+
+    private static String editorString(String translationKey) {
+        return editorText(translationKey).getString();
+    }
+
+    private static Component visibilityLabel(QuestDefinition.Visibility visibility) {
+        return switch (visibility) {
+            case NEVER -> Component.translatable("gui.theseus.editor.visibility.never");
+            case LOCKED -> Component.translatable("quest.theseus.locked");
+            case DEPENDENCIES_VISIBLE -> Component.translatable("quest.theseus.dependencies_visible");
+            case IN_PROGRESS -> Component.translatable("quest.theseus.in_progress");
+            case COMPLETED -> Component.translatable("quest.theseus.completed");
+        };
+    }
+
+    private static Component editorTypeLabel(EditorTypeRegistry.Kind kind, String type, String fallback) {
+        if (type != null && type.startsWith("theseus:")) {
+            String typeId = type.substring("theseus:".length());
+            boolean known = (kind == EditorTypeRegistry.Kind.TASK && TASK_CHOICES.stream().anyMatch(choice -> choice.type.equals(type)))
+                || (kind == EditorTypeRegistry.Kind.REWARD && REWARD_CHOICES.stream().anyMatch(choice -> choice.type.equals(type)))
+                || (kind == EditorTypeRegistry.Kind.ICON && type.equals("theseus:item"));
+            if (known) {
+                return Component.translatable("gui.theseus.editor.type." + kind.name().toLowerCase(java.util.Locale.ROOT) + "." + typeId);
+            }
+        }
+        return Component.literal(fallback == null || fallback.isBlank() ? String.valueOf(type) : fallback);
+    }
+
     public QuestScreen(JsonObject snapshot) {
         this(snapshot, null);
     }
 
     public QuestScreen(JsonObject snapshot, QuestScreen previous) {
-        super(Component.literal("Theseus Quests"));
+        super(Component.translatable("gui.theseus.editor.theseus_quests"));
         this.authoring = previous == null
             ? new AuthorMode(QuestSurfaceLayout.DEFAULT_ICON_SIZE)
             : previous.authoring.copy();
@@ -527,9 +606,9 @@ public final class QuestScreen extends Screen {
                 rebuildWidgets();
             });
             widget.withTooltip(
-                Component.literal(
-                    sidebarOpen ? "Collapse quest groups" : "Show quest groups"
-                )
+                Component.translatable(sidebarOpen
+                    ? "gui.theseus.editor.collapse_quest_groups"
+                    : "gui.theseus.editor.show_quest_groups")
             );
         });
         addRenderableWidget(sidebarToggle);
@@ -543,26 +622,26 @@ public final class QuestScreen extends Screen {
             if (!diagnostics.isEmpty()) {
                 addRenderableWidget(Widgets.button(widget -> {
                     widget.withPosition(header.diagnosticsX(), header.diagnosticsY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
-                    widget.withRenderer(WidgetRenderers.text(Component.literal("Diagnostics")));
+                    widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.diagnostics")));
                     widget.withCallback(() -> {
                         modalHost.open(QuestModalHost.Modal.DIAGNOSTICS);
                         diagnosticsScroll = 0;
                         rebuildWidgets();
                     });
-                    widget.withTooltip(Component.literal("View validation diagnostics"));
+                    widget.withTooltip(Component.translatable("gui.theseus.editor.view_validation_diagnostics"));
                 }));
             }
             if (mode.isAuthoring() && !authoring.open) addRenderableWidget(Widgets.button(widget -> {
                     widget.withPosition(header.importX(), header.importY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
-                    widget.withRenderer(WidgetRenderers.text(Component.literal("Import")));
+                    widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.import")));
                     widget.withCallback(this::openNativeFilePicker);
-                    widget.withTooltip(Component.literal("Choose one or more quest JSON files"));
+                    widget.withTooltip(Component.translatable("gui.theseus.editor.choose_one_or_more_quest_json_files"));
                 }));
             addRenderableWidget(editorButton(
                 header.editX(),
                 "edit",
                 mode.isAuthoring(),
-                mode.isAuthoring() ? "Leave quest edit mode" : "Edit quests",
+                Component.translatable(mode.isAuthoring() ? "gui.theseus.editor.leave_quest_edit_mode" : "gui.theseus.editor.edit_quests"),
                 () -> {
                     requestDiscard(() -> {
                         boolean enteringEditMode = !mode.isAuthoring();
@@ -597,7 +676,7 @@ public final class QuestScreen extends Screen {
                     toolX,
                     tool.icon,
                     mode.editorTool() == tool,
-                    tool.tooltip + " (" + tool.shortcut + ")",
+                    Component.translatable(tool.tooltipKey, tool.shortcut),
                     () -> {
                         requestDiscard(() -> {
                             mode.setEditorTool(tool);
@@ -627,9 +706,7 @@ public final class QuestScreen extends Screen {
                         .withSize(Math.max(1, buttonWidth), CHAPTER_ROW_CONTENT_HEIGHT);
                     widget.withTexture(null);
                     widget.withRenderer(chapterButtonRenderer(candidate, candidate.equals(group)));
-                    if (chapterLabelRequiresTooltip(candidate, buttonWidth)) {
-                        widget.withTooltip(Component.literal(candidate));
-                    }
+                    widget.withTooltip(Component.literal(candidate));
                     widget.withCallback(() -> {
                         chapterListFocused = true;
                         focusedChapterIndex = index;
@@ -644,6 +721,7 @@ public final class QuestScreen extends Screen {
                         widget.withRenderer(WidgetRenderers.text(Component.literal("↑")));
                         widget.withCallback(() -> reorderChapter(index, -1));
                         widget.active = index > 0;
+                        widget.withTooltip(Component.translatable("gui.theseus.editor.move_chapter_up"));
                     }));
                     addRenderableWidget(Widgets.button(widget -> {
                         widget.withPosition(sidebarWidth - 32, groupY).withSize(11, 20);
@@ -651,13 +729,14 @@ public final class QuestScreen extends Screen {
                         widget.withRenderer(WidgetRenderers.text(Component.literal("↓")));
                         widget.withCallback(() -> reorderChapter(index, 1));
                         widget.active = index < orderedGroups.size() - 1;
+                        widget.withTooltip(Component.translatable("gui.theseus.editor.move_chapter_down"));
                     }));
                     addRenderableWidget(Widgets.button(widget -> {
                         widget.withPosition(sidebarWidth - 19, groupY).withSize(11, 20);
                         widget.withTexture(null);
                         widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
                         widget.withCallback(() -> openChapterEditor(candidate));
-                        widget.withTooltip(Component.literal("Edit chapter"));
+                        widget.withTooltip(Component.translatable("gui.theseus.editor.edit_chapter"));
                     }));
                 }
             }
@@ -667,6 +746,7 @@ public final class QuestScreen extends Screen {
                 widget.withTexture(null);
                 widget.withRenderer(chapterButtonRenderer("+  Add chapter", false));
                 widget.withCallback(() -> openChapterEditor(null));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.add_chapter"));
             }));
         }
         addDockWidgets();
@@ -806,9 +886,9 @@ public final class QuestScreen extends Screen {
         }));
         if (!authoring.open) addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(header.fitX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
-                widget.withRenderer(WidgetRenderers.text(Component.literal("F")));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.f")));
                 widget.withCallback(this::fitGraphToContent);
-                widget.withTooltip(Component.literal("Fit visible quests in the graph"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.fit_visible_quests_in_the_graph"));
             }));
         if (!TheseusClientOptions.disableMinimap()
             && minimapHidden
@@ -835,7 +915,7 @@ public final class QuestScreen extends Screen {
                         clearMinimapTransientState();
                         rebuildWidgets();
                     });
-                    widget.withTooltip(Component.literal("Show quest minimap"));
+                    widget.withTooltip(Component.translatable("gui.theseus.editor.show_quest_minimap"));
                 }));
             }
         }
@@ -855,7 +935,7 @@ public final class QuestScreen extends Screen {
                     TheseusClientOptions.setShowGrid(!TheseusClientOptions.showGrid());
                     rebuildWidgets();
                 });
-                widget.withTooltip(Component.literal(visible ? "Hide graph grid" : "Show graph grid"));
+                widget.withTooltip(Component.translatable(visible ? "gui.theseus.editor.hide_graph_grid" : "gui.theseus.editor.show_graph_grid"));
             }));
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(header.snapX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
@@ -872,7 +952,7 @@ public final class QuestScreen extends Screen {
                     TheseusClientOptions.setSnapToGrid(!TheseusClientOptions.snapToGrid());
                     rebuildWidgets();
                 });
-                widget.withTooltip(Component.literal(enabled ? "Disable snap to grid" : "Enable snap to grid"));
+                widget.withTooltip(Component.translatable(enabled ? "gui.theseus.editor.disable_snap_to_grid" : "gui.theseus.editor.enable_snap_to_grid"));
             }));
         }
     }
@@ -902,7 +982,7 @@ public final class QuestScreen extends Screen {
                 widget.withPosition(tabX, 8).withSize(tabWidth - 3, 20);
                 widget.withRenderer(
                     WidgetRenderers.text(
-                        Component.literal(tab.label)
+                        Component.translatable(tab.translationKey)
                     ).withColor(
                         tab == detailTab
                             ? new Color(ClientThemeLoader.active().questDetails().tabButtonSelected())
@@ -914,6 +994,7 @@ public final class QuestScreen extends Screen {
                     detailScroll = 0;
                     rebuildWidgets();
                 });
+                widget.withTooltip(Component.translatable(tab.translationKey));
             });
             addRenderableWidget(tabButton);
         }
@@ -927,7 +1008,7 @@ public final class QuestScreen extends Screen {
                 selectedQuestId = null;
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Close quest details"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.close_quest_details"));
         });
         addRenderableWidget(closeDetails);
         Button pin = Widgets.button(widget -> {
@@ -949,11 +1030,9 @@ public final class QuestScreen extends Screen {
             });
             widget.active = selected != null && selected.unlocked;
             widget.withTooltip(
-                Component.literal(
-                    selected != null && selected.pinned
-                        ? "Unpin quest"
-                        : "Pin quest"
-                )
+                Component.translatable(selected != null && selected.pinned
+                    ? "gui.theseus.editor.unpin_quest"
+                    : "gui.theseus.editor.pin_quest")
             );
         });
         addRenderableWidget(pin);
@@ -972,7 +1051,7 @@ public final class QuestScreen extends Screen {
                 .withPosition(detailsLeft + 9, height - 36)
                 .withSize(actionWidth, 20);
             widget.withRenderer(
-                WidgetRenderers.text(Component.literal("Claim rewards"))
+                WidgetRenderers.text(Component.translatable("gui.theseus.editor.claim_rewards"))
             );
             widget.withCallback(this::claimSelected);
             widget.active =
@@ -981,6 +1060,7 @@ public final class QuestScreen extends Screen {
                 !selected.claimed &&
                 !mutations.isPending() &&
                 canClaimRewards(selected);
+            widget.withTooltip(Component.translatable("gui.theseus.editor.claim_rewards"));
             if (
                 selected != null &&
                 selected.complete &&
@@ -999,10 +1079,11 @@ public final class QuestScreen extends Screen {
                     .withPosition(detailsLeft + 18 + actionWidth, height - 36)
                     .withSize(actionWidth, 20);
                 widget.withRenderer(
-                    WidgetRenderers.text(Component.literal("Submit task"))
+                    WidgetRenderers.text(Component.translatable("gui.theseus.editor.submit_task"))
                 );
                 widget.withCallback(() -> submitTask(selected, submittable));
                 widget.active = !mutations.isPending();
+                widget.withTooltip(Component.translatable("gui.theseus.editor.submit_task"));
             });
             addRenderableWidget(submit);
         }
@@ -1012,7 +1093,7 @@ public final class QuestScreen extends Screen {
         int x,
         String icon,
         boolean selected,
-        String tooltip,
+        Component tooltip,
         Runnable callback
     ) {
         return Widgets.button(widget -> {
@@ -1024,7 +1105,7 @@ public final class QuestScreen extends Screen {
                 WidgetRenderers.sprite(new WidgetSprites(texture, texture))
             ));
             widget.withCallback(callback);
-            widget.withTooltip(Component.literal(tooltip));
+            widget.withTooltip(tooltip);
         });
     }
 
@@ -1050,13 +1131,13 @@ public final class QuestScreen extends Screen {
                     0x224C9AFF
                 );
             }
-            if (selected) {
+            if (selected || context.getWidget().isFocused()) {
                 graphics.outline(
                     context.getX(),
                     context.getY(),
                     context.getWidth(),
                     context.getHeight(),
-                    0xFF8A929F
+                    selected ? 0xFFFFD966 : ClientThemeLoader.active().genericControls().accent()
                 );
             }
             int contentX = context.getX() + 3;
@@ -1092,7 +1173,7 @@ public final class QuestScreen extends Screen {
             Button tabButton = Widgets.button(widget -> {
                 widget.withPosition(tabX, 8).withSize(tabWidth - 3, 20);
                 widget.withRenderer(WidgetRenderers.text(
-                    Component.literal(tab.label)
+                    Component.translatable(tab.translationKey)
                 ).withColor(Color.parse(
                     tab == createQuestTab ? "#5A4300" : "#FFFFFF"
                 )));
@@ -1105,6 +1186,7 @@ public final class QuestScreen extends Screen {
                     }
                     rebuildWidgets();
                 });
+                widget.withTooltip(Component.translatable(tab.translationKey));
             });
             addRenderableWidget(tabButton);
         }
@@ -1122,7 +1204,7 @@ public final class QuestScreen extends Screen {
                     rebuildWidgets();
                 });
             });
-            widget.withTooltip(Component.literal("Close new quest"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.close_new_quest"));
         });
         addRenderableWidget(close);
 
@@ -1130,10 +1212,12 @@ public final class QuestScreen extends Screen {
         int fieldWidth = detailsWidth() - 24;
         createConfirmButton = Widgets.button(widget -> {
             widget.withPosition(x, height - 30).withSize(fieldWidth, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal(authoring.editingExisting ? "Save quest" : "Create quest")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable(authoring.editingExisting ? "gui.theseus.editor.save_quest" : "gui.theseus.editor.create_quest")));
             widget.withCallback(this::confirmCreateQuest);
             String error = draftValidationError();
-            widget.withTooltip(Component.literal(mutations.isPending() ? "Waiting for the server" : error.isEmpty() ? "Save this quest" : error));
+            widget.withTooltip(mutations.isPending()
+                ? Component.translatable("gui.theseus.editor.waiting_for_the_server")
+                : error.isEmpty() ? Component.translatable("gui.theseus.editor.save_this_quest") : Component.literal(error));
         });
         updateCreateConfirmButton();
         addRenderableWidget(createConfirmButton);
@@ -1154,8 +1238,8 @@ public final class QuestScreen extends Screen {
     private void addOverviewDockWidgets(int x, int fieldWidth) {
         GridLayout layout = new GridLayout().rowSpacing(4);
         int row = 0;
-        layout.addChild(dockLabel("ID", fieldWidth), row++, 0);
-        EditBox id = new EditBox(font, 0, 0, fieldWidth, 18, Component.literal("Quest ID"));
+        layout.addChild(dockLabel("gui.theseus.editor.id", fieldWidth), row++, 0);
+        EditBox id = new EditBox(font, 0, 0, fieldWidth, 18, Component.translatable("gui.theseus.editor.quest_id"));
         id.setValue(authoring.id);
         id.setResponder(value -> {
             authoring.id = value;
@@ -1163,8 +1247,8 @@ public final class QuestScreen extends Screen {
         });
         layout.addChild(id, row++, 0);
 
-        layout.addChild(dockLabel("Title", fieldWidth), row++, 0);
-        EditBox title = new EditBox(font, 0, 0, fieldWidth, 18, Component.literal("Quest title"));
+        layout.addChild(dockLabel("gui.theseus.editor.title", fieldWidth), row++, 0);
+        EditBox title = new EditBox(font, 0, 0, fieldWidth, 18, Component.translatable("gui.theseus.editor.quest_title"));
         title.setValue(authoring.title);
         title.setResponder(value -> {
             authoring.title = value;
@@ -1172,48 +1256,49 @@ public final class QuestScreen extends Screen {
         });
         layout.addChild(title, row++, 0);
 
-        layout.addChild(dockLabel("Subtitle", fieldWidth), row++, 0);
-        EditBox subtitle = new EditBox(font, 0, 0, fieldWidth, 18, Component.literal("Quest subtitle"));
+        layout.addChild(dockLabel("gui.theseus.editor.subtitle", fieldWidth), row++, 0);
+        EditBox subtitle = new EditBox(font, 0, 0, fieldWidth, 18, Component.translatable("gui.theseus.editor.quest_subtitle"));
         subtitle.setValue(authoring.subtitle);
         subtitle.setResponder(value -> authoring.subtitle = value);
         layout.addChild(subtitle, row++, 0);
 
-        layout.addChild(dockLabel("Description", fieldWidth), row++, 0);
+        layout.addChild(dockLabel("gui.theseus.editor.description", fieldWidth), row++, 0);
         layout.addChild(Widgets.button(widget -> {
             widget.withSize(fieldWidth, 32);
-            widget.withRenderer(WidgetRenderers.text(Component.literal(
-                authoring.body.isBlank() ? "Write rich description…" : "Edit rich description…"
-            )));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable(authoring.body.isBlank()
+                ? "gui.theseus.editor.write_rich_description"
+                : "gui.theseus.editor.edit_rich_description")));
             widget.withCallback(this::openDescriptionEditor);
-            widget.withTooltip(Component.literal("Markdown editor with live player preview"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.markdown_editor_with_live_player_preview"));
         }), row++, 0);
 
-        layout.addChild(dockLabel("Appearance", fieldWidth), row++, 0);
+        layout.addChild(dockLabel("gui.theseus.editor.appearance", fieldWidth), row++, 0);
         GridLayout appearance = new GridLayout().columnSpacing(6);
         Button icon = Widgets.button(widget -> {
             widget.withSize((fieldWidth - 6) / 2, 24);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Choose icon")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.choose_icon")));
             widget.withCallback(() -> openPicker(Picker.ICON, PickerTarget.QUEST_ICON));
-            widget.withTooltip(Component.literal("Choose quest icon"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_quest_icon"));
         });
         Button background = Widgets.button(widget -> {
             widget.withSize((fieldWidth - 6) / 2, 24);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Choose background")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.choose_background")));
             widget.withCallback(() -> openPicker(Picker.BACKGROUND));
-            widget.withTooltip(Component.literal("Choose quest background"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_quest_background"));
         });
         appearance.addChild(icon, 0, 0);
         appearance.addChild(background, 0, 1);
         layout.addChild(appearance, row++, 0);
-        layout.addChild(dockLabel("Icon size (8–64)", fieldWidth), row++, 0);
+        layout.addChild(dockLabel("gui.theseus.editor.icon_size_range", fieldWidth), row++, 0);
         GridLayout iconSize = new GridLayout().columnSpacing(6);
         Button decreaseIconSize = Widgets.button(widget -> {
             widget.withSize(28, 20);
             widget.withRenderer(WidgetRenderers.text(Component.literal("−")));
             widget.active = authoring.iconSize > QuestSurfaceLayout.MIN_ICON_SIZE;
             widget.withCallback(() -> adjustCreateQuestIconSize(-1));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.decrease_icon_size"));
         });
-        EditBox iconSizeField = new EditBox(font, 0, 0, Math.max(44, fieldWidth - 68), 18, Component.literal("Icon size"));
+        EditBox iconSizeField = new EditBox(font, 0, 0, Math.max(44, fieldWidth - 68), 18, Component.translatable("gui.theseus.editor.icon_size"));
         iconSizeField.setValue(authoring.iconSizeText);
         iconSizeField.setResponder(this::updateCreateQuestIconSize);
         Button increaseIconSize = Widgets.button(widget -> {
@@ -1221,6 +1306,7 @@ public final class QuestScreen extends Screen {
             widget.withRenderer(WidgetRenderers.text(Component.literal("+")));
             widget.active = authoring.iconSize < QuestSurfaceLayout.MAX_ICON_SIZE;
             widget.withCallback(() -> adjustCreateQuestIconSize(1));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.increase_icon_size"));
         });
         iconSize.addChild(decreaseIconSize, 0, 0);
         iconSize.addChild(iconSizeField, 0, 1);
@@ -1228,18 +1314,18 @@ public final class QuestScreen extends Screen {
         layout.addChild(iconSize, row++, 0);
         layout.addChild(Widgets.button(widget -> {
             widget.withSize(fieldWidth, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Inspect display JSON")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.inspect_display_json")));
             widget.withCallback(() -> openRawInspector("Display", draftDisplay()));
-            widget.withTooltip(Component.literal("Read the generated display configuration"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.read_the_generated_display_configuration"));
         }), row++, 0);
 
-        layout.addChild(dockLabel("Position", fieldWidth), row++, 0);
+        layout.addChild(dockLabel("gui.theseus.editor.position", fieldWidth), row++, 0);
         GridLayout position = new GridLayout().columnSpacing(6);
         int positionWidth = (fieldWidth - 6) / 2;
-        EditBox positionX = new EditBox(font, 0, 0, positionWidth, 18, Component.literal("X"));
+        EditBox positionX = new EditBox(font, 0, 0, positionWidth, 18, Component.translatable("gui.theseus.editor.x"));
         positionX.setValue(authoring.xText);
         positionX.setResponder(value -> updateCreateQuestPosition(true, value));
-        EditBox positionY = new EditBox(font, 0, 0, positionWidth, 18, Component.literal("Y"));
+        EditBox positionY = new EditBox(font, 0, 0, positionWidth, 18, Component.translatable("gui.theseus.editor.y"));
         positionY.setValue(authoring.yText);
         positionY.setResponder(value -> updateCreateQuestPosition(false, value));
         position.addChild(positionX, 0, 0);
@@ -1247,43 +1333,43 @@ public final class QuestScreen extends Screen {
         layout.addChild(position, row++, 0);
         layout.addChild(Widgets.button(widget -> {
             widget.withSize(fieldWidth, 20);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Snap position")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.snap_position")));
             widget.withCallback(this::snapCurrentDraftPosition);
-            widget.withTooltip(Component.literal("Snap this quest center to the 27-unit graph grid"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.snap_this_quest_center_to_the_27_unit_graph_grid"));
         }), row++, 0);
 
-        layout.addChild(dockLabel("Quest settings", fieldWidth), row++, 0);
+        layout.addChild(dockLabel("gui.theseus.editor.quest_settings", fieldWidth), row++, 0);
         GridLayout settings = new GridLayout().columnSpacing(6).rowSpacing(4);
         int settingWidth = (fieldWidth - 6) / 2;
-        settings.addChild(settingButton(settingWidth, "Individual progress", authoring.individualProgress,
+        settings.addChild(settingButton(settingWidth, "setting.theseus.quest.individual_progress", authoring.individualProgress,
             () -> authoring.individualProgress = !authoring.individualProgress), 0, 0);
-        settings.addChild(settingButton(settingWidth, "Unlock notification", authoring.unlockNotification,
+        settings.addChild(settingButton(settingWidth, "setting.theseus.quest.unlock_notification", authoring.unlockNotification,
             () -> authoring.unlockNotification = !authoring.unlockNotification), 0, 1);
-        settings.addChild(settingButton(settingWidth, "Dependency arrows", authoring.showDependencyArrow,
+        settings.addChild(settingButton(settingWidth, "setting.theseus.quest.show_dependency_arrow", authoring.showDependencyArrow,
             () -> authoring.showDependencyArrow = !authoring.showDependencyArrow), 1, 0);
-        settings.addChild(settingButton(settingWidth, "Repeatable", authoring.repeatable,
+        settings.addChild(settingButton(settingWidth, "setting.theseus.quest.repeatable", authoring.repeatable,
             () -> authoring.repeatable = !authoring.repeatable), 1, 1);
-        settings.addChild(settingButton(settingWidth, "Auto-claim rewards", authoring.autoClaimRewards,
+        settings.addChild(settingButton(settingWidth, "setting.theseus.quest.auto_claim_rewards", authoring.autoClaimRewards,
             () -> authoring.autoClaimRewards = !authoring.autoClaimRewards), 2, 0);
-        String hidden = friendly(authoring.hiddenUntil.name().toLowerCase(java.util.Locale.ROOT));
         settings.addChild(Widgets.button(widget -> {
             widget.withSize(settingWidth, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Visible: " + hidden)));
+            Component visibility = visibilityLabel(authoring.hiddenUntil);
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.visibility", visibility)));
             widget.withCallback(() -> {
                 QuestDefinition.Visibility[] values = QuestDefinition.Visibility.values();
                 authoring.hiddenUntil = values[(authoring.hiddenUntil.ordinal() + 1) % values.length];
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Choose when the quest becomes visible"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.visibility_tooltip", visibility));
         }), 2, 1);
         layout.addChild(settings, row++, 0);
 
         if (authoring.editingExisting) {
-            layout.addChild(dockLabel("Quest actions", fieldWidth), row++, 0);
+            layout.addChild(dockLabel("gui.theseus.editor.quest_actions", fieldWidth), row++, 0);
             GridLayout actions = new GridLayout().columnSpacing(6);
             Button delete = Widgets.button(widget -> {
                 widget.withSize((fieldWidth - 6) / 2, 22);
-                widget.withRenderer(WidgetRenderers.text(Component.literal("Delete quest")));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete_quest")));
                 widget.withCallback(() -> {
                     modalHost.open(QuestModalHost.Modal.DELETE_QUEST_CONFIRMATION);
                     rebuildWidgets();
@@ -1292,7 +1378,7 @@ public final class QuestScreen extends Screen {
             actions.addChild(delete, 0, 0);
             if (authoring.groups.size() > 1) actions.addChild(Widgets.button(widget -> {
                 widget.withSize((fieldWidth - 6) / 2, 22);
-                widget.withRenderer(WidgetRenderers.text(Component.literal("Remove from chapter")));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.remove_from_chapter")));
                 widget.withCallback(() -> requestDiscard(this::removeExistingQuestFromChapter));
             }), 0, 1);
             layout.addChild(actions, row, 0);
@@ -1368,10 +1454,13 @@ public final class QuestScreen extends Screen {
         rebuildWidgets();
     }
 
-    private Button settingButton(int width, String label, boolean value, Runnable toggle) {
+    private Button settingButton(int width, String labelKey, boolean value, Runnable toggle) {
         return Widgets.button(widget -> {
             widget.withSize(width, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal(label + ": " + (value ? "On" : "Off"))));
+            Component label = Component.translatable(labelKey);
+            Component state = Component.translatable(value ? "gui.theseus.editor.state_on" : "gui.theseus.editor.state_off");
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.setting_value", label, state)));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.setting_narration", label, state));
             widget.withCallback(() -> {
                 toggle.run();
                 rebuildWidgets();
@@ -1382,9 +1471,9 @@ public final class QuestScreen extends Screen {
     private void addRawInspectorButton(int x, int y, int width, Runnable open) {
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(x, y).withSize(width, 24);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Raw JSON")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.raw_json")));
             widget.withCallback(open);
-            widget.withTooltip(Component.literal("Inspect this configuration without editing it"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.inspect_this_configuration_without_editing_it"));
         }));
     }
 
@@ -1408,7 +1497,7 @@ public final class QuestScreen extends Screen {
         addRenderableWidget(value);
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + inspectorWidth - 92, top + inspectorHeight - 28).withSize(80, 20);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Close")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.close")));
             widget.withCallback(() -> {
                 modalHost.close();
                 rebuildWidgets();
@@ -1435,7 +1524,7 @@ public final class QuestScreen extends Screen {
 
         descriptionEditor = new MarkdownEditBox(
             font, left + 12, editorTop, paneWidth, editorHeight,
-            Component.literal("Quest Markdown description")
+            Component.translatable("gui.theseus.editor.quest_markdown_description")
         );
         descriptionEditor.setValue(descriptionEditorValue);
         descriptionEditor.setValueListener(value -> descriptionEditorValue = value);
@@ -1444,42 +1533,42 @@ public final class QuestScreen extends Screen {
 
         int actionX = left + 12;
         int toolbarY = top + 31;
-        actionX = addMarkdownSpriteAction(actionX, toolbarY, "H1", "header1", () -> descriptionEditor.prefixLine("# "));
-        actionX = addMarkdownSpriteAction(actionX, toolbarY, "H2", "header2", () -> descriptionEditor.prefixLine("## "));
-        actionX = addMarkdownTextAction(actionX, toolbarY, "Bold", "B", () -> descriptionEditor.surround("**"));
-        actionX = addMarkdownTextAction(actionX, toolbarY, "Italic", "I", () -> descriptionEditor.surround("--"));
-        actionX = addMarkdownTextAction(actionX, toolbarY, "Underline", "U", () -> descriptionEditor.surround("__"));
-        actionX = addMarkdownTextAction(actionX, toolbarY, "Strikethrough", "S", () -> descriptionEditor.surround("~~"));
-        actionX = addMarkdownTextAction(actionX, toolbarY, "Spoiler", "||", () -> descriptionEditor.surround("||"));
-        actionX = addMarkdownTextAction(actionX, toolbarY, "Color", "C", () -> descriptionEditor.surround("/e/"));
-        actionX = addMarkdownSpriteAction(actionX, toolbarY, "List", "list", () -> descriptionEditor.prefixLine("- "));
-        actionX = addMarkdownTextAction(actionX, toolbarY, "Blockquote", ">", () -> descriptionEditor.prefixLine("> "));
-        actionX = addMarkdownSpriteAction(actionX, toolbarY, "Link", "link", () -> descriptionEditor.insertLink(null, "https://"));
-        actionX = addMarkdownSpriteAction(actionX, toolbarY, "Horizontal rule", "horizontalline", () -> descriptionEditor.insert("\n---\n"));
+        actionX = addMarkdownSpriteAction(actionX, toolbarY, "gui.theseus.editor.h1", "header1", () -> descriptionEditor.prefixLine("# "));
+        actionX = addMarkdownSpriteAction(actionX, toolbarY, "gui.theseus.editor.h2", "header2", () -> descriptionEditor.prefixLine("## "));
+        actionX = addMarkdownTextAction(actionX, toolbarY, "gui.theseus.editor.bold", "B", () -> descriptionEditor.surround("**"));
+        actionX = addMarkdownTextAction(actionX, toolbarY, "gui.theseus.editor.italic", "I", () -> descriptionEditor.surround("--"));
+        actionX = addMarkdownTextAction(actionX, toolbarY, "gui.theseus.editor.underline", "U", () -> descriptionEditor.surround("__"));
+        actionX = addMarkdownTextAction(actionX, toolbarY, "gui.theseus.editor.strikethrough", "S", () -> descriptionEditor.surround("~~"));
+        actionX = addMarkdownTextAction(actionX, toolbarY, "gui.theseus.editor.spoiler", "||", () -> descriptionEditor.surround("||"));
+        actionX = addMarkdownTextAction(actionX, toolbarY, "gui.theseus.editor.color", "C", () -> descriptionEditor.surround("/e/"));
+        actionX = addMarkdownSpriteAction(actionX, toolbarY, "gui.theseus.editor.list", "list", () -> descriptionEditor.prefixLine("- "));
+        actionX = addMarkdownTextAction(actionX, toolbarY, "gui.theseus.editor.blockquote", ">", () -> descriptionEditor.prefixLine("> "));
+        actionX = addMarkdownSpriteAction(actionX, toolbarY, "gui.theseus.editor.link", "link", () -> descriptionEditor.insertLink(null, "https://"));
+        actionX = addMarkdownSpriteAction(actionX, toolbarY, "gui.theseus.editor.horizontal_rule", "horizontalline", () -> descriptionEditor.insert("\n---\n"));
 
         int objectX = actionX;
         if (!authoring.tasks.isEmpty()) {
-            objectX = addMarkdownSpriteAction(objectX, toolbarY, "Insert task", "task", () ->
+            objectX = addMarkdownSpriteAction(objectX, toolbarY, "gui.theseus.editor.insert_task", "task", () ->
                 descriptionEditor.insertObject("task", authoring.tasks.getFirst().id));
         }
         if (!authoring.rewards.isEmpty()) {
-            addMarkdownSpriteAction(objectX, toolbarY, "Insert reward", "reward", () ->
+            addMarkdownSpriteAction(objectX, toolbarY, "gui.theseus.editor.insert_reward", "reward", () ->
                 descriptionEditor.insertObject("reward", authoring.rewards.getFirst().id));
         }
 
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + modalWidth - 174, top + modalHeight - 31).withSize(76, 20);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(this::closeDescriptionEditor);
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + modalWidth - 92, top + modalHeight - 31).withSize(80, 20);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Apply")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.apply")));
             widget.withCallback(this::applyDescriptionEditor);
         }));
     }
 
-    private int addMarkdownSpriteAction(int x, int y, String tooltip, String icon, Runnable action) {
+    private int addMarkdownSpriteAction(int x, int y, String tooltipKey, String icon, Runnable action) {
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(x, y).withSize(MARKDOWN_ACTION_SIZE, MARKDOWN_ACTION_SIZE);
             widget.withTexture(null);
@@ -1487,12 +1576,12 @@ public final class QuestScreen extends Screen {
             Identifier hovered = sprite("editor/" + icon + "/hovered");
             widget.withRenderer(WidgetRenderers.sprite(new WidgetSprites(normal, hovered)));
             widget.withCallback(action);
-            widget.withTooltip(Component.literal(tooltip));
+            widget.withTooltip(editorText(tooltipKey));
         }));
         return x + MARKDOWN_ACTION_SIZE + MARKDOWN_ACTION_GAP;
     }
 
-    private int addMarkdownTextAction(int x, int y, String tooltip, String label, Runnable action) {
+    private int addMarkdownTextAction(int x, int y, String tooltipKey, String label, Runnable action) {
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(x, y).withSize(MARKDOWN_ACTION_SIZE, MARKDOWN_ACTION_SIZE);
             widget.withRenderer(WidgetRenderers.center(
@@ -1501,7 +1590,7 @@ public final class QuestScreen extends Screen {
                 WidgetRenderers.text(Component.literal(label))
             ));
             widget.withCallback(action);
-            widget.withTooltip(Component.literal(tooltip));
+            widget.withTooltip(editorText(tooltipKey));
         }));
         return x + MARKDOWN_ACTION_SIZE + MARKDOWN_ACTION_GAP;
     }
@@ -1518,8 +1607,8 @@ public final class QuestScreen extends Screen {
         rebuildWidgets();
     }
 
-    private TextWidget dockLabel(String text, int width) {
-        return Widgets.text(Component.literal(text), widget -> {
+    private TextWidget dockLabel(String translationKey, int width) {
+        return Widgets.text(editorText(translationKey), widget -> {
             widget.withLeftAlignment().withFont(font).withColor(Color.parse("#B8C0CC"));
             widget.setSize(width, 12);
         });
@@ -1553,7 +1642,7 @@ public final class QuestScreen extends Screen {
     private void addChapterEditorWidgets() {
         int left = (width - 280) / 2;
         int top = chapterEditorTop();
-        EditBox name = new EditBox(font, left + 14, top + 48, 252, 18, Component.literal("Chapter name"));
+        EditBox name = new EditBox(font, left + 14, top + 48, 252, 18, Component.translatable("gui.theseus.editor.chapter_name"));
         name.setValue(chapterEditorName);
         name.setResponder(value -> chapterEditorName = value);
         addRenderableWidget(name);
@@ -1566,22 +1655,25 @@ public final class QuestScreen extends Screen {
                 } catch (RuntimeException ignored) { }
             });
             widget.withCallback(() -> openPicker(Picker.ICON, PickerTarget.CHAPTER_ICON));
-            widget.withTooltip(Component.literal("Choose chapter icon"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_chapter_icon"));
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 54, top + 81).withSize(100, 24);
-            widget.withRenderer(WidgetRenderers.text(Component.literal(chapterEditorIconEnabled ? "Icon: On" : "Icon: Off")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable(
+                "gui.theseus.editor.chapter_icon_state",
+                Component.translatable(chapterEditorIconEnabled ? "gui.theseus.editor.state_on" : "gui.theseus.editor.state_off")
+            )));
             widget.withCallback(() -> {
                 chapterEditorIconEnabled = !chapterEditorIconEnabled;
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Show or hide this chapter's icon"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.show_or_hide_this_chapter_s_icon"));
         }));
-        EditBox background = new EditBox(font, left + 14, top + 126, 252, 18, Component.literal("Background path or URL"));
+        EditBox background = new EditBox(font, left + 14, top + 126, 252, 18, Component.translatable("gui.theseus.editor.background_path_or_url"));
         background.setValue(chapterEditorBackground);
         background.setResponder(value -> chapterEditorBackground = value);
         addRenderableWidget(background);
-        EditBox opacity = new EditBox(font, left + 14, top + 158, 90, 18, Component.literal("Opacity"));
+        EditBox opacity = new EditBox(font, left + 14, top + 158, 90, 18, Component.translatable("gui.theseus.editor.opacity"));
         opacity.setValue(Integer.toString(chapterEditorBackgroundOpacity));
         opacity.setResponder(value -> {
             try { chapterEditorBackgroundOpacity = Math.clamp(Integer.parseInt(value), 0, 100); }
@@ -1590,12 +1682,12 @@ public final class QuestScreen extends Screen {
         addRenderableWidget(opacity);
         if (chapterEditorOriginal != null) addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 14, top + 201).withSize(72, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Delete")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete")));
             widget.withCallback(this::deleteChapter);
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 94, top + 201).withSize(82, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> requestModalDiscard(() -> {
                 chapterEditorBaseline = null;
                 modalHost.close();
@@ -1604,7 +1696,7 @@ public final class QuestScreen extends Screen {
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 184, top + 201).withSize(82, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Save")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.save")));
             widget.withCallback(this::saveChapter);
         }));
     }
@@ -1677,9 +1769,9 @@ public final class QuestScreen extends Screen {
                 pickerTop() + 30,
                 176,
                 18,
-                Component.literal(picker == Picker.ENTITY
-                    ? "Search entities"
-                    : "Search blocks and items")
+                editorText(picker == Picker.ENTITY
+                    ? "gui.theseus.editor.search_entities"
+                    : "gui.theseus.editor.search_blocks_and_items")
             );
             pickerSearch.setResponder(ignored -> pickerScroll = 0);
             addRenderableWidget(pickerSearch);
@@ -1701,7 +1793,9 @@ public final class QuestScreen extends Screen {
                 widget.withRenderer(listActionRenderer("edit"));
                 widget.withCallback(() -> openTaskEditor(taskIndex));
                 widget.active = isTaskEditable(authoring.tasks.get(taskIndex));
-                widget.withTooltip(Component.literal(widget.active ? "Edit task" : unavailableReason(EditorTypeRegistry.Kind.TASK, authoring.tasks.get(taskIndex).type)));
+                widget.withTooltip(widget.active
+                    ? editorText("gui.theseus.editor.edit_task")
+                    : Component.literal(unavailableReason(EditorTypeRegistry.Kind.TASK, authoring.tasks.get(taskIndex).type)));
             });
             addRenderableWidget(edit);
             Button delete = Widgets.button(widget -> {
@@ -1712,7 +1806,7 @@ public final class QuestScreen extends Screen {
                     modalHost.open(QuestModalHost.Modal.TASK_DELETE_CONFIRMATION);
                     rebuildWidgets();
                 });
-                widget.withTooltip(Component.literal("Delete task"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.delete_task"));
             });
             addRenderableWidget(delete);
         }
@@ -1721,13 +1815,14 @@ public final class QuestScreen extends Screen {
             int addY = y + (addIndex - createTaskScroll) * 48;
             Button add = Widgets.button(widget -> {
                 widget.withPosition(x, addY).withSize(width, 42);
-                widget.withRenderer(WidgetRenderers.text(Component.literal("+  Add task")));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_task")));
                 widget.withCallback(() -> {
                     taskChooserScroll = 0;
+                    taskChooserSelectedIndex = 0;
                     if (modalHost.isTaskChooserOpen()) modalHost.close();
                     else modalHost.open(QuestModalHost.Modal.TASK_CHOOSER);
                 });
-                widget.withTooltip(Component.literal("Choose a task type"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.choose_a_task_type"));
             });
             addRenderableWidget(add);
         }
@@ -1747,7 +1842,9 @@ public final class QuestScreen extends Screen {
                 widget.withRenderer(listActionRenderer("edit"));
                 widget.withCallback(() -> openRewardEditor(rewardIndex));
                 widget.active = isRewardEditable(authoring.rewards.get(rewardIndex));
-                widget.withTooltip(Component.literal(widget.active ? "Edit reward" : unavailableReason(EditorTypeRegistry.Kind.REWARD, authoring.rewards.get(rewardIndex).type)));
+                widget.withTooltip(widget.active
+                    ? editorText("gui.theseus.editor.edit_reward")
+                    : Component.literal(unavailableReason(EditorTypeRegistry.Kind.REWARD, authoring.rewards.get(rewardIndex).type)));
             }));
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(deleteX, actionY).withSize(EDITOR_LIST_ACTION_WIDTH, EDITOR_LIST_ACTION_HEIGHT);
@@ -1758,7 +1855,7 @@ public final class QuestScreen extends Screen {
                     if (modalHost.isRewardChooserOpen()) modalHost.close();
                     rebuildWidgets();
                 });
-                widget.withTooltip(Component.literal("Delete reward"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.delete_reward"));
             }));
         }
         int addIndex = authoring.rewards.size();
@@ -1766,13 +1863,14 @@ public final class QuestScreen extends Screen {
             int addY = y + (addIndex - createRewardScroll) * 48;
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(x, addY).withSize(width, 42);
-                widget.withRenderer(WidgetRenderers.text(Component.literal("+  Add reward")));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_reward")));
                 widget.withCallback(() -> {
                     rewardChooserScroll = 0;
+                    rewardChooserSelectedIndex = 0;
                     if (modalHost.isRewardChooserOpen()) modalHost.close();
                     else modalHost.open(QuestModalHost.Modal.REWARD_CHOOSER);
                 });
-                widget.withTooltip(Component.literal("Choose a reward type"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.choose_a_reward_type"));
             }));
         }
     }
@@ -1959,7 +2057,7 @@ public final class QuestScreen extends Screen {
         int top = (height - 110) / 2;
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 12, top + 70).withSize(102, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
                 modalHost.close();
                 rebuildWidgets();
@@ -1967,7 +2065,7 @@ public final class QuestScreen extends Screen {
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 126, top + 70).withSize(102, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Delete")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete")));
             widget.withCallback(() -> {
                 confirmDeleteQuest();
             });
@@ -1979,7 +2077,7 @@ public final class QuestScreen extends Screen {
         int top = (height - 142) / 2;
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 12, top + 102).withSize(122, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
                 progressResetTarget = null;
                 modalHost.close();
@@ -1988,7 +2086,7 @@ public final class QuestScreen extends Screen {
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 146, top + 102).withSize(122, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Reset progress")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.reset_progress")));
             widget.withCallback(this::confirmProgressReset);
             widget.active = progressResetTarget != null && !mutations.isPending();
         }));
@@ -2013,7 +2111,7 @@ public final class QuestScreen extends Screen {
         int top = (height - 110) / 2;
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 12, top + 70).withSize(102, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
                 authoring.taskDeleteConfirmation = -1;
                 modalHost.close();
@@ -2022,7 +2120,7 @@ public final class QuestScreen extends Screen {
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 126, top + 70).withSize(102, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Delete")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete")));
             widget.withCallback(() -> {
                 confirmDeleteTask();
             });
@@ -2054,7 +2152,7 @@ public final class QuestScreen extends Screen {
         int top = (height - 116) / 2;
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 12, top + 76).withSize(112, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Keep editing")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.keep_editing")));
             widget.withCallback(() -> {
                 modalHost.cancelDismissal();
                 rebuildWidgets();
@@ -2062,7 +2160,7 @@ public final class QuestScreen extends Screen {
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 136, top + 76).withSize(112, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Discard changes")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.discard_changes")));
             widget.withCallback(() -> {
                 modalHost.confirmDismissal();
             });
@@ -2085,12 +2183,12 @@ public final class QuestScreen extends Screen {
         int top = taskEditorTop();
         int fieldWidth = 232;
 
-        EditBox id = new EditBox(font, left + 14, top + 38, fieldWidth, 18, Component.literal("Task ID"));
+        EditBox id = new EditBox(font, left + 14, top + 38, fieldWidth, 18, Component.translatable("gui.theseus.editor.task_id"));
         id.setValue(authoring.editingTask.id);
         id.setResponder(value -> authoring.editingTask.id = value);
         addRenderableWidget(id);
 
-        EditBox title = new EditBox(font, left + 14, top + 70, fieldWidth, 18, Component.literal("Task title"));
+        EditBox title = new EditBox(font, left + 14, top + 70, fieldWidth, 18, Component.translatable("gui.theseus.editor.task_title"));
         title.setValue(jsonString(authoring.editingTask.source, "title", ""));
         title.setResponder(value -> setOptionalString(authoring.editingTask.source, "title", value));
         addRenderableWidget(title);
@@ -2099,7 +2197,7 @@ public final class QuestScreen extends Screen {
             widget.withPosition(left + 14, top + 101).withSize(34, 24);
             widget.withRenderer(WidgetRenderers.text(Component.empty()));
             widget.withCallback(() -> openPicker(Picker.ICON, PickerTarget.TASK_ICON));
-            widget.withTooltip(Component.literal("Choose task icon override"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_task_icon_override"));
         });
         addRenderableWidget(icon);
         Button clearIcon = Widgets.button(widget -> {
@@ -2109,7 +2207,7 @@ public final class QuestScreen extends Screen {
                 authoring.editingTask.source.remove("icon");
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Use the default task icon"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.use_the_default_task_icon"));
         });
         addRenderableWidget(clearIcon);
         // Keep action controls outside the label lane drawn by the foreground pass.
@@ -2120,49 +2218,49 @@ public final class QuestScreen extends Screen {
             case "theseus:item" -> addItemTaskFields(left, top, fieldWidth);
             case "theseus:xp" -> addXpTaskFields(left, top, fieldWidth);
             case "theseus:kill_entity" -> addKillTaskFields(left, top, fieldWidth);
-            case "theseus:advancement" -> addStringListTaskField(left, top, fieldWidth, "advancements", "Advancement IDs", "minecraft:story/mine_stone");
-            case "theseus:biome" -> addIdentifierTaskField(left, top, fieldWidth, "biomes", "Biome or #tag", "minecraft:plains");
+            case "theseus:advancement" -> addStringListTaskField(left, top, fieldWidth, "advancements", "gui.theseus.editor.advancement_ids", "minecraft:story/mine_stone");
+            case "theseus:biome" -> addIdentifierTaskField(left, top, fieldWidth, "biomes", "gui.theseus.editor.biome_or_tag", "minecraft:plains");
             case "theseus:block_interaction" -> addBlockInteractionTaskFields(left, top, fieldWidth);
             case "theseus:changed_dimension" -> addDimensionTaskFields(left, top, fieldWidth);
-            case "theseus:check" -> addJsonTaskField(left, top, fieldWidth, "components", "Player data predicate", new JsonObject());
+            case "theseus:check" -> addJsonTaskField(left, top, fieldWidth, "components", "gui.theseus.editor.player_data_predicate", new JsonObject());
             case "theseus:composite" -> addCompositeTaskFields(left, top, fieldWidth);
-            case "theseus:entity_interaction" -> addPredicateTargetFields(left, top, fieldWidth, "entity", "Entity or #tag", "minecraft:pig", PickerTarget.TASK_ENTITY);
-            case "theseus:item_interaction", "theseus:item_use" -> addPredicateTargetFields(left, top, fieldWidth, "item", "Item or #tag", "minecraft:stick", PickerTarget.TASK_ITEM);
+            case "theseus:entity_interaction" -> addPredicateTargetFields(left, top, fieldWidth, "entity", "gui.theseus.editor.entity_or_tag", "minecraft:pig", PickerTarget.TASK_ENTITY);
+            case "theseus:item_interaction", "theseus:item_use" -> addPredicateTargetFields(left, top, fieldWidth, "item", "gui.theseus.editor.item_or_tag", "minecraft:stick", PickerTarget.TASK_ITEM);
             case "theseus:location" -> addLocationTaskFields(left, top, fieldWidth);
-            case "theseus:recipe" -> addStringListTaskField(left, top, fieldWidth, "recipes", "Recipe IDs", "minecraft:crafting_table");
+            case "theseus:recipe" -> addStringListTaskField(left, top, fieldWidth, "recipes", "gui.theseus.editor.recipe_ids", "minecraft:crafting_table");
             case "theseus:stat" -> addStatTaskFields(left, top, fieldWidth);
-            case "theseus:structure" -> addIdentifierTaskField(left, top, fieldWidth, "structures", "Structure or #tag", "#minecraft:village");
+            case "theseus:structure" -> addIdentifierTaskField(left, top, fieldWidth, "structures", "gui.theseus.editor.structure_or_tag", "#minecraft:village");
             default -> {
             }
         }
 
         Button cancel = Widgets.button(widget -> {
             widget.withPosition(left + 14, top + 264).withSize(108, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> requestModalDiscard(this::closeTaskEditor));
         });
         addRenderableWidget(cancel);
         Button save = Widgets.button(widget -> {
             widget.withPosition(left + 138, top + 264).withSize(108, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Save task")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.save_task")));
             widget.withCallback(this::saveTaskEditor);
         });
         addRenderableWidget(save);
     }
 
     private void addDummyTaskFields(int left, int top, int width) {
-        EditBox value = new EditBox(font, left + 14, top + 142, width, 18, Component.literal("Trigger value"));
+        EditBox value = new EditBox(font, left + 14, top + 142, width, 18, Component.translatable("gui.theseus.editor.trigger_value"));
         value.setValue(jsonString(authoring.editingTask.source, "value", ""));
         value.setResponder(text -> authoring.editingTask.source.addProperty("value", text));
         addRenderableWidget(value);
-        EditBox description = new EditBox(font, left + 14, top + 181, width, 18, Component.literal("Description"));
+        EditBox description = new EditBox(font, left + 14, top + 181, width, 18, Component.translatable("gui.theseus.editor.description"));
         description.setValue(jsonString(authoring.editingTask.source, "description", ""));
         description.setResponder(text -> setOptionalString(authoring.editingTask.source, "description", text));
         addRenderableWidget(description);
     }
 
     private void addItemTaskFields(int left, int top, int width) {
-        EditBox item = new EditBox(font, left + 14, top + 142, width - 40, 18, Component.literal("Item or #tag"));
+        EditBox item = new EditBox(font, left + 14, top + 142, width - 40, 18, Component.translatable("gui.theseus.editor.item_or_tag"));
         item.setValue(registryValueString(authoring.editingTask.source, "item", "minecraft:stone"));
         item.setResponder(text -> authoring.editingTask.source.addProperty("item", text));
         addRenderableWidget(item);
@@ -2170,7 +2268,7 @@ public final class QuestScreen extends Screen {
             widget.withPosition(left + 210, top + 139).withSize(36, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
             widget.withCallback(() -> openPicker(Picker.ICON, PickerTarget.TASK_ITEM));
-            widget.withTooltip(Component.literal("Choose item"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_item"));
         });
         addRenderableWidget(choose);
         addAmountField(left, top + 181);
@@ -2188,7 +2286,7 @@ public final class QuestScreen extends Screen {
     }
 
     private void addKillTaskFields(int left, int top, int width) {
-        EditBox entity = new EditBox(font, left + 14, top + 142, width - 40, 18, Component.literal("Entity"));
+        EditBox entity = new EditBox(font, left + 14, top + 142, width - 40, 18, Component.translatable("gui.theseus.editor.entity"));
         entity.setValue(registryValueString(authoring.editingTask.source, "entity", "minecraft:pig"));
         entity.setResponder(text -> authoring.editingTask.source.addProperty("entity", text));
         addRenderableWidget(entity);
@@ -2196,30 +2294,30 @@ public final class QuestScreen extends Screen {
             widget.withPosition(left + 210, top + 139).withSize(36, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
             widget.withCallback(() -> openPicker(Picker.ENTITY, PickerTarget.TASK_ENTITY));
-            widget.withTooltip(Component.literal("Choose entity"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_entity"));
         });
         addRenderableWidget(choose);
         addAmountField(left, top + 181);
     }
 
-    private void addIdentifierTaskField(int left, int top, int width, String key, String label, String fallback) {
-        EditBox field = new EditBox(font, left + 14, top + 142, width, 18, Component.literal(label));
+    private void addIdentifierTaskField(int left, int top, int width, String key, String labelKey, String fallback) {
+        EditBox field = new EditBox(font, left + 14, top + 142, width, 18, editorText(labelKey));
         field.setValue(registryValueString(authoring.editingTask.source, key, fallback));
         field.setResponder(text -> authoring.editingTask.source.addProperty(key, text));
         addRenderableWidget(field);
     }
 
-    private void addStringListTaskField(int left, int top, int width, String key, String label, String fallback) {
-        EditBox field = new EditBox(font, left + 14, top + 142, width, 18, Component.literal(label));
+    private void addStringListTaskField(int left, int top, int width, String key, String labelKey, String fallback) {
+        EditBox field = new EditBox(font, left + 14, top + 142, width, 18, editorText(labelKey));
         field.setValue(jsonStringList(authoring.editingTask.source, key, fallback));
         field.setResponder(text -> authoring.editingTask.source.add(key, stringArray(text)));
         addRenderableWidget(field);
     }
 
     private void addPredicateTargetFields(
-        int left, int top, int width, String key, String label, String fallback, PickerTarget target
+        int left, int top, int width, String key, String labelKey, String fallback, PickerTarget target
     ) {
-        EditBox value = new EditBox(font, left + 14, top + 142, width - 40, 18, Component.literal(label));
+        EditBox value = new EditBox(font, left + 14, top + 142, width - 40, 18, editorText(labelKey));
         value.setValue(registryValueString(authoring.editingTask.source, key, fallback));
         value.setResponder(text -> authoring.editingTask.source.addProperty(key, text));
         addRenderableWidget(value);
@@ -2227,37 +2325,37 @@ public final class QuestScreen extends Screen {
             widget.withPosition(left + 210, top + 139).withSize(36, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
             widget.withCallback(() -> openPicker(target == PickerTarget.TASK_ENTITY ? Picker.ENTITY : Picker.ICON, target));
-            widget.withTooltip(Component.literal("Choose target"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_target"));
         }));
-        addJsonTaskField(left, top + 39, width, "components", "Component/data predicate", new JsonObject());
+        addJsonTaskField(left, top + 39, width, "components", "gui.theseus.editor.component_data_predicate", new JsonObject());
     }
 
     private void addBlockInteractionTaskFields(int left, int top, int width) {
-        addPredicateTargetFields(left, top, width, "block", "Block or #tag", "minecraft:stone", PickerTarget.TASK_BLOCK);
-        addJsonTaskField(left, top + 78, width, "state", "Block state predicate", new JsonObject());
+        addPredicateTargetFields(left, top, width, "block", "gui.theseus.editor.block_or_tag", "minecraft:stone", PickerTarget.TASK_BLOCK);
+        addJsonTaskField(left, top + 78, width, "state", "gui.theseus.editor.block_state_predicate", new JsonObject());
     }
 
     private void addLocationTaskFields(int left, int top, int width) {
-        addJsonTaskField(left, top, width, "predicate", "Location predicate", defaultLocationPredicate());
-        EditBox description = new EditBox(font, left + 14, top + 181, width, 18, Component.literal("Description"));
+        addJsonTaskField(left, top, width, "predicate", "gui.theseus.editor.location_predicate", defaultLocationPredicate());
+        EditBox description = new EditBox(font, left + 14, top + 181, width, 18, Component.translatable("gui.theseus.editor.description"));
         description.setValue(jsonString(authoring.editingTask.source, "description", ""));
         description.setResponder(text -> setOptionalString(authoring.editingTask.source, "description", text));
         addRenderableWidget(description);
     }
 
     private void addDimensionTaskFields(int left, int top, int width) {
-        EditBox from = new EditBox(font, left + 14, top + 142, 110, 18, Component.literal("From dimension"));
+        EditBox from = new EditBox(font, left + 14, top + 142, 110, 18, Component.translatable("gui.theseus.editor.from_dimension"));
         from.setValue(jsonString(authoring.editingTask.source, "from", ""));
         from.setResponder(text -> setOptionalString(authoring.editingTask.source, "from", text));
         addRenderableWidget(from);
-        EditBox to = new EditBox(font, left + 136, top + 142, 110, 18, Component.literal("To dimension"));
+        EditBox to = new EditBox(font, left + 136, top + 142, 110, 18, Component.translatable("gui.theseus.editor.to_dimension"));
         to.setValue(jsonString(authoring.editingTask.source, "to", ""));
         to.setResponder(text -> setOptionalString(authoring.editingTask.source, "to", text));
         addRenderableWidget(to);
     }
 
-    private void addJsonTaskField(int left, int top, int width, String key, String label, JsonObject fallback) {
-        EditBox field = new EditBox(font, left + 14, top + 142, width, 18, Component.literal(label));
+    private void addJsonTaskField(int left, int top, int width, String key, String labelKey, JsonObject fallback) {
+        EditBox field = new EditBox(font, left + 14, top + 142, width, 18, editorText(labelKey));
         field.setMaxLength(2048);
         JsonElement current = authoring.editingTask.source.get(key);
         field.setValue(current == null ? GSON.toJson(fallback) : current.isJsonPrimitive() ? current.getAsString() : GSON.toJson(current));
@@ -2269,13 +2367,16 @@ public final class QuestScreen extends Screen {
         addAmountField(left, top + 142);
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 104, top + 139).withSize(142, 24);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Manage children (" + nestedTasks(authoring.editingTask).size() + ")")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable(
+                "gui.theseus.editor.manage_children",
+                nestedTasks(authoring.editingTask).size()
+            )));
             widget.withCallback(() -> {
                 authoring.nestedTaskScroll = 0;
                 modalHost.open(QuestModalHost.Modal.NESTED_TASKS);
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Edit this composite task's child tasks"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.edit_this_composite_task_s_child_tasks"));
         }));
     }
 
@@ -2304,7 +2405,9 @@ public final class QuestScreen extends Screen {
                     rebuildWidgets();
                 });
                 widget.active = isTaskEditable(child);
-                widget.withTooltip(Component.literal(widget.active ? "Edit child task" : unavailableReason(EditorTypeRegistry.Kind.TASK, child.type)));
+                widget.withTooltip(widget.active
+                    ? editorText("gui.theseus.editor.edit_child_task")
+                    : Component.literal(unavailableReason(EditorTypeRegistry.Kind.TASK, child.type)));
             }));
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(left + 160, rowY + 5).withSize(24, 24);
@@ -2328,23 +2431,24 @@ public final class QuestScreen extends Screen {
                     authoring.nestedTaskScroll = Math.min(authoring.nestedTaskScroll, Math.max(0, updated.size() - 4));
                     rebuildWidgets();
                 });
-                widget.withTooltip(Component.literal("Delete child task"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.delete_child_task"));
             }));
         }
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 14, top + 218).withSize(113, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("+ Add task")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_task")));
             widget.withCallback(() -> {
                 taskChooserScroll = 0;
+                taskChooserSelectedIndex = 0;
                 if (modalHost.isNestedTaskChooserOpen()) modalHost.close();
                 else modalHost.open(QuestModalHost.Modal.NESTED_TASK_CHOOSER);
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Choose a task type"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_a_task_type"));
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 133, top + 218).withSize(113, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Done")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.done")));
             widget.withCallback(() -> {
                 modalHost.close();
                 rebuildWidgets();
@@ -2368,18 +2472,18 @@ public final class QuestScreen extends Screen {
     }
 
     private void addStatTaskFields(int left, int top, int width) {
-        EditBox stat = new EditBox(font, left + 14, top + 142, width - 100, 18, Component.literal("Statistic ID"));
+        EditBox stat = new EditBox(font, left + 14, top + 142, width - 100, 18, Component.translatable("gui.theseus.editor.statistic_id"));
         stat.setValue(jsonString(authoring.editingTask.source, "stat", "minecraft:jump"));
         stat.setResponder(text -> authoring.editingTask.source.addProperty("stat", text));
         addRenderableWidget(stat);
-        EditBox target = new EditBox(font, left + width - 76, top + 142, 76, 18, Component.literal("Target"));
+        EditBox target = new EditBox(font, left + width - 76, top + 142, 76, 18, Component.translatable("gui.theseus.editor.target"));
         target.setValue(Integer.toString(jsonInt(authoring.editingTask.source, "target", 1)));
         target.setResponder(text -> authoring.editingTask.source.addProperty("target", parseInteger(text)));
         addRenderableWidget(target);
     }
 
     private void addAmountField(int left, int y) {
-        EditBox amount = new EditBox(font, left + 14, y, 82, 18, Component.literal("Amount"));
+        EditBox amount = new EditBox(font, left + 14, y, 82, 18, Component.translatable("gui.theseus.editor.amount"));
         amount.setValue(Integer.toString(jsonInt(authoring.editingTask.source, "amount", 1)));
         amount.setResponder(text -> {
             try {
@@ -2402,13 +2506,13 @@ public final class QuestScreen extends Screen {
         String current = jsonString(authoring.editingTask.source, key, fallback).toLowerCase(java.util.Locale.ROOT);
         Button cycle = Widgets.button(widget -> {
             widget.withPosition(x, y).withSize(width, 24);
-            widget.withRenderer(WidgetRenderers.text(Component.literal(friendly(current))));
+            widget.withRenderer(WidgetRenderers.text(cycleValueLabel(key, current)));
             widget.withCallback(() -> {
                 int index = Math.max(0, values.indexOf(current));
                 authoring.editingTask.source.addProperty(key, values.get((index + 1) % values.size()));
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Click to change"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.click_to_change"));
         });
         addRenderableWidget(cycle);
     }
@@ -2458,11 +2562,11 @@ public final class QuestScreen extends Screen {
         int left = rewardEditorLeft();
         int top = rewardEditorTop();
         int width = 272;
-        EditBox id = new EditBox(font, left + 14, top + 38, width, 18, Component.literal("Reward ID"));
+        EditBox id = new EditBox(font, left + 14, top + 38, width, 18, Component.translatable("gui.theseus.editor.reward_id"));
         id.setValue(reward.id);
         id.setResponder(value -> reward.id = value);
         addRenderableWidget(id);
-        EditBox title = new EditBox(font, left + 14, top + 70, width, 18, Component.literal("Reward title"));
+        EditBox title = new EditBox(font, left + 14, top + 70, width, 18, Component.translatable("gui.theseus.editor.reward_title"));
         title.setValue(jsonString(reward.source, "title", ""));
         title.setResponder(value -> setOptionalString(reward.source, "title", value));
         addRenderableWidget(title);
@@ -2470,7 +2574,7 @@ public final class QuestScreen extends Screen {
             widget.withPosition(left + 14, top + 101).withSize(34, 24);
             widget.withRenderer(WidgetRenderers.text(Component.empty()));
             widget.withCallback(() -> openPicker(Picker.ICON, PickerTarget.REWARD_ICON));
-            widget.withTooltip(Component.literal("Choose reward icon override"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.choose_reward_icon_override"));
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 52, top + 101).withSize(24, 24);
@@ -2479,7 +2583,7 @@ public final class QuestScreen extends Screen {
                 reward.source.remove("icon");
                 rebuildWidgets();
             });
-            widget.withTooltip(Component.literal("Use the default reward icon"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.use_the_default_reward_icon"));
         }));
         addRawInspectorButton(left + REWARD_RAW_INSPECTOR_X, top + 101, 88, () -> openRawInspector("Reward: " + reward.id, reward.source));
         switch (reward.type) {
@@ -2488,7 +2592,7 @@ public final class QuestScreen extends Screen {
                 addRewardCycleButton(reward, left + 114, top + 139, 172, "xptype", "level", List.of("level", "points"));
             }
             case "theseus:item" -> {
-                EditBox item = new EditBox(font, left + 14, top + 142, 210, 18, Component.literal("Item"));
+                EditBox item = new EditBox(font, left + 14, top + 142, 210, 18, Component.translatable("gui.theseus.editor.item"));
                 item.setValue(rewardItemId(reward.source));
                 item.setResponder(value -> setRewardItem(reward.source, value, rewardItemCount(reward.source)));
                 addRenderableWidget(item);
@@ -2496,17 +2600,20 @@ public final class QuestScreen extends Screen {
                     widget.withPosition(left + 232, top + 139).withSize(54, 24);
                     widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
                     widget.withCallback(() -> openPicker(Picker.ICON, PickerTarget.REWARD_ITEM));
-                    widget.withTooltip(Component.literal("Choose item"));
+                    widget.withTooltip(Component.translatable("gui.theseus.editor.choose_item"));
                 }));
                 addRewardAmountField(reward, left + 14, top + 181, 92, "item.count");
             }
-            case "theseus:loottable" -> addRewardTextField(reward, left, top, "loot_table", "Loot table");
-            case "theseus:command" -> addRewardTextField(reward, left, top, "command", "Command");
+            case "theseus:loottable" -> addRewardTextField(reward, left, top, "loot_table", "gui.theseus.editor.loot_table");
+            case "theseus:command" -> addRewardTextField(reward, left, top, "command", "gui.theseus.editor.command");
             case "theseus:selectable" -> {
                 addRewardAmountField(reward, left + 14, top + 142, 92, "amount");
                 addRenderableWidget(Widgets.button(widget -> {
                     widget.withPosition(left + 114, top + 139).withSize(172, 24);
-                    widget.withRenderer(WidgetRenderers.text(Component.literal("Manage choices (" + nestedRewards(reward).size() + ")")));
+                    widget.withRenderer(WidgetRenderers.text(Component.translatable(
+                        "gui.theseus.editor.manage_choices",
+                        nestedRewards(reward).size()
+                    )));
                     widget.withCallback(() -> {
                         authoring.rewardEditorError = "";
                         modalHost.open(QuestModalHost.Modal.NESTED_REWARDS);
@@ -2518,18 +2625,18 @@ public final class QuestScreen extends Screen {
         }
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 14, top + 244).withSize(128, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> requestModalDiscard(() -> closeRewardEditor(nested)));
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 158, top + 244).withSize(128, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Save reward")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.save_reward")));
             widget.withCallback(() -> saveRewardEditor(nested));
         }));
     }
 
-    private void addRewardTextField(QuestAuthoringSession.RewardDraft reward, int left, int top, String key, String label) {
-        EditBox field = new EditBox(font, left + 14, top + 142, 272, 18, Component.literal(label));
+    private void addRewardTextField(QuestAuthoringSession.RewardDraft reward, int left, int top, String key, String labelKey) {
+        EditBox field = new EditBox(font, left + 14, top + 142, 272, 18, editorText(labelKey));
         field.setValue(jsonString(reward.source, key, ""));
         field.setResponder(value -> reward.source.addProperty(key, value));
         addRenderableWidget(field);
@@ -2537,7 +2644,7 @@ public final class QuestScreen extends Screen {
 
     private void addRewardAmountField(QuestAuthoringSession.RewardDraft reward, int x, int y, int width, String path) {
         int current = path.equals("item.count") ? rewardItemCount(reward.source) : jsonInt(reward.source, path, 1);
-        EditBox amount = new EditBox(font, x, y, width, 18, Component.literal("Amount"));
+        EditBox amount = new EditBox(font, x, y, width, 18, Component.translatable("gui.theseus.editor.amount"));
         amount.setValue(Integer.toString(current));
         amount.setResponder(value -> {
             int parsed;
@@ -2552,7 +2659,7 @@ public final class QuestScreen extends Screen {
         String current = jsonString(reward.source, key, fallback).toLowerCase(java.util.Locale.ROOT);
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(x, y).withSize(width, 24);
-            widget.withRenderer(WidgetRenderers.text(Component.literal(friendly(current))));
+            widget.withRenderer(WidgetRenderers.text(cycleValueLabel(key, current)));
             widget.withCallback(() -> {
                 int index = Math.max(0, values.indexOf(current));
                 reward.source.addProperty(key, values.get((index + 1) % values.size()));
@@ -2611,7 +2718,11 @@ public final class QuestScreen extends Screen {
             int rowY = top + 42 + (index - authoring.nestedRewardScroll) * 42;
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(left + 14, rowY).withSize(180, 34);
-                widget.withRenderer(WidgetRenderers.text(Component.literal(rewards.get(nestedIndex).id + "  ·  " + rewardChoice(rewards.get(nestedIndex)).label)));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable(
+                    "gui.theseus.editor.nested_reward_label",
+                    rewards.get(nestedIndex).id,
+                    editorTypeLabel(EditorTypeRegistry.Kind.REWARD, rewards.get(nestedIndex).type, rewardChoice(rewards.get(nestedIndex)).label)
+                )));
                 widget.withCallback(() -> {
                     authoring.editingNestedRewardIndex = nestedIndex;
                     authoring.editingNestedReward = rewards.get(nestedIndex).copy();
@@ -2619,7 +2730,9 @@ public final class QuestScreen extends Screen {
                     rebuildWidgets();
                 });
                 widget.active = isRewardEditable(rewards.get(nestedIndex));
-                widget.withTooltip(Component.literal(widget.active ? "Edit choice" : unavailableReason(EditorTypeRegistry.Kind.REWARD, rewards.get(nestedIndex).type)));
+                widget.withTooltip(widget.active
+                    ? editorText("gui.theseus.editor.edit_choice")
+                    : Component.literal(unavailableReason(EditorTypeRegistry.Kind.REWARD, rewards.get(nestedIndex).type)));
             }));
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(left + 200, rowY + 5).withSize(24, 24);
@@ -2643,13 +2756,14 @@ public final class QuestScreen extends Screen {
                     authoring.nestedRewardScroll = Math.min(authoring.nestedRewardScroll, Math.max(0, updated.size() - 4));
                     rebuildWidgets();
                 });
-                widget.withTooltip(Component.literal("Delete choice"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.delete_choice"));
             }));
         }
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 14, top + 218).withSize(128, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("+  Add choice")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_choice")));
             widget.withCallback(() -> {
+                rewardChooserSelectedIndex = 0;
                 if (modalHost.isNestedRewardChooserOpen()) modalHost.close();
                 else modalHost.open(QuestModalHost.Modal.NESTED_REWARD_CHOOSER);
                 rebuildWidgets();
@@ -2657,7 +2771,7 @@ public final class QuestScreen extends Screen {
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 148, top + 218).withSize(128, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Done")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.done")));
             widget.withCallback(() -> {
                 modalHost.close();
                 rebuildWidgets();
@@ -3042,9 +3156,9 @@ public final class QuestScreen extends Screen {
         if (mode.isAuthoring() && mode.editorTool() == EditorTool.LINK) {
             graphics.text(
                 font,
-                Component.literal(linkSourceId == null
-                    ? "Link: select prerequisite"
-                    : "Link: select dependent"),
+                Component.translatable(linkSourceId == null
+                    ? "gui.theseus.editor.link_select_prerequisite"
+                    : "gui.theseus.editor.link_select_dependent"),
                 sidebarWidth() + 112,
                 10,
                 0xFF9FDFFF,
@@ -3094,7 +3208,7 @@ public final class QuestScreen extends Screen {
         graphics.enableScissor(mapBounds.x(), mapBounds.y(), mapBounds.maxX(), mapBounds.maxY());
         graphics.fill(mapBounds.x(), mapBounds.y(), mapBounds.maxX(), mapBounds.maxY(), background);
         graphics.fill(mapBounds.x(), mapBounds.y(), mapBounds.maxX(), mapBounds.contentY(), header);
-        graphics.text(font, Component.literal("Map"), mapBounds.x() + 4, mapBounds.y() + 2, text, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.map"), mapBounds.x() + 4, mapBounds.y() + 2, text, false);
         graphics.text(
             font,
             Component.literal("⋮"),
@@ -3211,7 +3325,7 @@ public final class QuestScreen extends Screen {
         int top = (height - 300) / 2;
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 330, top + 264).withSize(96, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Close")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.close")));
             widget.withCallback(() -> {
                 closeDiagnosticsModal();
                 rebuildWidgets();
@@ -3282,7 +3396,7 @@ public final class QuestScreen extends Screen {
         graphics.fill(0, 0, width, height, 0x99000000);
         graphics.fill(left, top, left + 440, top + 300, 0xFF20242B);
         graphics.fill(left + 1, top + 1, left + 439, top + 28, 0xFF303640);
-        graphics.text(font, Component.literal("Validation diagnostics"), left + 12, top + 9, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.validation_diagnostics"), left + 12, top + 9, 0xFFFFFFFF, true);
         int visibleRows = 13;
         List<String> lines = diagnosticLines(416);
         int maxScroll = Math.max(0, lines.size() - visibleRows);
@@ -3297,8 +3411,8 @@ public final class QuestScreen extends Screen {
             graphics.text(font, Component.literal(line), left + 12, y, color, false);
         }
         graphics.disableScissor();
-        if (diagnostics.isEmpty()) graphics.text(font, Component.literal("No diagnostics reported."), left + 12, top + 42, 0xFFB8C0CC, false);
-        else if (maxScroll > 0) graphics.text(font, Component.literal("Scroll for more"), left + 12, top + 270, 0xFF8893A3, false);
+        if (diagnostics.isEmpty()) graphics.text(font, Component.translatable("gui.theseus.editor.no_diagnostics_reported"), left + 12, top + 42, 0xFFB8C0CC, false);
+        else if (maxScroll > 0) graphics.text(font, Component.translatable("gui.theseus.editor.scroll_for_more"), left + 12, top + 270, 0xFF8893A3, false);
     }
 
     private void drawRawInspector(GuiGraphicsExtractor graphics) {
@@ -3309,7 +3423,7 @@ public final class QuestScreen extends Screen {
         graphics.fill(0, 0, width, height, 0xCC000000);
         graphics.fill(left, top, left + inspectorWidth, top + inspectorHeight, 0xFF20242B);
         graphics.fill(left + 1, top + 1, left + inspectorWidth - 1, top + 28, 0xFF303640);
-        graphics.text(font, Component.literal(rawInspectorTitle + " (read-only)"), left + 12, top + 9, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.read_only_title", rawInspectorTitle), left + 12, top + 9, 0xFFFFFFFF, true);
     }
 
     private void addImportModalWidgets() {
@@ -3323,7 +3437,7 @@ public final class QuestScreen extends Screen {
         for (int index = first; index < entries.size() && index < first + visibleRows; index++) {
             QuestImportController.Entry entry = entries.get(index);
             int y = listTop + (index - first) * 32;
-            EditBox id = new EditBox(font, left + 250, y, 100, 18, Component.literal("Quest ID"));
+            EditBox id = new EditBox(font, left + 250, y, 100, 18, Component.translatable("gui.theseus.editor.quest_id"));
             id.setValue(entry.id() == null ? "" : entry.id());
             id.setResponder(value -> {
                 importController.changeId(entry.key(), value);
@@ -3333,31 +3447,31 @@ public final class QuestScreen extends Screen {
             addRenderableWidget(id);
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(left + 354, y).withSize(62, 20);
-                widget.withRenderer(WidgetRenderers.text(Component.literal("Details")));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.details")));
                 widget.active = !entry.diagnostics().isEmpty();
                 widget.withCallback(() -> openImportDiagnostics(entry.key()));
-                widget.withTooltip(Component.literal("View every diagnostic for this file"));
+                widget.withTooltip(Component.translatable("gui.theseus.editor.view_every_diagnostic_for_this_file"));
             }));
             addRenderableWidget(Widgets.button(widget -> {
                 widget.withPosition(left + 420, y).withSize(62, 20);
-                widget.withRenderer(WidgetRenderers.text(Component.literal("Remove")));
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.remove")));
                 widget.withCallback(() -> removeImportFile(entry.key()));
             }));
         }
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 12, top + 304).withSize(100, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(this::cancelImport);
         }));
         if (!importController.batchDiagnostics().isEmpty()) addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 120, top + 304).withSize(120, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Batch details")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.batch_details")));
             widget.withCallback(this::openBatchDiagnostics);
-            widget.withTooltip(Component.literal("View batch-level server diagnostics"));
+            widget.withTooltip(Component.translatable("gui.theseus.editor.view_batch_level_server_diagnostics"));
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 388, top + 304).withSize(100, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Import")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.import")));
             widget.active = importController.canSubmit() && !mutations.isPending();
             widget.withCallback(this::sendImport);
         }));
@@ -3369,11 +3483,11 @@ public final class QuestScreen extends Screen {
         graphics.fill(0, 0, width, height, 0x99000000);
         graphics.fill(left, top, left + 500, top + 340, 0xFF20242B);
         graphics.fill(left + 1, top + 1, left + 499, top + 28, 0xFF303640);
-        graphics.text(font, Component.literal("Import quests"), left + 12, top + 9, 0xFFFFFFFF, true);
-        graphics.text(font, Component.literal("Each file is checked independently; Import is all-or-nothing."), left + 12, top + 30, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.import_quests"), left + 12, top + 9, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.each_file_is_checked_independently_import_is_all_or_nothing"), left + 12, top + 30, 0xFFB8C0CC, false);
         if (!importController.batchDiagnostics().isEmpty()) {
             long errors = importController.batchDiagnostics().stream().filter(QuestDiagnostics.Diagnostic::blocksSave).count();
-            graphics.text(font, Component.literal("Batch rejected: " + errors + " error(s) — Batch details"), left + 12, top + 42, 0xFFFF9999, false);
+            graphics.text(font, Component.translatable("gui.theseus.editor.batch_rejected", errors), left + 12, top + 42, 0xFFFF9999, false);
         }
         List<QuestImportController.Entry> entries = importController.entries();
         int listTop = top + (importController.batchDiagnostics().isEmpty() ? 52 : 64);
@@ -3446,16 +3560,6 @@ public final class QuestScreen extends Screen {
             drawDraftTasks(graphics);
         } else if (createQuestTab == DetailTab.REWARDS) {
             drawDraftRewards(graphics);
-        } else {
-            graphics.textWithWordWrap(
-                font,
-                Component.literal(createQuestTab.label + " will be implemented in a later editor iteration."),
-                x,
-                42,
-                detailsWidth() - 24,
-                0xFFB8C0CC,
-                false
-            );
         }
         if (createQuestTab == DetailTab.TASKS && modalHost.isTaskChooserOpen()) {
             drawTaskChooser(graphics, mouseX, mouseY);
@@ -3490,7 +3594,7 @@ public final class QuestScreen extends Screen {
             drawClippedText(graphics, rewardDisplayLabel(reward), x + 29, cardY + 9, cardWidth - 108, isRewardEditable(reward) ? 0xFFFFFFFF : 0xFFFFAA77);
             drawClippedText(graphics, reward.id, x + 29, cardY + 23, cardWidth - 108, 0xFF8E98A6);
         }
-        if (authoring.rewards.isEmpty()) graphics.text(font, Component.literal("No rewards yet"), x, 34, 0xFF8E98A6, false);
+        if (authoring.rewards.isEmpty()) graphics.text(font, Component.translatable("gui.theseus.editor.no_rewards_yet"), x, 34, 0xFF8E98A6, false);
     }
 
     private void drawRewardChooser(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean nested) {
@@ -3508,8 +3612,11 @@ public final class QuestScreen extends Screen {
             int rowY = top + 2 + index * TASK_CHOOSER_ROW_HEIGHT;
             boolean hovered = mouseX >= left + 2 && mouseX < left + chooserWidth - 2 && mouseY >= rowY && mouseY < rowY + TASK_CHOOSER_ROW_HEIGHT - 1;
             if (hovered) graphics.fill(left + 2, rowY, left + chooserWidth - 2, rowY + TASK_CHOOSER_ROW_HEIGHT - 1, 0xFF454C58);
+            if (index == rewardChooserSelectedIndex) {
+                graphics.outline(left + 2, rowY, chooserWidth - 4, TASK_CHOOSER_ROW_HEIGHT - 1, ClientThemeLoader.active().genericControls().accent());
+            }
             graphics.item(new ItemStack(choice.icon), left + 4, rowY + 5);
-            graphics.text(font, Component.literal(choice.label), left + 24, rowY + 9, 0xFFFFFFFF, false);
+            graphics.text(font, editorTypeLabel(EditorTypeRegistry.Kind.REWARD, choice.type, choice.label), left + 24, rowY + 9, 0xFFFFFFFF, false);
         }
     }
 
@@ -3530,7 +3637,7 @@ public final class QuestScreen extends Screen {
         if (authoring.tasks.isEmpty()) {
             graphics.text(
                 font,
-                Component.literal("No tasks yet"),
+                Component.translatable("gui.theseus.editor.no_tasks_yet"),
                 x,
                 34,
                 0xFF8E98A6,
@@ -3566,10 +3673,13 @@ public final class QuestScreen extends Screen {
             boolean hovered = mouseX >= left + 2 && mouseX < left + chooserWidth - 2 &&
                 mouseY >= rowY && mouseY < rowY + TASK_CHOOSER_ROW_HEIGHT - 1;
             if (hovered) graphics.fill(left + 2, rowY, left + chooserWidth - 2, rowY + TASK_CHOOSER_ROW_HEIGHT - 1, 0xFF454C58);
+            if (taskChooserScroll + visible == taskChooserSelectedIndex) {
+                graphics.outline(left + 2, rowY, chooserWidth - 4, TASK_CHOOSER_ROW_HEIGHT - 1, ClientThemeLoader.active().genericControls().accent());
+            }
             graphics.item(new ItemStack(choice.icon), left + 4, rowY + 5);
             graphics.text(
                 font,
-                Component.literal(choice.label),
+                editorTypeLabel(EditorTypeRegistry.Kind.TASK, choice.type, choice.label),
                 left + 24,
                 rowY + (choice.implemented ? 9 : 3),
                 choice.implemented ? 0xFFFFFFFF : 0xFF9AA2AE,
@@ -3577,10 +3687,10 @@ public final class QuestScreen extends Screen {
             );
             if (!choice.implemented) graphics.text(
                 font,
-                Component.literal("Not yet implemented"),
+                Component.translatable("gui.theseus.editor.not_yet_implemented"),
                 left + 24,
                 rowY + 14,
-                0xFF707987,
+                0xFF9AA4B2,
                 false
             );
         }
@@ -3618,10 +3728,10 @@ public final class QuestScreen extends Screen {
         graphics.outline(left, top, 200, 176, 0xFF8A929F);
         graphics.text(
             font,
-            Component.literal(switch (picker) {
-                case ICON -> "Choose item";
-                case ENTITY -> "Choose entity";
-                default -> "Choose background";
+            Component.translatable(switch (picker) {
+                case ICON -> "gui.theseus.editor.choose_item";
+                case ENTITY -> "gui.theseus.editor.choose_entity";
+                default -> "gui.theseus.editor.choose_background";
             }),
             left + 12,
             top + 10,
@@ -3643,9 +3753,9 @@ public final class QuestScreen extends Screen {
         graphics.fill(0, 0, width, height, 0x88000000);
         graphics.fill(left, top, left + modalWidth, top + modalHeight, 0xFF20242B);
         graphics.outline(left, top, modalWidth, modalHeight, 0xFF8A929F);
-        graphics.text(font, Component.literal("Rich description"), left + 12, top + 12, 0xFFFFFFFF, true);
-        graphics.text(font, Component.literal("Markdown"), left + 12, top + 52, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Player preview"), previewX, top + 52, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.rich_description"), left + 12, top + 12, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.markdown"), left + 12, top + 52, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.player_preview"), previewX, top + 52, 0xFFB8C0CC, false);
         int editorX = left + 12;
         int editorY = top + 61;
         graphics.fill(editorX, editorY, editorX + paneWidth, editorY + (modalHeight - 103), 0xFF171A20);
@@ -3709,8 +3819,8 @@ public final class QuestScreen extends Screen {
         int top = (height - 110) / 2;
         graphics.fill(left, top, left + 240, top + 110, 0xFF20242B);
         graphics.outline(left, top, 240, 110, 0xFF8A929F);
-        graphics.text(font, Component.literal("Delete quest?"), left + 12, top + 12, 0xFFFFFFFF, true);
-        graphics.textWithWordWrap(font, Component.literal("This deletes the quest file and resets its player progress."), left + 12, top + 32, 216, 0xFFFFAAAA, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.confirm_delete_quest"), left + 12, top + 12, 0xFFFFFFFF, true);
+        graphics.textWithWordWrap(font, Component.translatable("gui.theseus.editor.this_deletes_the_quest_file_and_resets_its_player_progress"), left + 12, top + 32, 216, 0xFFFFAAAA, false);
     }
 
     private void drawProgressResetConfirmation(GuiGraphicsExtractor graphics) {
@@ -3720,20 +3830,22 @@ public final class QuestScreen extends Screen {
         graphics.fill(left, top, left + 280, top + 142, 0xFF20242B);
         graphics.outline(left, top, 280, 142, 0xFFFF6B6B);
         QuestModalHost.ProgressResetTarget target = progressResetTarget;
-        String title = target == null ? "Reset progress?" : switch (target.scope()) {
-            case "quest" -> "Reset quest progress?";
-            case "task" -> "Reset task progress?";
-            case "reward" -> "Reset reward progress?";
-            default -> "Reset progress?";
+        Component title = Component.translatable(target == null ? "gui.theseus.editor.confirm_reset_progress" : switch (target.scope()) {
+            case "quest" -> "gui.theseus.editor.confirm_reset_quest_progress";
+            case "task" -> "gui.theseus.editor.confirm_reset_task_progress";
+            case "reward" -> "gui.theseus.editor.confirm_reset_reward_progress";
+            default -> "gui.theseus.editor.confirm_reset_progress";
+        });
+        Component detail = target == null
+            ? Component.translatable("gui.theseus.editor.no_reset_target")
+            : switch (target.scope()) {
+                case "quest" -> Component.translatable("gui.theseus.editor.reset_quest_progress_body", target.questTitle());
+                case "task" -> Component.translatable("gui.theseus.editor.reset_task_progress_body", target.displayLabel(), target.entryId(), target.questTitle());
+                case "reward" -> Component.translatable("gui.theseus.editor.reset_reward_progress_body", target.displayLabel(), target.entryId(), target.questTitle());
+                default -> Component.translatable("gui.theseus.editor.reset_selected_progress_body");
         };
-        String detail = target == null ? "No reset target is selected." : switch (target.scope()) {
-            case "quest" -> "Clear all task and reward progress for '" + target.questTitle() + "'? The quest pin will be preserved.";
-            case "task" -> "Clear progress for task '" + target.displayLabel() + "' (" + target.entryId() + ") in '" + target.questTitle() + "'?";
-            case "reward" -> "Clear the claim for reward '" + target.displayLabel() + "' (" + target.entryId() + ") in '" + target.questTitle() + "'?";
-            default -> "Clear the selected progress?";
-        };
-        graphics.text(font, Component.literal(title), left + 12, top + 12, 0xFFFFFFFF, true);
-        graphics.textWithWordWrap(font, Component.literal(detail + " This affects the current player."), left + 12, top + 34, 256, 0xFFFFC4C4, false);
+        graphics.text(font, title, left + 12, top + 12, 0xFFFFFFFF, true);
+        graphics.textWithWordWrap(font, detail, left + 12, top + 34, 256, 0xFFFFC4C4, false);
     }
 
     private void drawDeleteTaskConfirmation(GuiGraphicsExtractor graphics) {
@@ -3742,10 +3854,10 @@ public final class QuestScreen extends Screen {
         int top = (height - 110) / 2;
         graphics.fill(left, top, left + 240, top + 110, 0xFF20242B);
         graphics.outline(left, top, 240, 110, 0xFF8A929F);
-        graphics.text(font, Component.literal("Delete task?"), left + 12, top + 12, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.confirm_delete_task"), left + 12, top + 12, 0xFFFFFFFF, true);
         String id = authoring.taskDeleteConfirmation >= 0 && authoring.taskDeleteConfirmation < authoring.tasks.size()
             ? authoring.tasks.get(authoring.taskDeleteConfirmation).id : "this task";
-        graphics.textWithWordWrap(font, Component.literal("Delete '" + id + "' and its configuration?"), left + 12, top + 34, 216, 0xFFFFAAAA, false);
+        graphics.textWithWordWrap(font, Component.translatable("gui.theseus.editor.confirm_delete_task_body", id), left + 12, top + 34, 216, 0xFFFFAAAA, false);
     }
 
     private void drawDiscardConfirmation(GuiGraphicsExtractor graphics) {
@@ -3754,8 +3866,8 @@ public final class QuestScreen extends Screen {
         int top = (height - 116) / 2;
         graphics.fill(left, top, left + 260, top + 116, 0xFF20242B);
         graphics.outline(left, top, 260, 116, 0xFF8A929F);
-        graphics.text(font, Component.literal("Discard unsaved changes?"), left + 12, top + 12, 0xFFFFFFFF, true);
-        graphics.textWithWordWrap(font, Component.literal("The quest draft has changes that have not been saved."), left + 12, top + 34, 236, 0xFFFFCC88, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.discard_unsaved_changes"), left + 12, top + 12, 0xFFFFFFFF, true);
+        graphics.textWithWordWrap(font, Component.translatable("gui.theseus.editor.the_quest_draft_has_changes_that_have_not_been_saved"), left + 12, top + 34, 236, 0xFFFFCC88, false);
     }
 
     private void drawChapterEditor(GuiGraphicsExtractor graphics) {
@@ -3764,11 +3876,13 @@ public final class QuestScreen extends Screen {
         int top = chapterEditorTop();
         graphics.fill(left, top, left + 280, top + 250, 0xFF20242B);
         graphics.outline(left, top, 280, 250, 0xFF8A929F);
-        graphics.text(font, Component.literal(chapterEditorOriginal == null ? "Create chapter" : "Edit chapter"), left + 14, top + 14, 0xFFFFFFFF, true);
-        graphics.text(font, Component.literal("Name"), left + 14, top + 36, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Chapter icon"), left + 56, top + 88, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Background"), left + 14, top + 114, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Background opacity"), left + 14, top + 146, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable(chapterEditorOriginal == null
+            ? "gui.theseus.editor.create_chapter"
+            : "gui.theseus.editor.edit_chapter"), left + 14, top + 14, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.name"), left + 14, top + 36, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.chapter_icon"), left + 56, top + 88, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.background"), left + 14, top + 114, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.background_opacity"), left + 14, top + 146, 0xFFB8C0CC, false);
         if (!chapterEditorError.isEmpty()) graphics.text(font, Component.literal(chapterEditorError), left + 14, top + 185, 0xFFFF7777, false);
     }
 
@@ -3778,8 +3892,8 @@ public final class QuestScreen extends Screen {
         graphics.fill(0, 0, width, height, 0x88000000);
         graphics.fill(left, top, left + 280, top + 130, 0xFF20242B);
         graphics.outline(left, top, 280, 130, 0xFF8A929F);
-        graphics.text(font, Component.literal("Paste quest"), left + 14, top + 14, 0xFFFFFFFF, true);
-        graphics.text(font, Component.literal("Choose the ID for the cloned quest."), left + 14, top + 34, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.paste_quest"), left + 14, top + 14, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.choose_the_id_for_the_cloned_quest"), left + 14, top + 34, 0xFFB8C0CC, false);
     }
 
     private void drawRewardModalForeground(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -3793,25 +3907,28 @@ public final class QuestScreen extends Screen {
         int top = rewardEditorTop();
         RewardChoice choice = rewardChoice(reward);
         graphics.item(new ItemStack(choice.icon), left + 14, top + 10);
-        graphics.text(font, Component.literal((nested ? "Edit choice: " : "Edit ") + choice.label), left + 36, top + 14, 0xFFFFFFFF, true);
-        graphics.text(font, Component.literal("ID"), left + 14, top + 27, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Title override"), left + 14, top + 59, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Icon override"), left + REWARD_ICON_LABEL_X, top + 108, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable(
+            nested ? "gui.theseus.editor.edit_reward_choice" : "gui.theseus.editor.edit_reward_type",
+            editorTypeLabel(EditorTypeRegistry.Kind.REWARD, reward.type, choice.label)
+        ), left + 36, top + 14, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.id"), left + 14, top + 27, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.title_override"), left + 14, top + 59, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.icon_override"), left + REWARD_ICON_LABEL_X, top + 108, 0xFFB8C0CC, false);
         renderDraftRewardIcon(graphics, reward, left + 23, top + 105);
         switch (reward.type) {
             case "theseus:xp" -> {
-                graphics.text(font, Component.literal("Amount"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Unit"), left + 114, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.amount"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.unit"), left + 114, top + 131, 0xFFB8C0CC, false);
             }
             case "theseus:item" -> {
-                graphics.text(font, Component.literal("Item"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Amount"), left + 14, top + 170, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.item"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.amount"), left + 14, top + 170, 0xFFB8C0CC, false);
             }
-            case "theseus:loottable" -> graphics.text(font, Component.literal("Loot table"), left + 14, top + 131, 0xFFB8C0CC, false);
-            case "theseus:command" -> graphics.text(font, Component.literal("Command"), left + 14, top + 131, 0xFFB8C0CC, false);
+            case "theseus:loottable" -> graphics.text(font, Component.translatable("gui.theseus.editor.loot_table"), left + 14, top + 131, 0xFFB8C0CC, false);
+            case "theseus:command" -> graphics.text(font, Component.translatable("gui.theseus.editor.command"), left + 14, top + 131, 0xFFB8C0CC, false);
             case "theseus:selectable" -> {
-                graphics.text(font, Component.literal("Selection amount"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Nested rewards"), left + 114, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.selection_amount"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.nested_rewards"), left + 114, top + 131, 0xFFB8C0CC, false);
             }
             default -> { }
         }
@@ -3821,7 +3938,7 @@ public final class QuestScreen extends Screen {
     private void drawNestedRewardsForeground(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int left = rewardEditorLeft();
         int top = rewardEditorTop();
-        if (nestedRewards(authoring.editingReward).isEmpty()) graphics.text(font, Component.literal("No choices yet"), left + 14, top + 48, 0xFF8E98A6, false);
+        if (nestedRewards(authoring.editingReward).isEmpty()) graphics.text(font, Component.translatable("gui.theseus.editor.no_choices_yet"), left + 14, top + 48, 0xFF8E98A6, false);
         if (modalHost.isNestedRewardChooserOpen()) drawRewardChooser(graphics, mouseX, mouseY, true);
     }
 
@@ -3830,54 +3947,57 @@ public final class QuestScreen extends Screen {
         int top = taskEditorTop();
         TaskChoice choice = taskChoice(authoring.editingTask);
         graphics.item(new ItemStack(choice.icon), left + 14, top + 10);
-        graphics.text(font, Component.literal("Edit " + choice.label), left + 36, top + 14, 0xFFFFFFFF, true);
-        graphics.text(font, Component.literal("ID"), left + 14, top + 27, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Title override"), left + 14, top + 59, 0xFFB8C0CC, false);
-        graphics.text(font, Component.literal("Icon override"), left + TASK_ICON_LABEL_X, top + 108, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable(
+            "gui.theseus.editor.edit_task_type",
+            editorTypeLabel(EditorTypeRegistry.Kind.TASK, authoring.editingTask.type, choice.label)
+        ), left + 36, top + 14, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("gui.theseus.editor.id"), left + 14, top + 27, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.title_override"), left + 14, top + 59, 0xFFB8C0CC, false);
+        graphics.text(font, Component.translatable("gui.theseus.editor.icon_override"), left + TASK_ICON_LABEL_X, top + 108, 0xFFB8C0CC, false);
         renderDraftTaskIcon(graphics, authoring.editingTask, left + 23, top + 105);
         switch (authoring.editingTask.type) {
             case "theseus:dummy" -> {
-                graphics.text(font, Component.literal("Trigger value"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Description"), left + 14, top + 170, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.trigger_value"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.description"), left + 14, top + 170, 0xFFB8C0CC, false);
             }
             case "theseus:item" -> {
-                graphics.text(font, Component.literal("Item or #tag"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Amount"), left + 14, top + 170, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Collection"), left + 104, top + 170, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.item_or_tag"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.amount"), left + 14, top + 170, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.collection"), left + 104, top + 170, 0xFFB8C0CC, false);
             }
             case "theseus:xp" -> {
-                graphics.text(font, Component.literal("Amount"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Unit"), left + 104, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Collection"), left + 14, top + 170, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.amount"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.unit"), left + 104, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.collection"), left + 14, top + 170, 0xFFB8C0CC, false);
             }
             case "theseus:kill_entity" -> {
-                graphics.text(font, Component.literal("Entity"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Amount"), left + 14, top + 170, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.entity"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.amount"), left + 14, top + 170, 0xFFB8C0CC, false);
             }
-            case "theseus:advancement" -> taskFieldLabel(graphics, left, top, "Advancement IDs (comma separated)", null);
-            case "theseus:biome" -> taskFieldLabel(graphics, left, top, "Biome or #tag", null);
+            case "theseus:advancement" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.advancement_ids_comma_separated", null);
+            case "theseus:biome" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.biome_or_tag", null);
             case "theseus:block_interaction" -> {
-                taskFieldLabel(graphics, left, top, "Block or #tag", "Component/data predicate (JSON)");
-                graphics.text(font, Component.literal("Block state predicate (JSON)"), left + 14, top + 209, 0xFFB8C0CC, false);
+                taskFieldLabel(graphics, left, top, "gui.theseus.editor.block_or_tag", "gui.theseus.editor.component_data_predicate_json");
+                graphics.text(font, Component.translatable("gui.theseus.editor.block_state_predicate_json"), left + 14, top + 209, 0xFFB8C0CC, false);
             }
             case "theseus:changed_dimension" -> {
-                graphics.text(font, Component.literal("From dimension (optional)"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("To dimension (optional)"), left + 136, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.from_dimension_optional"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.to_dimension_optional"), left + 136, top + 131, 0xFFB8C0CC, false);
             }
-            case "theseus:check" -> taskFieldLabel(graphics, left, top, "Player data predicate (JSON)", null);
+            case "theseus:check" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.player_data_predicate_json", null);
             case "theseus:composite" -> {
-                graphics.text(font, Component.literal("Required tasks"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Nested tasks"), left + 104, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.required_tasks"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.nested_tasks"), left + 104, top + 131, 0xFFB8C0CC, false);
             }
-            case "theseus:entity_interaction" -> taskFieldLabel(graphics, left, top, "Entity or #tag", "Component/data predicate (JSON)");
-            case "theseus:item_interaction", "theseus:item_use" -> taskFieldLabel(graphics, left, top, "Item or #tag", "Component/data predicate (JSON)");
-            case "theseus:location" -> taskFieldLabel(graphics, left, top, "Location predicate (JSON)", "Description");
-            case "theseus:recipe" -> taskFieldLabel(graphics, left, top, "Recipe IDs (comma separated)", null);
+            case "theseus:entity_interaction" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.entity_or_tag", "gui.theseus.editor.component_data_predicate_json");
+            case "theseus:item_interaction", "theseus:item_use" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.item_or_tag", "gui.theseus.editor.component_data_predicate_json");
+            case "theseus:location" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.location_predicate_json", "gui.theseus.editor.description");
+            case "theseus:recipe" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.recipe_ids_comma_separated", null);
             case "theseus:stat" -> {
-                graphics.text(font, Component.literal("Statistic ID"), left + 14, top + 131, 0xFFB8C0CC, false);
-                graphics.text(font, Component.literal("Target"), left + 170, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.statistic_id"), left + 14, top + 131, 0xFFB8C0CC, false);
+                graphics.text(font, Component.translatable("gui.theseus.editor.target"), left + 170, top + 131, 0xFFB8C0CC, false);
             }
-            case "theseus:structure" -> taskFieldLabel(graphics, left, top, "Structure or #tag", null);
+            case "theseus:structure" -> taskFieldLabel(graphics, left, top, "gui.theseus.editor.structure_or_tag", null);
             default -> {
             }
         }
@@ -3902,7 +4022,7 @@ public final class QuestScreen extends Screen {
         if (nestedTasks(authoring.editingTask).isEmpty()) {
             graphics.text(
                 font,
-                Component.literal("No child tasks yet"),
+                Component.translatable("gui.theseus.editor.no_child_tasks_yet"),
                 left + 14,
                 top + 48,
                 0xFF8E98A6,
@@ -3912,9 +4032,9 @@ public final class QuestScreen extends Screen {
         if (modalHost.isNestedTaskChooserOpen()) drawNestedTaskChooser(graphics, mouseX, mouseY);
     }
 
-    private void taskFieldLabel(GuiGraphicsExtractor graphics, int left, int top, String first, String second) {
-        graphics.text(font, Component.literal(first), left + 14, top + 131, 0xFFB8C0CC, false);
-        if (second != null) graphics.text(font, Component.literal(second), left + 14, top + 170, 0xFFB8C0CC, false);
+    private void taskFieldLabel(GuiGraphicsExtractor graphics, int left, int top, String firstKey, String secondKey) {
+        graphics.text(font, editorText(firstKey), left + 14, top + 131, 0xFFB8C0CC, false);
+        if (secondKey != null) graphics.text(font, editorText(secondKey), left + 14, top + 170, 0xFFB8C0CC, false);
     }
 
     private void drawEntityPicker(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -4515,6 +4635,10 @@ public final class QuestScreen extends Screen {
         return text.isEmpty() ? text : Character.toUpperCase(text.charAt(0)) + text.substring(1);
     }
 
+    private static Component cycleValueLabel(String key, String value) {
+        return Component.translatable("gui.theseus.editor.value." + value.toLowerCase(java.util.Locale.ROOT));
+    }
+
     private boolean isTaskEditable(QuestAuthoringSession.TaskDraft task) {
         return editorResolution(EditorTypeRegistry.Kind.TASK, task.type).editable();
     }
@@ -4534,11 +4658,15 @@ public final class QuestScreen extends Screen {
     }
 
     private String taskDisplayLabel(QuestAuthoringSession.TaskDraft task) {
-        return isTaskEditable(task) ? taskChoice(task).label : "Unsupported: " + task.type;
+        return isTaskEditable(task)
+            ? editorTypeLabel(EditorTypeRegistry.Kind.TASK, task.type, taskChoice(task).label).getString()
+            : Component.translatable("gui.theseus.editor.unsupported_type", task.type).getString();
     }
 
     private String rewardDisplayLabel(QuestAuthoringSession.RewardDraft reward) {
-        return isRewardEditable(reward) ? rewardChoice(reward).label : "Unsupported: " + reward.type;
+        return isRewardEditable(reward)
+            ? editorTypeLabel(EditorTypeRegistry.Kind.REWARD, reward.type, rewardChoice(reward).label).getString()
+            : Component.translatable("gui.theseus.editor.unsupported_type", reward.type).getString();
     }
 
     private Item taskDisplayIcon(QuestAuthoringSession.TaskDraft task) {
@@ -4556,10 +4684,14 @@ public final class QuestScreen extends Screen {
 
     private String unavailableReason(EditorTypeRegistry.Kind kind, String type) {
         return switch (editorResolution(kind, type).availability()) {
-            case EXECUTABLE_READ_ONLY -> "The server can execute '" + type + "', but this client has no editable descriptor";
-            case UNAVAILABLE_ON_SERVER -> "This client can edit '" + type + "', but the server does not provide it";
-            case UNKNOWN_CONFIGURATION -> "Unknown " + kind.name().toLowerCase(java.util.Locale.ROOT) + " type '" + type + "'";
-            case EXECUTABLE_EDITABLE -> "Editable";
+            case EXECUTABLE_READ_ONLY -> Component.translatable("gui.theseus.editor.server_read_only_type", type).getString();
+            case UNAVAILABLE_ON_SERVER -> Component.translatable("gui.theseus.editor.client_only_type", type).getString();
+            case UNKNOWN_CONFIGURATION -> Component.translatable(
+                "gui.theseus.editor.unknown_type",
+                Component.translatable("gui.theseus.editor.kind." + kind.name().toLowerCase(java.util.Locale.ROOT)),
+                type
+            ).getString();
+            case EXECUTABLE_EDITABLE -> Component.translatable("gui.theseus.editor.editable").getString();
         };
     }
 
@@ -4670,7 +4802,7 @@ public final class QuestScreen extends Screen {
         if (quest == null) {
             graphics.text(
                 font,
-                Component.literal("Select a quest"),
+                Component.translatable("gui.theseus.editor.select_a_quest"),
                 x,
                 42,
                 0xFFAAAAAA,
@@ -4807,7 +4939,7 @@ public final class QuestScreen extends Screen {
             .count();
         graphics.text(
             font,
-            Component.literal("Quest progress"),
+            Component.translatable("gui.theseus.editor.quest_progress"),
             x,
             y,
             ClientThemeLoader.active().questDetails().summaryTitle(),
@@ -4843,7 +4975,7 @@ public final class QuestScreen extends Screen {
         y += 4;
         graphics.text(
             font,
-            Component.literal("Status"),
+            Component.translatable("gui.theseus.editor.status"),
             x,
             y,
             0xFFFFD966,
@@ -4852,7 +4984,7 @@ public final class QuestScreen extends Screen {
         y += 14;
         graphics.text(
             font,
-            Component.literal(status(quest).trim()),
+            status(quest),
             x,
             y,
             nodeStateColor(quest),
@@ -4897,12 +5029,13 @@ public final class QuestScreen extends Screen {
         if (!active.isEmpty()) {
             y = drawSectionHeading(
                 graphics,
-                "In progress",
+                Component.translatable("quest.theseus.in_progress").getString(),
                 active.size(),
                 x,
                 y,
                 contentWidth,
-                0xFF4C9AFF
+                0xFF4C9AFF,
+                false
             );
             for (QuestDefinition.Task task : active) {
                 y = drawTaskTree(
@@ -4920,12 +5053,13 @@ public final class QuestScreen extends Screen {
         if (!complete.isEmpty()) {
             y = drawSectionHeading(
                 graphics,
-                "Completed",
+                Component.translatable("quest.theseus.completed").getString(),
                 complete.size(),
                 x,
                 y + (active.isEmpty() ? 0 : 4),
                 contentWidth,
-                0xFF55D86A
+                0xFF55D86A,
+                true
             );
             for (QuestDefinition.Task task : complete) {
                 y = drawTaskTree(
@@ -4942,7 +5076,7 @@ public final class QuestScreen extends Screen {
         }
         if (active.isEmpty() && complete.isEmpty()) graphics.text(
             font,
-            Component.literal("No tasks"),
+            Component.translatable("gui.theseus.editor.no_tasks"),
             x,
             y,
             0xFF9AA1AC,
@@ -4968,9 +5102,13 @@ public final class QuestScreen extends Screen {
             quest.definition, states, group
         );
         List<Component> lines = explanation.blockers().isEmpty()
-            ? List.of(Component.literal(explanation.summary()))
-            : explanation.blockers().stream().<Component>map(blocker -> Component.literal(
-                (blocker.selectable() ? "Open " : "Complete ") + blocker.label()
+            ? List.of(Component.translatable(
+                "gui.theseus.quest.locked_policy_visibility",
+                visibilityLabel(quest.definition.settings().hiddenUntil())
+            ))
+            : explanation.blockers().stream().<Component>map(blocker -> Component.translatable(
+                blocker.selectable() ? "gui.theseus.quest.open_prerequisite" : "gui.theseus.quest.complete_prerequisite",
+                blocker.label()
             )).toList();
         int textWidth = width - 14;
         int height =
@@ -4983,8 +5121,9 @@ public final class QuestScreen extends Screen {
         graphics.outline(x, y, width, height, 0xFFFFD966);
         graphics.text(
             font,
-            Component.literal(explanation.kind() == QuestSurfaceLayout.LockKind.DEPENDENCY
-                ? "Locked — prerequisites" : "Locked — policy"),
+            Component.translatable(explanation.kind() == QuestSurfaceLayout.LockKind.DEPENDENCY
+                ? "gui.theseus.quest.locked_prerequisites"
+                : "gui.theseus.quest.locked_policy"),
             x + 7,
             y + 5,
             0xFFFFD966,
@@ -5045,7 +5184,7 @@ public final class QuestScreen extends Screen {
         if (quest.definition.rewards().isEmpty()) {
             graphics.text(
                 font,
-                Component.literal("No rewards"),
+                Component.translatable("gui.theseus.editor.no_rewards"),
                 x,
                 y,
                 0xFF9AA1AC,
@@ -5055,12 +5194,13 @@ public final class QuestScreen extends Screen {
         }
         y = drawSectionHeading(
             graphics,
-            quest.claimed ? "Claimed" : "Quest rewards",
+            (quest.claimed ? Component.translatable("quest.theseus.claimed") : Component.translatable("gui.theseus.rewards.title")).getString(),
             quest.definition.rewards().size(),
             x,
             y,
             contentWidth,
-            quest.claimed ? 0xFF55D86A : 0xFFFFD966
+            quest.claimed ? 0xFF55D86A : 0xFFFFD966,
+            quest.claimed
         );
         for (QuestDefinition.Reward reward : quest.definition
             .rewards()
@@ -5181,9 +5321,9 @@ public final class QuestScreen extends Screen {
         int x,
         int y,
         int width,
-        int color
+        int color,
+        boolean completed
     ) {
-        boolean completed = title.equals("Completed");
         Identifier left = completed ? HEADING_COMPLETED_LEFT : HEADING_IN_PROGRESS_LEFT;
         Identifier right = completed ? HEADING_COMPLETED_RIGHT : HEADING_IN_PROGRESS_RIGHT;
         int titleWidth = font.width(title) + 14;
@@ -5860,7 +6000,7 @@ public final class QuestScreen extends Screen {
                 if (!card.bounds().contains(mouseX, mouseY)) continue;
                 List<QuestContextMenu.Entry> entries = new ArrayList<>();
                 entries.add(QuestContextMenu.Entry.item(
-                    "Copy task path",
+                    editorString("gui.theseus.editor.copy_task_path"),
                     "",
                     true,
                     false,
@@ -5868,7 +6008,7 @@ public final class QuestScreen extends Screen {
                 ));
                 entries.add(QuestContextMenu.Entry.separator());
                 entries.add(QuestContextMenu.Entry.item(
-                    "Reset task progress",
+                    editorString("gui.theseus.editor.reset_task_progress"),
                     "",
                     true,
                     true,
@@ -5889,7 +6029,7 @@ public final class QuestScreen extends Screen {
                 if (!card.bounds().contains(mouseX, mouseY)) continue;
                 List<QuestContextMenu.Entry> entries = new ArrayList<>();
                 entries.add(QuestContextMenu.Entry.item(
-                    "Copy reward ID",
+                    editorString("gui.theseus.editor.copy_reward_id"),
                     "",
                     true,
                     false,
@@ -5897,7 +6037,7 @@ public final class QuestScreen extends Screen {
                 ));
                 entries.add(QuestContextMenu.Entry.separator());
                 entries.add(QuestContextMenu.Entry.item(
-                    "Reset reward progress",
+                    editorString("gui.theseus.editor.reset_reward_progress"),
                     "",
                     true,
                     true,
@@ -5927,10 +6067,12 @@ public final class QuestScreen extends Screen {
         graphFocused = true;
         List<QuestContextMenu.Entry> entries = new ArrayList<>();
         if (!mode.isAuthoring()) {
-            entries.add(QuestContextMenu.Entry.item("Open details", "Enter", true, false, () -> openQuestDetails(quest)));
-            entries.add(QuestContextMenu.Entry.item("Copy quest ID", "", true, false, () -> copyQuestId(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.open_details"), "Enter", true, false, () -> openQuestDetails(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.copy_quest_id"), "", true, false, () -> copyQuestId(quest)));
             entries.add(QuestContextMenu.Entry.item(
-                quest != null && quest.pinned ? "Unpin quest" : "Pin quest",
+                editorString(quest != null && quest.pinned
+                    ? "gui.theseus.editor.unpin_quest"
+                    : "gui.theseus.editor.pin_quest"),
                 "",
                 quest != null && quest.unlocked,
                 false,
@@ -5938,21 +6080,21 @@ public final class QuestScreen extends Screen {
             ));
         } else {
             if (canOpenQuestFile(quest)) entries.add(QuestContextMenu.Entry.item(
-                "Open quest file",
+                editorString("gui.theseus.editor.open_quest_file"),
                 "",
                 true,
                 false,
                 () -> requestQuestFileOpen(quest)
             ));
-            entries.add(QuestContextMenu.Entry.item("Edit quest", "Enter", true, false, () -> openQuestEditorFromMenu(quest)));
-            entries.add(QuestContextMenu.Entry.item("Copy quest ID", "", true, false, () -> copyQuestId(quest)));
-            entries.add(QuestContextMenu.Entry.item("Reset quest progress", "", true, true, () -> resetQuestProgressFromMenu(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.edit_quest"), "Enter", true, false, () -> openQuestEditorFromMenu(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.copy_quest_id"), "", true, false, () -> copyQuestId(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.reset_quest_progress"), "", true, true, () -> resetQuestProgressFromMenu(quest)));
             entries.add(QuestContextMenu.Entry.separator());
-            entries.add(QuestContextMenu.Entry.item("Copy quest", "Ctrl+C", true, false, () -> copyQuestToClipboard(quest)));
-            entries.add(QuestContextMenu.Entry.item("Cut quest", "Ctrl+X", true, false, () -> cutQuestToClipboard(quest)));
-            entries.add(QuestContextMenu.Entry.item("Snap selected quest", "", true, false, () -> snapQuestFromMenu(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.copy_quest"), "Ctrl+C", true, false, () -> copyQuestToClipboard(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.cut_quest"), "Ctrl+X", true, false, () -> cutQuestToClipboard(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.snap_selected_quest"), "", true, false, () -> snapQuestFromMenu(quest)));
             entries.add(QuestContextMenu.Entry.separator());
-            entries.add(QuestContextMenu.Entry.item("Delete quest", "", true, true, () -> deleteQuestFromMenu(quest)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.delete_quest"), "", true, true, () -> deleteQuestFromMenu(quest)));
         }
         showContextMenu(mouseX, mouseY, entries);
     }
@@ -5960,22 +6102,24 @@ public final class QuestScreen extends Screen {
     private void openEmptyGraphContextMenu(double worldX, double worldY, int mouseX, int mouseY) {
         List<QuestContextMenu.Entry> entries = new ArrayList<>();
         if (mode.isAuthoring()) {
-            entries.add(QuestContextMenu.Entry.item("Add quest here", "", true, false, () ->
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.add_quest_here"), "", true, false, () ->
                 requestDiscard(() -> beginCreateQuest(worldX, worldY))
             ));
-            if (hasClipboardContent()) entries.add(QuestContextMenu.Entry.item("Paste here", "Ctrl+V", true, false, () -> {
+            if (hasClipboardContent()) entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.paste_here"), "Ctrl+V", true, false, () -> {
                 if (clipboardMove) sendClipboardPaste(false, null, worldX, worldY);
                 else openPasteIdPrompt(worldX, worldY);
             }));
-            entries.add(QuestContextMenu.Entry.item("Fit to content", "Home", true, false, this::fitGraphToContent));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.fit_to_content"), "Home", true, false, this::fitGraphToContent));
             entries.add(QuestContextMenu.Entry.separator());
-            entries.add(QuestContextMenu.Entry.item("Select tool", "S", true, false, () -> setEditorTool(EditorTool.SELECT)));
-            entries.add(QuestContextMenu.Entry.item("Hand tool", "H", true, false, () -> setEditorTool(EditorTool.HAND)));
-            entries.add(QuestContextMenu.Entry.item("Add tool", "A", true, false, () -> setEditorTool(EditorTool.ADD)));
-            entries.add(QuestContextMenu.Entry.item("Link tool", "L", true, false, () -> setEditorTool(EditorTool.LINK)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.select_tool"), "S", true, false, () -> setEditorTool(EditorTool.SELECT)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.hand_tool"), "H", true, false, () -> setEditorTool(EditorTool.HAND)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.add_tool"), "A", true, false, () -> setEditorTool(EditorTool.ADD)));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.link_tool"), "L", true, false, () -> setEditorTool(EditorTool.LINK)));
             entries.add(QuestContextMenu.Entry.separator());
             entries.add(QuestContextMenu.Entry.item(
-                TheseusClientOptions.showGrid() ? "Hide grid" : "Show grid",
+                editorString(TheseusClientOptions.showGrid()
+                    ? "gui.theseus.editor.hide_graph_grid"
+                    : "gui.theseus.editor.show_graph_grid"),
                 "",
                 true,
                 false,
@@ -5985,7 +6129,9 @@ public final class QuestScreen extends Screen {
                 }
             ));
             entries.add(QuestContextMenu.Entry.item(
-                TheseusClientOptions.snapToGrid() ? "Disable snap to grid" : "Enable snap to grid",
+                editorString(TheseusClientOptions.snapToGrid()
+                    ? "gui.theseus.editor.disable_snap_to_grid"
+                    : "gui.theseus.editor.enable_snap_to_grid"),
                 "",
                 true,
                 false,
@@ -5995,7 +6141,7 @@ public final class QuestScreen extends Screen {
                 }
             ));
         } else {
-            entries.add(QuestContextMenu.Entry.item("Fit to content", "Home", true, false, this::fitGraphToContent));
+            entries.add(QuestContextMenu.Entry.item(editorString("gui.theseus.editor.fit_to_content"), "Home", true, false, this::fitGraphToContent));
         }
         showContextMenu(mouseX, mouseY, entries);
     }
@@ -6019,21 +6165,23 @@ public final class QuestScreen extends Screen {
         if (authoring.open) {
             entries.add(QuestContextMenu.Entry.separator());
             entries.add(QuestContextMenu.Entry.item(
-                "Import quests",
+                editorString("gui.theseus.editor.import_quests"),
                 "",
                 true,
                 false,
                 this::openNativeFilePicker
             ));
             entries.add(QuestContextMenu.Entry.item(
-                "Fit graph to content",
+                editorString("gui.theseus.editor.fit_graph_to_content"),
                 "Home",
                 true,
                 false,
                 this::fitGraphToContent
             ));
             entries.add(QuestContextMenu.Entry.item(
-                TheseusClientOptions.showGrid() ? "Hide grid" : "Show grid",
+                editorString(TheseusClientOptions.showGrid()
+                    ? "gui.theseus.editor.hide_graph_grid"
+                    : "gui.theseus.editor.show_graph_grid"),
                 "",
                 true,
                 false,
@@ -6043,7 +6191,9 @@ public final class QuestScreen extends Screen {
                 }
             ));
             entries.add(QuestContextMenu.Entry.item(
-                TheseusClientOptions.snapToGrid() ? "Disable snap to grid" : "Enable snap to grid",
+                editorString(TheseusClientOptions.snapToGrid()
+                    ? "gui.theseus.editor.disable_snap_to_grid"
+                    : "gui.theseus.editor.enable_snap_to_grid"),
                 "",
                 true,
                 false,
@@ -6104,8 +6254,14 @@ public final class QuestScreen extends Screen {
             boolean active = entry.enabled() &&
                 (row.entryIndex() == contextMenu.hoveredIndex() || row.entryIndex() == contextMenu.selectedIndex());
             if (active) graphics.fill(row.x(), row.y(), row.x() + row.width(), row.y() + row.height(), 0xFF454C58);
-            int labelColor = !entry.enabled() ? 0xFF68717F : entry.danger() ? 0xFFFF9999 : 0xFFFFFFFF;
-            graphics.text(font, Component.literal(entry.label()), row.x() + 6, row.y() + 6, labelColor, false);
+            if (row.entryIndex() == contextMenu.selectedIndex()) {
+                graphics.outline(row.x(), row.y(), row.width(), row.height(), ClientThemeLoader.active().genericControls().accent());
+            }
+            int labelColor = !entry.enabled() ? 0xFF9AA4B2 : entry.danger() ? 0xFFFF9999 : 0xFFFFFFFF;
+            Component label = entry.enabled()
+                ? Component.literal(entry.label())
+                : Component.translatable("gui.theseus.editor.disabled_menu_label", entry.label());
+            graphics.text(font, label, row.x() + 6, row.y() + 6, labelColor, false);
             if (!entry.shortcut().isBlank()) {
                 graphics.text(font, Component.literal(entry.shortcut()), row.x() + row.width() - font.width(entry.shortcut()) - 6, row.y() + 6, 0xFF9AA4B2, false);
             }
@@ -6115,8 +6271,9 @@ public final class QuestScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         boolean modalOpen = modalHost.blocksInput();
+        if (modalOpen && handleChooserKey(event)) return true;
         if (!modalOpen && contextMenu != null && contextMenu.isOpen()) {
-            contextMenu.keyPressed(event.key());
+            contextMenu.keyPressed(event.key(), event.hasShiftDown());
             return true;
         }
         if (!modalOpen && chapterListFocused && !isTextEditing()) {
@@ -6257,6 +6414,8 @@ public final class QuestScreen extends Screen {
             && !event.hasControlDown()
             && !event.hasAltDown()
             && event.key() == InputConstants.KEY_HOME) {
+            graphFocused = true;
+            setFocused(null);
             fitGraphToContent();
             return true;
         }
@@ -6287,6 +6446,16 @@ public final class QuestScreen extends Screen {
                 return true;
             }
         }
+        if (!modalOpen && graphFocused && !authoring.open && !isTextEditing()
+            && !event.hasControlDown() && !event.hasAltDown()) {
+            if (moveGraphSelection(event.key())) return true;
+            if ((event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER)
+                && selected() != null) {
+                if (mode.isAuthoring()) openQuestEditorFromMenu(selected());
+                else openQuestDetails(selected());
+                return true;
+            }
+        }
         if (!event.isEscape()) return super.keyPressed(event);
         if (authoring.open) {
             requestDiscard(() -> {
@@ -6297,6 +6466,104 @@ public final class QuestScreen extends Screen {
         }
         onClose();
         return true;
+    }
+
+    private boolean handleChooserKey(KeyEvent event) {
+        boolean taskChooser = modalHost.isTaskChooserOpen() || modalHost.isNestedTaskChooserOpen();
+        boolean rewardChooser = modalHost.isRewardChooserOpen() || modalHost.isNestedRewardChooserOpen();
+        if (!taskChooser && !rewardChooser) return false;
+        int direction = switch (event.key()) {
+            case InputConstants.KEY_UP -> -1;
+            case InputConstants.KEY_DOWN -> 1;
+            case InputConstants.KEY_TAB -> event.hasShiftDown() ? -1 : 1;
+            default -> 0;
+        };
+        if (direction != 0) {
+            if (taskChooser) {
+                taskChooserSelectedIndex = Math.floorMod(taskChooserSelectedIndex + direction, TASK_CHOICES.size());
+                if (taskChooserSelectedIndex < taskChooserScroll) taskChooserScroll = taskChooserSelectedIndex;
+                else if (taskChooserSelectedIndex >= taskChooserScroll + TASK_CHOOSER_VISIBLE) {
+                    taskChooserScroll = taskChooserSelectedIndex - TASK_CHOOSER_VISIBLE + 1;
+                }
+            } else {
+                int choiceCount = modalHost.isNestedRewardChooserOpen() ? REWARD_CHOICES.size() - 1 : REWARD_CHOICES.size();
+                rewardChooserSelectedIndex = Math.floorMod(rewardChooserSelectedIndex + direction, choiceCount);
+            }
+            return true;
+        }
+        if (event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER) {
+            if (taskChooser) chooseTask(taskChooserSelectedIndex, modalHost.isNestedTaskChooserOpen());
+            else chooseReward(rewardChooserSelectedIndex, modalHost.isNestedRewardChooserOpen());
+            return true;
+        }
+        return false;
+    }
+
+    private boolean moveGraphSelection(int keyCode) {
+        int directionX = switch (keyCode) {
+            case InputConstants.KEY_LEFT -> -1;
+            case InputConstants.KEY_RIGHT -> 1;
+            default -> 0;
+        };
+        int directionY = switch (keyCode) {
+            case InputConstants.KEY_UP -> -1;
+            case InputConstants.KEY_DOWN -> 1;
+            default -> 0;
+        };
+        if (directionX == 0 && directionY == 0) return false;
+        List<ClientQuest> visible = visibleQuests();
+        if (visible.isEmpty()) return true;
+        ClientQuest current = selected();
+        if (current == null || !visible.contains(current)) {
+            selectedQuestId = visible.getFirst().definition.id();
+            rebuildWidgets();
+            return true;
+        }
+        QuestDefinition.GroupDisplay currentPosition = current.definition.position(group);
+        ClientQuest best = null;
+        double bestScore = Double.MAX_VALUE;
+        for (ClientQuest candidate : visible) {
+            if (candidate == current) continue;
+            QuestDefinition.GroupDisplay position = candidate.definition.position(group);
+            double deltaX = position.x() - currentPosition.x();
+            double deltaY = position.y() - currentPosition.y();
+            double forward = deltaX * directionX + deltaY * directionY;
+            if (forward <= 0) continue;
+            double cross = Math.abs(deltaX * directionY - deltaY * directionX);
+            double score = forward + cross * 2.0;
+            if (score < bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+        if (best != null) {
+            selectedQuestId = best.definition.id();
+            rebuildWidgets();
+        }
+        return true;
+    }
+
+    private void chooseTask(int index, boolean nested) {
+        if (index < 0 || index >= TASK_CHOICES.size()) return;
+        TaskChoice choice = TASK_CHOICES.get(index);
+        if (!choice.implemented) return;
+        QuestAuthoringSession.TaskDraft previousTask = authoring.editingTask;
+        if (nested) addNestedDraftTask(choice);
+        else addDraftTask(choice);
+        if (authoring.editingTask != previousTask) {
+            modalHost.close();
+            modalHost.open(QuestModalHost.Modal.TASK_EDITOR);
+        }
+        rebuildWidgets();
+    }
+
+    private void chooseReward(int index, boolean nested) {
+        List<RewardChoice> choices = nested
+            ? REWARD_CHOICES.stream().filter(choice -> !choice.type.equals("theseus:selectable")).toList()
+            : REWARD_CHOICES;
+        if (index < 0 || index >= choices.size()) return;
+        addDraftReward(choices.get(index), nested);
+        rebuildWidgets();
     }
 
     private void closeModalOnEscape() {
@@ -6447,13 +6714,13 @@ public final class QuestScreen extends Screen {
     private void addPasteIdPromptWidgets() {
         int left = (width - 280) / 2;
         int top = (height - 130) / 2;
-        pasteIdField = new EditBox(font, left + 14, top + 52, 252, 18, Component.literal("New quest ID"));
+        pasteIdField = new EditBox(font, left + 14, top + 52, 252, 18, Component.translatable("gui.theseus.editor.new_quest_id"));
         pasteIdField.setValue(clipboardSourceId + "_copy");
         addRenderableWidget(pasteIdField);
         setInitialFocus(pasteIdField);
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 14, top + 88).withSize(100, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Cancel")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
                 pasteIdField = null;
                 modalHost.close();
@@ -6462,7 +6729,7 @@ public final class QuestScreen extends Screen {
         }));
         addRenderableWidget(Widgets.button(widget -> {
             widget.withPosition(left + 166, top + 88).withSize(100, 22);
-            widget.withRenderer(WidgetRenderers.text(Component.literal("Paste")));
+            widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.paste")));
             widget.withCallback(this::confirmPasteIdPrompt);
         }));
     }
@@ -6844,17 +7111,8 @@ public final class QuestScreen extends Screen {
         }
         int row = (int) (event.y() - top - 2) / TASK_CHOOSER_ROW_HEIGHT;
         if (row >= 0 && row < visibleCount) {
-            TaskChoice choice = TASK_CHOICES.get(taskChooserScroll + row);
-            if (choice.implemented) {
-                QuestAuthoringSession.TaskDraft previousTask = authoring.editingTask;
-                if (nested) addNestedDraftTask(choice);
-                else addDraftTask(choice);
-                if (authoring.editingTask != previousTask) {
-                    modalHost.close();
-                    modalHost.open(QuestModalHost.Modal.TASK_EDITOR);
-                }
-                rebuildWidgets();
-            }
+            taskChooserSelectedIndex = taskChooserScroll + row;
+            chooseTask(taskChooserSelectedIndex, nested);
         }
         return true;
     }
@@ -6875,8 +7133,8 @@ public final class QuestScreen extends Screen {
         }
         int row = (int) (event.y() - top - 2) / TASK_CHOOSER_ROW_HEIGHT;
         if (row >= 0 && row < choices.size()) {
-            addDraftReward(choices.get(row), nested);
-            rebuildWidgets();
+            rewardChooserSelectedIndex = row;
+            chooseReward(rewardChooserSelectedIndex, nested);
         }
         return true;
     }
@@ -7137,14 +7395,16 @@ public final class QuestScreen extends Screen {
         boolean docked = TheseusClientOptions.defaultMinimapMode() == TheseusClientOptions.MinimapMode.DOCKED;
         List<QuestContextMenu.Entry> entries = new ArrayList<>();
         entries.add(QuestContextMenu.Entry.item(
-            docked ? "Undock minimap" : "Dock minimap",
+            editorString(docked
+                ? "gui.theseus.editor.undock_minimap"
+                : "gui.theseus.editor.dock_minimap"),
             "",
             true,
             false,
             this::toggleMinimapDocking
         ));
         entries.add(QuestContextMenu.Entry.item(
-            "Hide minimap",
+            editorString("gui.theseus.editor.hide_minimap"),
             "",
             true,
             false,
@@ -7316,6 +7576,7 @@ public final class QuestScreen extends Screen {
                 0,
                 Math.min(max, taskChooserScroll - (int) Math.signum(scrollY))
             );
+            taskChooserSelectedIndex = taskChooserScroll;
             return true;
         }
         if (modalHost.is(QuestModalHost.Modal.NESTED_TASKS)) {
@@ -7333,6 +7594,7 @@ public final class QuestScreen extends Screen {
                 0,
                 Math.min(max, taskChooserScroll - (int) Math.signum(scrollY))
             );
+            taskChooserSelectedIndex = taskChooserScroll;
             return true;
         }
         if (modalHost.blocksInput()) return true;
@@ -7390,11 +7652,11 @@ public final class QuestScreen extends Screen {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
-    private static String status(ClientQuest quest) {
-        if (!quest.unlocked) return "[Locked]";
-        if (quest.claimed) return "[Claimed]";
-        if (quest.complete) return "[Complete]";
-        return "[Active]";
+    private static Component status(ClientQuest quest) {
+        if (!quest.unlocked) return Component.translatable("quest.theseus.locked");
+        if (quest.claimed) return Component.translatable("quest.theseus.completed_claimed");
+        if (quest.complete) return Component.translatable("quest.theseus.completed");
+        return Component.translatable("quest.theseus.in_progress");
     }
 
     private static int nodeStateColor(ClientQuest quest) {
@@ -7431,14 +7693,14 @@ public final class QuestScreen extends Screen {
     }
 
     private enum DetailTab {
-        OVERVIEW("Overview"),
-        TASKS("Tasks"),
-        REWARDS("Rewards");
+        OVERVIEW("gui.theseus.editor.overview"),
+        TASKS("gui.theseus.editor.tasks"),
+        REWARDS("gui.theseus.editor.rewards");
 
-        private final String label;
+        private final String translationKey;
 
-        DetailTab(String label) {
-            this.label = label;
+        DetailTab(String translationKey) {
+            this.translationKey = translationKey;
         }
     }
 
