@@ -54,6 +54,17 @@ public final class QuestMutationCoordinator {
         pending = null;
     }
 
+    /**
+     * Detaches a request whose server outcome became unknowable when the
+     * connection closed.  The caller may retain the returned request for
+     * presentation, but it must not be replayed automatically.
+     */
+    public Pending connectionLost() {
+        Pending interrupted = pending;
+        pending = null;
+        return interrupted;
+    }
+
     public QuestMutationCoordinator copy() {
         return new QuestMutationCoordinator(nextRequestId, pending == null ? null : pending.copy());
     }

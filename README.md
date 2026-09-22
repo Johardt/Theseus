@@ -48,11 +48,8 @@ with the world. The quest screen is built into Theseus; Hermes is not required.
 
 ## Documentation
 
-- [Authoring quests](docs/AUTHORING.md)
 - [Compatibility and intentional changes](docs/COMPATIBILITY.md)
-- [Import, clipboard, and export](docs/IMPORT-CLIPBOARD-EXPORT.md)
 - [Add-on extension guide](docs/EXTENSIONS.md)
-- [Diagnostics reference](docs/DIAGNOSTICS.md)
 - [Backup and recovery](docs/BACKUP-RECOVERY.md)
 - [Known limitations](docs/LIMITATIONS.md)
 - [Manual smoke test](smoke-test/README.md)

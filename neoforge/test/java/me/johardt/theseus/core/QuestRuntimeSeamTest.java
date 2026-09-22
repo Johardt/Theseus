@@ -10,6 +10,8 @@ import com.google.gson.JsonParser;
 import me.johardt.theseus.client.MinecraftTestBootstrap;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +23,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class QuestRuntimeSeamTest {
 
@@ -153,6 +157,122 @@ class QuestRuntimeSeamTest {
         assertTrue(runtime.isComplete(null, catalog.quests().get("composite_contract")));
     }
 
+    @ParameterizedTest(name = "{0} requires dedicated-server editor permission")
+    @EnumSource(QuestMutation.Kind.class)
+    void unauthorizedDedicatedServerMutationLeavesQuestFilesUnchanged(QuestMutation.Kind kind) throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("protected", questDocument("Protected", true));
+        documents.createQuest("dependent", questDocument("Dependent", false));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        FakeWorld dedicatedWorld = new FakeWorld(catalog, false, false);
+        Path progressFile = directory.resolve("world/data/theseus_progress.json");
+        Files.createDirectories(progressFile.getParent());
+        Files.writeString(progressFile, "{\"sentinel\":true}\n");
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new FileProgressStore(progressFile),
+            dedicatedWorld,
+            new RecordingSync()
+        );
+        Map<String, String> before = fileContents(directory);
+
+        QuestRuntime.MutationResult result = runtime.applyEditorMutation(
+            null,
+            QuestMutation.of(kind, unauthorizedRequest(kind))
+        );
+
+        assertFalse(result.success());
+        assertEquals("You do not have permission to edit quests", result.message());
+        assertEquals(1, dedicatedWorld.canEditChecks);
+        assertFalse(dedicatedWorld.isIntegratedServer());
+        assertEquals(before, fileContents(directory));
+
+        FakeWorld authorizedDedicatedWorld = new FakeWorld(catalog, true, false);
+        QuestRuntime authorizedRuntime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new FileProgressStore(progressFile),
+            authorizedDedicatedWorld,
+            new RecordingSync()
+        );
+        assertTrue(authorizedRuntime.applyEditorMutation(
+            null,
+            QuestMutation.of(kind, unauthorizedRequest(kind))
+        ).success(), "security fixture must be a valid mutating request");
+        assertFalse(before.equals(fileContents(directory)), "authorized fixture must change persistent state");
+    }
+
+    private static JsonObject unauthorizedRequest(QuestMutation.Kind kind) {
+        JsonObject request = new JsonObject();
+        switch (kind) {
+            case CREATE_QUEST -> {
+                request.addProperty("id", "unauthorized_create");
+                request.add("document", questDocument("Created", false));
+            }
+            case UPDATE_QUEST -> {
+                QuestDraft draft = QuestDraft.open("protected", questDocument("Protected", true));
+                draft.setDisplayBasics("Unauthorized update", null, null, null);
+                return draft.updateMutation();
+            }
+            case IMPORT_QUESTS -> {
+                JsonObject files = new JsonObject();
+                files.add("unauthorized_import", questDocument("Imported", false));
+                request.add("files", files);
+            }
+            case PASTE_QUEST -> {
+                request.addProperty("source_id", "protected");
+                request.addProperty("id", "unauthorized_copy");
+            }
+            case DELETE_QUEST -> request.addProperty("id", "protected");
+            case CHAPTER_ACTION -> {
+                request.addProperty("operation", "create");
+                request.addProperty("name", "Unauthorized");
+            }
+            case SET_DEPENDENCY -> {
+                request.addProperty("prerequisite", "protected");
+                request.addProperty("dependent", "dependent");
+            }
+            case REMOVE_QUEST_GROUP -> {
+                request.addProperty("id", "protected");
+                request.addProperty("group", "Other");
+            }
+            case RESET_PROGRESS -> {
+                request.addProperty("scope", "quest");
+                request.addProperty("quest", "protected");
+            }
+        }
+        return request;
+    }
+
+    private static JsonObject questDocument(String title, boolean secondChapter) {
+        JsonObject document = JsonParser.parseString("""
+            {
+              "display":{"title":"placeholder","groups":{"Main":{"position":[0,0]}}},
+              "tasks":{},
+              "rewards":{}
+            }
+            """).getAsJsonObject();
+        document.getAsJsonObject("display").addProperty("title", title);
+        if (secondChapter) {
+            JsonObject placement = new JsonObject();
+            placement.add("position", JsonParser.parseString("[27,0]"));
+            document.getAsJsonObject("display").getAsJsonObject("groups").add("Other", placement);
+        }
+        return document;
+    }
+
+    private static Map<String, String> fileContents(Path root) throws IOException {
+        Map<String, String> contents = new LinkedHashMap<>();
+        try (var paths = Files.walk(root)) {
+            for (Path path : paths.filter(Files::isRegularFile).sorted().toList()) {
+                contents.put(root.relativize(path).toString(), Files.readString(path));
+            }
+        }
+        return contents;
+    }
+
     private static JsonObject compatibilityFixture() throws Exception {
         try (var stream = QuestRuntimeSeamTest.class.getResourceAsStream("/fixtures/compatibility/current_builtins.json")) {
             if (stream == null) throw new AssertionError("Missing current built-in fixture");
@@ -205,7 +325,10 @@ class QuestRuntimeSeamTest {
 
     private static final class FakeWorld implements QuestWorld {
         private final QuestCatalog catalog;
+        private final boolean canEdit;
+        private final boolean integratedServer;
         private int catalogLoads;
+        private int canEditChecks;
         private int experienceGranted;
         private boolean experienceWasPoints;
         private final java.util.Map<String, Integer> itemCounts = new java.util.LinkedHashMap<>();
@@ -213,7 +336,13 @@ class QuestRuntimeSeamTest {
         private String generatedLootTable;
 
         private FakeWorld(QuestCatalog catalog) {
+            this(catalog, true, true);
+        }
+
+        private FakeWorld(QuestCatalog catalog, boolean canEdit, boolean integratedServer) {
             this.catalog = catalog;
+            this.canEdit = canEdit;
+            this.integratedServer = integratedServer;
         }
 
         @Override
@@ -234,12 +363,13 @@ class QuestRuntimeSeamTest {
 
         @Override
         public boolean canEdit(ServerPlayer player) {
-            return true;
+            canEditChecks++;
+            return canEdit;
         }
 
         @Override
         public boolean isIntegratedServer() {
-            return true;
+            return integratedServer;
         }
 
         @Override

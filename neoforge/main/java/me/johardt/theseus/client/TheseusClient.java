@@ -17,6 +17,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -47,6 +48,8 @@ public final class TheseusClient {
     );
     private static JsonObject snapshot = new JsonObject();
     private static boolean trackerCollapsed;
+    private static QuestScreen disconnectedEditor;
+    private static String disconnectedServer;
 
     /** Opens the quest screen through the normal server-backed flow. */
     public static void openQuestScreen() {
@@ -67,6 +70,8 @@ public final class TheseusClient {
         modBus.addListener(ClientThemeLoader::register);
         modBus.addListener(QuestTutorialContentLoader::register);
         NeoForge.EVENT_BUS.addListener(this::clientTick);
+        NeoForge.EVENT_BUS.addListener(this::clientLoggedIn);
+        NeoForge.EVENT_BUS.addListener(this::clientLoggedOut);
     }
 
     private void registerKeys(RegisterKeyMappingsEvent event) {
@@ -92,11 +97,9 @@ public final class TheseusClient {
                 payload.open() ||
                 Minecraft.getInstance().gui.screen() instanceof QuestScreen
             ) {
-                QuestScreen previous =
-                    Minecraft.getInstance().gui.screen() instanceof
-                        QuestScreen screen
-                        ? screen
-                        : null;
+                QuestScreen previous = Minecraft.getInstance().gui.screen() instanceof QuestScreen screen
+                    ? screen
+                    : payload.open() ? takeDisconnectedEditor() : null;
                 QuestScreen screen = new QuestScreen(snapshot, previous);
                 Minecraft.getInstance().gui.setScreen(screen);
                 if ("index".equals(snapshotKind(snapshot))) screen.requestActiveChapter();
@@ -168,5 +171,45 @@ public final class TheseusClient {
             trackerCollapsed = !TheseusClientOptions.trackerCollapsed();
             TheseusClientOptions.setTrackerCollapsed(trackerCollapsed);
         }
+    }
+
+    private void clientLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        snapshot = new JsonObject();
+        if (!(Minecraft.getInstance().gui.screen() instanceof QuestScreen screen)) {
+            clearDisconnectedEditor();
+            return;
+        }
+        String server = serverKey(event.getConnection());
+        if (server == null) {
+            clearDisconnectedEditor();
+            return;
+        }
+        screen.handleConnectionLost();
+        disconnectedEditor = screen;
+        disconnectedServer = server;
+    }
+
+    private void clientLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
+        if (disconnectedEditor != null
+            && !java.util.Objects.equals(disconnectedServer, serverKey(event.getConnection()))) {
+            clearDisconnectedEditor();
+        }
+    }
+
+    private static QuestScreen takeDisconnectedEditor() {
+        QuestScreen retained = disconnectedEditor;
+        clearDisconnectedEditor();
+        return retained;
+    }
+
+    private static void clearDisconnectedEditor() {
+        disconnectedEditor = null;
+        disconnectedServer = null;
+    }
+
+    private static String serverKey(net.minecraft.network.Connection connection) {
+        return connection == null || connection.getRemoteAddress() == null
+            ? null
+            : connection.getRemoteAddress().toString();
     }
 }
