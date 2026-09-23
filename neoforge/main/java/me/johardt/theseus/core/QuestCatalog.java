@@ -67,14 +67,6 @@ public final class QuestCatalog {
                 .map(QuestDocumentStore.LoadFailure::id)
                 .filter(id -> !id.isBlank())
                 .forEach(failedQuestIds::add);
-            snapshot.documents().forEach((id, document) -> {
-                try {
-                    quests.put(id, QuestDefinition.parse(id, document.root()));
-                } catch (RuntimeException exception) {
-                    failedQuestIds.add(id);
-                    Theseus.LOGGER.error("Quest validation: {}: {}", document.path(), exception.getMessage());
-                }
-            });
             List<QuestDefinition.ValidationIssue> storageIssues = snapshot.failures().stream()
                 .map(failure -> new QuestDefinition.ValidationIssue(
                     QuestDefinition.Severity.ERROR,
@@ -82,6 +74,20 @@ public final class QuestCatalog {
                     failure.message()
                 ))
                 .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+            snapshot.documents().forEach((id, document) -> {
+                try {
+                    quests.put(id, QuestDefinition.parse(id, document.root()));
+                } catch (RuntimeException exception) {
+                    failedQuestIds.add(id);
+                    String message = exception.getMessage();
+                    if (message == null || message.isBlank()) message = exception.getClass().getSimpleName();
+                    storageIssues.add(new QuestDefinition.ValidationIssue(
+                        QuestDefinition.Severity.ERROR,
+                        document.path().toString(),
+                        "Failed to parse quest definition: " + message
+                    ));
+                }
+            });
             QuestCatalog catalog = new QuestCatalog(
                 documents,
                 quests,
