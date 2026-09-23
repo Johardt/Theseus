@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import java.util.List;
 import me.johardt.theseus.client.QuestAuthoringSession.RewardDraft;
 import me.johardt.theseus.client.QuestAuthoringSession.TaskDraft;
+import me.johardt.theseus.core.EditorTypeRegistry;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
@@ -17,6 +19,19 @@ final class QuestEditorCatalog {
 
     static List<RewardChoice> rewards() {
         return Entries.REWARDS;
+    }
+
+    static Component editorTypeLabel(EditorTypeRegistry.Kind kind, String type, String fallback) {
+        if (type != null && type.startsWith("theseus:")) {
+            String typeId = type.substring("theseus:".length());
+            boolean known = (kind == EditorTypeRegistry.Kind.TASK && tasks().stream().anyMatch(choice -> choice.type().equals(type)))
+                || (kind == EditorTypeRegistry.Kind.REWARD && rewards().stream().anyMatch(choice -> choice.type().equals(type)))
+                || (kind == EditorTypeRegistry.Kind.ICON && type.equals("theseus:item"));
+            if (known) return Component.translatable(
+                "gui.theseus.editor.type." + kind.name().toLowerCase(java.util.Locale.ROOT) + "." + typeId
+            );
+        }
+        return Component.literal(fallback == null || fallback.isBlank() ? String.valueOf(type) : fallback);
     }
 
     static TaskChoice taskChoice(TaskDraft task) {

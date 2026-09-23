@@ -6,6 +6,7 @@ import me.johardt.theseus.core.QuestDefinition;
 import me.johardt.theseus.core.QuestIconDefinition;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +19,30 @@ import java.util.Optional;
 /** Converts loader-neutral quest data into compact, player-facing client content. */
 final class QuestPresentation {
     private QuestPresentation() {}
+
+    static Component status(boolean unlocked, boolean claimed, boolean complete) {
+        if (!unlocked) return Component.translatable("quest.theseus.locked");
+        if (claimed) return Component.translatable("quest.theseus.completed_claimed");
+        if (complete) return Component.translatable("quest.theseus.completed");
+        return Component.translatable("quest.theseus.in_progress");
+    }
+
+    static int nodeStateColor(boolean unlocked, boolean claimed, boolean complete) {
+        if (!unlocked) return 0xFF737B87;
+        if (claimed) return 0xFF55D86A;
+        if (complete) return 0xFFFFD966;
+        return 0xFF4C9AFF;
+    }
+
+    static Component visibilityLabel(QuestDefinition.Visibility visibility) {
+        return switch (visibility) {
+            case NEVER -> Component.translatable("gui.theseus.editor.visibility.never");
+            case LOCKED -> Component.translatable("quest.theseus.locked");
+            case DEPENDENCIES_VISIBLE -> Component.translatable("quest.theseus.dependencies_visible");
+            case IN_PROGRESS -> Component.translatable("quest.theseus.in_progress");
+            case COMPLETED -> Component.translatable("quest.theseus.completed");
+        };
+    }
 
     static ItemStack questIcon(QuestDefinition quest) {
         return QuestIconRegistry.itemStack(quest.display().icon()).orElseGet(() -> new ItemStack(Items.MAP));
