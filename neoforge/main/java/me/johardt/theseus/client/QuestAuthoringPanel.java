@@ -9,7 +9,6 @@ import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.List;
 import java.util.Set;
-import me.johardt.theseus.Theseus;
 import me.johardt.theseus.client.QuestScreen.Picker;
 import me.johardt.theseus.client.QuestScreen.PickerTarget;
 import me.johardt.theseus.client.QuestScreen.DetailTab;
@@ -21,7 +20,6 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.layouts.GridLayout;
 import earth.terrarium.olympus.client.components.compound.LayoutWidget;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 import static me.johardt.theseus.client.QuestDraftValidation.*;
@@ -44,7 +42,8 @@ final class QuestAuthoringPanel {
     static final int REWARD_ICON_LABEL_X = 84;
     static final int REWARD_RAW_INSPECTOR_X = 198;
     static final WidgetSprites CLOSE_BUTTON = new WidgetSprites(
-        sprite("heading/close"), sprite("heading/close_selected")
+        QuestScreenRenderer.sprite("heading/close"),
+        QuestScreenRenderer.sprite("heading/close_selected")
     );
 
     final AuthorMode authoring;
@@ -160,16 +159,13 @@ final class QuestAuthoringPanel {
         return display != null && display.isJsonObject() ? display.getAsJsonObject() : new JsonObject();
     }
 
-    static Identifier sprite(String path) {
-        return Identifier.fromNamespaceAndPath(Theseus.MOD_ID, "textures/gui/" + path + ".png");
-    }
-
     WidgetRenderer<Button> listActionRenderer(String action) {
         return WidgetRenderers.center(
             EDITOR_LIST_ACTION_ICON_SIZE,
             EDITOR_LIST_ACTION_ICON_SIZE,
             WidgetRenderers.sprite(new net.minecraft.client.gui.components.WidgetSprites(
-                sprite("heading/editor/" + action), sprite("heading/editor/" + action)
+                QuestScreenRenderer.sprite("heading/editor/" + action),
+                QuestScreenRenderer.sprite("heading/editor/" + action)
             ))
         );
     }
