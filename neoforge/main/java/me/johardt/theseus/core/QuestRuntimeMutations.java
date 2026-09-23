@@ -230,6 +230,8 @@ final class QuestRuntimeMutations {
             JsonObject proposed = authoredDocument(request.getAsJsonObject("document"));
             JsonArray changedPaths = request.has("changed_paths") && request.get("changed_paths").isJsonArray()
                 ? request.getAsJsonArray("changed_paths") : new JsonArray();
+            String conflict = QuestDraft.firstConflict(previousRoot, changedPaths);
+            if (conflict != null) return MutationResult.failure(conflict);
             JsonObject root = QuestDraft.merge(previousRoot, proposed, changedPaths);
             JsonObject previousTasks = object(previousRoot, "tasks");
             JsonObject previousRewards = object(previousRoot, "rewards");

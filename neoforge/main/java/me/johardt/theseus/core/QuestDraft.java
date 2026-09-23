@@ -367,6 +367,42 @@ public final class QuestDraft {
         return result;
     }
 
+    /** Returns a user-facing conflict message when a changed path no longer matches its edit base. */
+    static String firstConflict(JsonObject latest, JsonArray encodedChanges) {
+        if (encodedChanges == null) return null;
+        for (JsonElement encoded : encodedChanges) {
+            if (!encoded.isJsonObject()) return "This editor update cannot be checked for conflicts. Reopen the quest and reapply your changes.";
+            JsonObject change = encoded.getAsJsonObject();
+            if (!change.has("before_present") || !change.get("before_present").isJsonPrimitive()
+                || !change.getAsJsonPrimitive("before_present").isBoolean()) {
+                return "This editor update cannot be checked for conflicts. Reopen the quest and reapply your changes.";
+            }
+            boolean beforePresent = change.get("before_present").getAsBoolean();
+            if (beforePresent != change.has("before")) {
+                return "This editor update cannot be checked for conflicts. Reopen the quest and reapply your changes.";
+            }
+
+            QuestPath path = QuestPath.fromJson(change.has("path") && change.get("path").isJsonArray()
+                ? change.getAsJsonArray("path") : new JsonArray());
+            PathValue current = valueAt(latest, path);
+            if (beforePresent != current.present()
+                || (beforePresent && !orderedEquals(change.get("before"), current.value()))) {
+                return "Another operator changed " + path + " in this quest. Reopen the quest and reapply your changes.";
+            }
+        }
+        return null;
+    }
+
+    private static PathValue valueAt(JsonObject root, QuestPath path) {
+        JsonElement current = root;
+        for (QuestPath.Segment segment : path.segments()) {
+            if (current == null || !current.isJsonObject()) return new PathValue(false, null);
+            current = current.getAsJsonObject().get(segment.value());
+            if (current == null) return new PathValue(false, null);
+        }
+        return new PathValue(current != null, current);
+    }
+
     private JsonObject snapshotWithPlacement(String group, int x, int y) {
         QuestDraft copy = open(id, snapshot());
         copy.setGroupPosition(group == null || group.isBlank() ? "Main" : group, x, y);
@@ -454,11 +490,11 @@ public final class QuestDraft {
     private static void diff(QuestPath path, JsonElement before, JsonElement after, List<Change> changes) {
         if (before == null && after == null) return;
         if (before == null) {
-            changes.add(new Change(ChangeOperation.REPLACE, path, after));
+            changes.add(new Change(ChangeOperation.REPLACE, path, after, null, false));
             return;
         }
         if (after == null) {
-            changes.add(new Change(ChangeOperation.REMOVE, path, null));
+            changes.add(new Change(ChangeOperation.REMOVE, path, null, before, true));
             return;
         }
         if (before.isJsonObject() && after.isJsonObject()) {
@@ -466,7 +502,7 @@ public final class QuestDraft {
             JsonObject right = after.getAsJsonObject();
             if (!new ArrayList<>(left.keySet()).equals(new ArrayList<>(right.keySet()))
                 && left.keySet().equals(right.keySet())) {
-                changes.add(new Change(ChangeOperation.REORDER, path, after));
+                changes.add(new Change(ChangeOperation.REORDER, path, after, before, true));
             }
             Set<String> keys = new LinkedHashSet<>(left.keySet());
             keys.addAll(right.keySet());
@@ -474,10 +510,10 @@ public final class QuestDraft {
             return;
         }
         if (before.isJsonArray() && after.isJsonArray()) {
-            if (!before.equals(after)) changes.add(new Change(ChangeOperation.REPLACE, path, after));
+            if (!before.equals(after)) changes.add(new Change(ChangeOperation.REPLACE, path, after, before, true));
             return;
         }
-        if (!before.equals(after)) changes.add(new Change(ChangeOperation.REPLACE, path, after));
+        if (!before.equals(after)) changes.add(new Change(ChangeOperation.REPLACE, path, after, before, true));
     }
 
     private static boolean orderedEquals(JsonElement left, JsonElement right) {
@@ -504,11 +540,24 @@ public final class QuestDraft {
     }
 
     private record Parent(JsonObject object, String name, QuestPath containerPath) {}
+    private record PathValue(boolean present, JsonElement value) {}
 
-    public record Change(ChangeOperation operation, QuestPath path, JsonElement value) {
+    public record Change(
+        ChangeOperation operation,
+        QuestPath path,
+        JsonElement value,
+        JsonElement before,
+        boolean beforePresent
+    ) {
+        public Change(ChangeOperation operation, QuestPath path, JsonElement value) {
+            this(operation, path, value, null, false);
+        }
+
         public Change {
             if (operation == null || path == null) throw new IllegalArgumentException("Change operation and path are required");
+            if (beforePresent != (before != null)) throw new IllegalArgumentException("Original value and presence must agree");
             value = value == null ? null : value.deepCopy();
+            before = before == null ? null : before.deepCopy();
         }
     }
 
@@ -518,7 +567,9 @@ public final class QuestDraft {
         private final List<Change> changes;
 
         private ChangeSet(List<Change> changes) {
-            this.changes = changes.stream().map(change -> new Change(change.operation(), change.path(), change.value())).toList();
+            this.changes = changes.stream().map(change -> new Change(
+                change.operation(), change.path(), change.value(), change.before(), change.beforePresent()
+            )).toList();
         }
 
         public List<Change> values() { return changes; }
@@ -539,6 +590,8 @@ public final class QuestDraft {
                 value.addProperty("operation", change.operation().name().toLowerCase(java.util.Locale.ROOT));
                 value.add("path", change.path().toJson());
                 if (change.value() != null) value.add("value", change.value().deepCopy());
+                value.addProperty("before_present", change.beforePresent());
+                if (change.beforePresent()) value.add("before", change.before().deepCopy());
                 encoded.add(value);
             });
             return encoded;
