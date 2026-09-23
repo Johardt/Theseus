@@ -1,0 +1,74 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:bow"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 20,
+    "title": "Fortify Skeleton Bluff",
+    "subtitle": "05 · The Night Watch · field report 04.3",
+    "description": [
+      "The patrol missed its last check-in; the skeleton bluff team needs this entry before it can move on.",
+      "Complete the item use objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          360,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the chorus fruit provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:chorus_fruit",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 3,
+      "xpType": "points",
+      "collectionType": "consume"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 14
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_05_03_00",
+    "qg_05_02_02"
+  ]
+}

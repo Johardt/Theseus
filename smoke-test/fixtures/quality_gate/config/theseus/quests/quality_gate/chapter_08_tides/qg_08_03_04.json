@@ -1,0 +1,87 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:fishing_rod"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 24,
+    "title": "Follow Coastal Beacon",
+    "subtitle": "08 · Tides and Open Water · field report 04.5",
+    "description": [
+      "The delta has split into a new channel; the coastal beacon team needs this entry before it can move on.",
+      "Complete the location objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          720,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:ocean",
+        "position": {
+          "x": {
+            "min": -212,
+            "max": 332
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the sheep trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:sheep",
+      "amount": 2,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: glass bottle",
+      "item": {
+        "id": "minecraft:glass_bottle",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_03_04"
+    }
+  },
+  "dependencies": [
+    "qg_08_03_03",
+    "qg_08_02_04"
+  ]
+}

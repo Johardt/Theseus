@@ -1,0 +1,64 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:piston"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 20,
+    "title": {
+      "text": "Route Quarry Lift",
+      "color": "aqua"
+    },
+    "subtitle": "07 · Machines and Materials · field report 04.6",
+    "description": [
+      "The circuit is receiving uneven power; the quarry lift team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          900,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "minecraft:stronghold",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_03_05"
+    }
+  },
+  "dependencies": [
+    "qg_07_03_03",
+    "qg_07_02_05"
+  ]
+}

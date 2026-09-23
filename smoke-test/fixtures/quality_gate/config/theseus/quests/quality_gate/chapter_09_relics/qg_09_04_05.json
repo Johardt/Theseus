@@ -1,0 +1,82 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:gold_block"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 12,
+    "title": "Map Dragon Echo",
+    "subtitle": "09 · Relics Below the Surface · field report 05.6",
+    "description": "A quiet pulse came from the ancient city; the dragon echo team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          900,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the cow",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:cow",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_09_34_1",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 8
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 2
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_04_05"
+    }
+  },
+  "dependencies": [
+    "qg_09_04_03",
+    "qg_09_03_05"
+  ]
+}

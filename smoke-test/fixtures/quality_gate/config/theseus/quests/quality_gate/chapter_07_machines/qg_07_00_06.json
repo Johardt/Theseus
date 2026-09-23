@@ -1,0 +1,62 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lever"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 24,
+    "title": "Wire Workshop Core",
+    "subtitle": "07 · Machines and Materials · field report 01.7",
+    "description": "The workshop core is waiting for a stable signal; the workshop core team needs this entry before it can move on.",
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          1080,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:nether/enter_nether"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the mushroom stew provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:mushroom_stew",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 21
+    }
+  },
+  "dependencies": [
+    "qg_07_00_04",
+    "qg_07_00_05"
+  ]
+}

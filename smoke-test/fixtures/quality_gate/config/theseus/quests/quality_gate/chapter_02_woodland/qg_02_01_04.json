@@ -1,0 +1,71 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:golden_carrot"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 48,
+    "title": "Plant Hedge Paths",
+    "subtitle": "02 · Woodland Provisions · field report 02.5",
+    "description": [
+      "Young shoots need a safer fence; the hedge paths team needs this entry before it can move on.",
+      "Complete the dummy objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          720,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_02_12_0",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the end to overworld.",
+      "from": "minecraft:the_end",
+      "to": "minecraft:overworld"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 11
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_02_01_03",
+    "qg_02_00_04"
+  ]
+}

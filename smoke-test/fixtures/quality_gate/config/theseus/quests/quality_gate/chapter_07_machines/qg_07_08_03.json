@@ -1,0 +1,77 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:hopper"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": "Repair Sorting Loft",
+    "subtitle": "07 · Machines and Materials · field report 09.4",
+    "description": [
+      "The tower lamp needs a timing check; the sorting loft team needs this entry before it can move on.",
+      "Complete the entity interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          540,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the cow",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:cow",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_07_60_1",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 16
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: spyglass",
+      "item": {
+        "id": "minecraft:spyglass",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_08_03"
+    }
+  },
+  "dependencies": [
+    "qg_07_08_01",
+    "qg_07_08_02",
+    "qg_07_07_03"
+  ]
+}

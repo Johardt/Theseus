@@ -1,0 +1,94 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lantern"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 32,
+    "title": "Repair Deep Current",
+    "subtitle": "08 · Tides and Open Water · field report 07.6",
+    "description": [
+      "The coastal beacon lost its upper lamp; the deep current team needs this entry before it can move on.",
+      "Complete the xp objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          900,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the mooshroom",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:mooshroom",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 24
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: torch",
+          "item": {
+            "id": "minecraft:torch",
+            "count": 7
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_08_06_05"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_06_03",
+    "qg_08_05_05"
+  ]
+}

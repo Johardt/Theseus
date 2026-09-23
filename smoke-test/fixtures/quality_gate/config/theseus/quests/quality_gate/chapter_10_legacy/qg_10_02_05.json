@@ -1,0 +1,64 @@
+{
+  "display": {
+    "icon": "minecraft:beacon",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Light Nether Accord",
+    "subtitle": "10 · Wayfinder's Legacy · field report 03.6",
+    "description": [
+      "The expedition's original map has one blank corner; the nether accord team needs this entry before it can move on.",
+      "Complete the dummy objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          900,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_10_20_0"
+    },
+    "supporting_note": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 35
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: wheat seeds",
+      "item": {
+        "id": "minecraft:wheat_seeds",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_02_03",
+    "qg_10_01_05"
+  ]
+}

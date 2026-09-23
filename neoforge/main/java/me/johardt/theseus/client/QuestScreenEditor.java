@@ -3,6 +3,7 @@ package me.johardt.theseus.client;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.List;
+import me.johardt.theseus.client.QuestClientSnapshot.ClientQuest;
 import me.johardt.theseus.core.QuestDefinition;
 import me.johardt.theseus.core.QuestDiagnostics;
 import me.johardt.theseus.core.QuestDraft;
@@ -34,138 +35,49 @@ final class QuestScreenEditor {
     void beginEditQuest(ClientQuest quest) {
         if (!ensureChapterDataLoaded()) return;
         QuestDefinition definition = quest.definition();
-        screen.authoring.editingExisting = true;
-        screen.authoring.originalId = definition.id();
         screen.selectedQuestId = definition.id();
-        screen.authoring.id = definition.id();
-        screen.authoring.title = definition.title();
-        screen.authoring.subtitle = definition.subtitle();
-        screen.authoring.body = String.join("\n", definition.description());
-        screen.authoring.icon = definition.display().icon().item();
-        screen.authoring.iconSize = definition.display().iconSize();
-        screen.authoring.iconSizeText = Integer.toString(screen.authoring.iconSize);
-        screen.authoring.iconSizeTouched = false;
-        screen.authoring.iconSizeInvalid = false;
-        screen.authoring.descriptionTouched = false;
-        screen.authoring.iconTouched = false;
-        screen.authoring.background = definition.display().iconBackground();
-        screen.authoring.individualProgress = definition.settings().individualProgress();
-        screen.authoring.hiddenUntil = definition.settings().hiddenUntil();
-        screen.authoring.unlockNotification = definition.settings().unlockNotification();
-        screen.authoring.showDependencyArrow = definition.settings().showDependencyArrow();
-        screen.authoring.repeatable = definition.settings().repeatable();
-        screen.authoring.autoClaimRewards = definition.settings().autoClaimRewards();
-        screen.authoring.groups = new JsonObject();
-        definition.display().groups().forEach((name, position) -> {
-            JsonObject placement = new JsonObject();
-            com.google.gson.JsonArray coordinates = new com.google.gson.JsonArray();
-            coordinates.add(position.x());
-            coordinates.add(position.y());
-            placement.add("position", coordinates);
-            screen.authoring.groups.add(name, placement);
-        });
-        QuestDefinition.GroupDisplay position = definition.position(screen.group);
-        screen.authoring.x = position.x();
-        screen.authoring.y = position.y();
-        screen.authoring.xText = Integer.toString(screen.authoring.x);
-        screen.authoring.yText = Integer.toString(screen.authoring.y);
-        screen.authoring.xInvalid = false;
-        screen.authoring.yInvalid = false;
-        screen.authoring.tasks.clear();
-        definition.tasks().values().forEach(task -> screen.authoring.tasks.add(new QuestAuthoringSession.TaskDraft(task.id(), task.type(), task.source().deepCopy())));
-        screen.authoring.rewards.clear();
-        definition.rewards().values().forEach(reward -> screen.authoring.rewards.add(new QuestAuthoringSession.RewardDraft(reward.id(), reward.type(), reward.source().deepCopy())));
+        screen.authoring.beginExisting(definition, quest.raw(), screen.group);
         screen.authoringPanel.createQuestTab = DetailTab.OVERVIEW;
         screen.authoringPanel.resetOverviewScroll();
         screen.authoringPanel.resetDraftScrolls();
         screen.detailsOpen = false;
-        screen.authoring.open = true;
         screen.editorMessage = definition.issues().stream().anyMatch(issue -> issue.severity() == QuestDefinition.Severity.WARNING)
             ? "Unsupported configuration is preserved and shown read-only."
             : "";
         screen.editorMessageSuccess = false;
         screen.mutations.cancel();
-        screen.authoring.begin(QuestDraft.fromClientSnapshot(definition.id(), quest.raw()));
-        establishAuthoringBaseline();
         screen.rebuildWidgets();
     }
 
     boolean ensureChapterDataLoaded() {
         if (screen.loadedChapters.contains(screen.group)) return true;
-        screen.snapshots.requestChapter(screen.group);
+        screen.requestChapter(screen.group);
         screen.editorMessage = "Loading chapter data…";
         screen.editorMessageSuccess = false;
         screen.rebuildWidgets();
         return false;
     }
 
-    /**
-     * The form exposes parsed defaults for fields that may be omitted from a
-     * quest document. Treat that populated form as the initial baseline so an
-     * untouched quest is not reported as having changes.
-     */
-    void establishAuthoringBaseline() {
-        QuestDraft baseline = currentAuthoringDraft();
-        baseline.accept();
-        screen.authoring.begin(baseline);
-    }
-
     void beginCreateQuest(double treeX, double treeY) {
-        screen.authoring.id = "";
-        screen.authoring.title = "";
-        screen.authoring.subtitle = "";
-        screen.authoring.body = "";
-        screen.authoring.icon = "minecraft:map";
-        screen.authoring.iconSize = QuestSurfaceLayout.DEFAULT_ICON_SIZE;
-        screen.authoring.iconSizeText = Integer.toString(screen.authoring.iconSize);
-        screen.authoring.iconSizeTouched = false;
-        screen.authoring.iconSizeInvalid = false;
-        screen.authoring.descriptionTouched = false;
-        screen.authoring.iconTouched = false;
-        screen.authoring.background = "theseus:textures/gui/quest_backgrounds/default.png";
-        screen.authoring.individualProgress = false;
-        screen.authoring.hiddenUntil = QuestDefinition.Visibility.LOCKED;
-        screen.authoring.unlockNotification = false;
-        screen.authoring.showDependencyArrow = true;
-        screen.authoring.repeatable = false;
-        screen.authoring.autoClaimRewards = false;
-        screen.authoring.tasks.clear();
-        screen.authoring.rewards.clear();
-        screen.authoring.editingExisting = false;
-        screen.authoring.originalId = null;
-        screen.authoring.groups = new JsonObject();
+        int x = (int) Math.round(treeX);
+        int y = (int) Math.round(treeY);
+        if (TheseusClientOptions.snapToGrid()) {
+            QuestGraphLayout.Point snapped = QuestGraphLayout.snapPoint(x, y);
+            x = (int) snapped.x();
+            y = (int) snapped.y();
+        }
+        screen.authoring.beginNew(screen.group, x, y);
         screen.authoringPanel.resetDraftTaskScroll();
         screen.authoringPanel.createQuestTab = DetailTab.OVERVIEW;
         screen.authoringPanel.resetOverviewScroll();
-        screen.authoring.x = (int) Math.round(treeX);
-        screen.authoring.y = (int) Math.round(treeY);
-        if (TheseusClientOptions.snapToGrid()) {
-            QuestGraphLayout.Point snapped = QuestGraphLayout.snapPoint(screen.authoring.x, screen.authoring.y);
-            screen.authoring.x = (int) snapped.x();
-            screen.authoring.y = (int) snapped.y();
-        }
-        screen.authoring.xText = Integer.toString(screen.authoring.x);
-        screen.authoring.yText = Integer.toString(screen.authoring.y);
-        screen.authoring.xInvalid = false;
-        screen.authoring.yInvalid = false;
-        updateDraftGroupPosition();
         screen.detailsOpen = false;
-        screen.authoring.open = true;
         screen.editorMessage = "";
         screen.editorMessageSuccess = false;
         screen.mutations.cancel();
-        screen.authoring.begin(QuestDraft.create(null));
         screen.rebuildWidgets();
     }
 
     void updateDraftGroupPosition() {
-        JsonObject placement = screen.authoring.groups.has(screen.group) && screen.authoring.groups.get(screen.group).isJsonObject()
-            ? screen.authoring.groups.getAsJsonObject(screen.group) : new JsonObject();
-        com.google.gson.JsonArray coordinates = new com.google.gson.JsonArray();
-        coordinates.add(screen.authoring.x);
-        coordinates.add(screen.authoring.y);
-        placement.add("position", coordinates);
-        screen.authoring.groups.add(screen.group, placement);
         screen.authoring.setGroupPosition(screen.group, screen.authoring.x, screen.authoring.y);
     }
 
@@ -194,10 +106,8 @@ final class QuestScreenEditor {
     }
 
     void confirmDeleteTask() {
-        if (screen.authoring.taskDeleteConfirmation < screen.authoring.tasks.size()) {
-            screen.authoring.tasks.remove(screen.authoring.taskDeleteConfirmation);
-            screen.authoringPanel.clampDraftTaskScroll();
-        }
+        screen.authoring.removeTask(screen.authoring.taskDeleteConfirmation);
+        screen.authoringPanel.clampDraftTaskScroll();
         screen.authoring.taskDeleteConfirmation = -1;
         screen.modalHost.close();
         screen.rebuildWidgets();
@@ -255,7 +165,7 @@ final class QuestScreenEditor {
         for (int index = 0; index < screen.authoring.tasks.size(); index++) {
             QuestAuthoringSession.TaskDraft task = screen.authoring.tasks.get(index);
             if (screen.authoringPanel.taskEditor.isTaskEditable(task)) {
-                String error = screen.authoringPanel.taskEditor.validateTaskDraft(task.copy(), index);
+                String error = screen.authoring.validateTask(index, screen.authoringPanel.host.registryLookup());
                 if (!error.isEmpty()) return "Task '" + task.id + "': " + error;
             }
         }
@@ -321,16 +231,7 @@ final class QuestScreenEditor {
 
     boolean hasUnsavedModal() {
         if (screen.widgets.hasUnsavedChapterEditor()) return true;
-        if (screen.authoring.editingTask != null && screen.authoring.editingTaskIndex >= 0 && screen.authoring.editingTaskIndex < screen.authoring.tasks.size() &&
-            !screen.authoring.editingTask.sameAs(screen.authoring.tasks.get(screen.authoring.editingTaskIndex))) return true;
-        if (screen.authoring.editingReward != null && screen.authoring.editingRewardIndex >= 0 && screen.authoring.editingRewardIndex < screen.authoring.rewards.size() &&
-            !screen.authoring.editingReward.sameAs(screen.authoring.rewards.get(screen.authoring.editingRewardIndex))) return true;
-        if (screen.authoring.editingNestedReward != null) {
-            List<QuestAuthoringSession.RewardDraft> nested = nestedRewards(screen.authoring.editingReward);
-            if (screen.authoring.editingNestedRewardIndex >= 0 && screen.authoring.editingNestedRewardIndex < nested.size() &&
-                !screen.authoring.editingNestedReward.sameAs(nested.get(screen.authoring.editingNestedRewardIndex))) return true;
-        }
-        return false;
+        return screen.authoring.hasUnsavedEditorChanges();
     }
 
     void requestDiscard(Runnable action) {

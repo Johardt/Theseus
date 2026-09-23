@@ -1,0 +1,85 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:blaze_rod"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 20,
+    "title": "Rescue Skeleton Bluff",
+    "subtitle": "05 · The Night Watch · field report 07.3",
+    "description": [
+      "Tracks lead back toward the gate; the skeleton bluff team needs this entry before it can move on.",
+      "Complete the dummy objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          360,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_05_45_0",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 36
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: bone",
+          "item": {
+            "id": "minecraft:bone",
+            "count": 3
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_05_06_02"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_05_06_00",
+    "qg_05_05_02"
+  ]
+}

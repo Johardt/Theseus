@@ -1,0 +1,63 @@
+{
+  "display": {
+    "icon": "minecraft:compass",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 20,
+    "title": "Navigate High Ridge",
+    "subtitle": "04 · Roads Beyond the Valley · field report 04.5",
+    "description": [
+      "The river ford has shifted overnight; the high ridge team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          720,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 23
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: shield",
+      "item": {
+        "id": "minecraft:shield",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_04_03_03",
+    "qg_04_02_04"
+  ]
+}

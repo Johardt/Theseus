@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:oak_log"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 16,
+    "title": "Test Signal Fires",
+    "subtitle": "01 · Trailhead and Shelter · field report 09.2",
+    "description": "The last torch is burning low; the signal fires team needs this entry before it can move on.",
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          180,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the fox",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:fox",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_01_58_1"
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_01_08_00",
+    "qg_01_07_01"
+  ]
+}

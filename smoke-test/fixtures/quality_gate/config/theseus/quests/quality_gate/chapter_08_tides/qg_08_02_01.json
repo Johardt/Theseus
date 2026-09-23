@@ -1,0 +1,57 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:packed_ice"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": "Recover Reef Shelf",
+    "subtitle": "08 · Tides and Open Water · field report 03.2",
+    "description": "A camp flag is frozen into the floe; the reef shelf team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          180,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 3,
+      "xpType": "points",
+      "collectionType": "consume"
+    },
+    "supporting_note": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the cat",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:cat",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_02_01"
+    }
+  },
+  "dependencies": [
+    "qg_08_02_00",
+    "qg_08_01_01"
+  ]
+}

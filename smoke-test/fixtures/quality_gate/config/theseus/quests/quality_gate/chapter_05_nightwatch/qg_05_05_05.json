@@ -1,0 +1,108 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:shield"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 48,
+    "title": "Signal Nether Patrol",
+    "subtitle": "05 · The Night Watch · field report 06.6",
+    "description": [
+      "A damaged wall needs one more brace; the nether patrol team needs this entry before it can move on.",
+      "Complete the location objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          900,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:meadow",
+        "position": {
+          "x": {
+            "min": -196,
+            "max": 284
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:biome",
+          "title": "Read the signs in nether wastes",
+          "description": "Travel through the selected biome and update the field map.",
+          "biomes": "minecraft:nether_wastes",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          },
+          "fixture_extension": {
+            "retained": true,
+            "slot": 1
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item_interaction",
+          "title": "Present the spyglass",
+          "description": "Interact while carrying the selected item to complete the handoff.",
+          "item": "minecraft:spyglass",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "#minecraft:village"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:iron_ingot"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 33
+    }
+  },
+  "dependencies": [
+    "qg_05_05_03",
+    "qg_05_04_05"
+  ]
+}

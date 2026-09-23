@@ -1,0 +1,58 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:enchanting_table"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 48,
+    "title": "Restore Trial Notes",
+    "subtitle": "06 · The Arcane Workshop · field report 06.4",
+    "description": [
+      "The enchantment shelf is missing a label; the trial notes team needs this entry before it can move on.",
+      "Complete the structure objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          540,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    },
+    "supporting_note": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the oak log station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:oak_log"
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_06_05_01",
+    "qg_06_05_02",
+    "qg_06_04_03"
+  ]
+}

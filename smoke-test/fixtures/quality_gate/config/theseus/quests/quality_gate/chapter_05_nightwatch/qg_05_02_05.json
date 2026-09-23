@@ -1,0 +1,111 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:shield"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 48,
+    "title": "Clear Nether Patrol",
+    "subtitle": "05 · The Night Watch · field report 03.6",
+    "description": [
+      "An outpost lantern went dark; the nether patrol team needs this entry before it can move on.",
+      "Complete the changed dimension objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          900,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 81,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 13
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: potato",
+          "item": {
+            "id": "minecraft:potato",
+            "count": 8
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_05_02_05"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 31
+    }
+  },
+  "dependencies": [
+    "qg_05_02_03",
+    "qg_05_01_05"
+  ],
+  "fixture_extension": {
+    "source": "theseus-quality-gate",
+    "ordinal": 299,
+    "preserve": {
+      "enabled": true,
+      "labels": [
+        "fixture",
+        "compatibility",
+        "performance"
+      ]
+    }
+  }
+}

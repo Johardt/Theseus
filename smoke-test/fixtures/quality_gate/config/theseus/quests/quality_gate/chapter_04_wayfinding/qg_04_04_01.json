@@ -1,0 +1,91 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:water_bucket"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 12,
+    "title": "Climb Desert Wells",
+    "subtitle": "04 · Roads Beyond the Valley · field report 05.2",
+    "description": [
+      "A portal frame is missing one route marker; the desert wells team needs this entry before it can move on.",
+      "Complete the location objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          180,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:plains",
+        "position": {
+          "x": {
+            "min": -228,
+            "max": 284
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the sheep trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:sheep",
+      "amount": 1,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_04_04_00",
+    "qg_04_03_01"
+  ]
+}

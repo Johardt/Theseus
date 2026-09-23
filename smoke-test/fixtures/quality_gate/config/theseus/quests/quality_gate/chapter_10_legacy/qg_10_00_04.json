@@ -1,0 +1,62 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:elytra"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 16,
+    "title": "Renew Overworld Atlas",
+    "subtitle": "10 · Wayfinder's Legacy · field report 01.5",
+    "description": [
+      "The atlas now contains the full route; the overworld atlas team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          720,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure ender pearl",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:ender_pearl",
+      "amount": 6,
+      "collection": "consume"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 38
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_00_03"
+  ]
+}

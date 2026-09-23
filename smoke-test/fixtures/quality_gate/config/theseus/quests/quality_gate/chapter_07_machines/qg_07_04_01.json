@@ -1,0 +1,64 @@
+{
+  "display": {
+    "icon": "minecraft:redstone_lamp",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 48,
+    "title": "Power Redstone Circuit",
+    "subtitle": "07 · Machines and Materials · field report 05.2",
+    "description": [
+      "The lift cable has reached the upper landing; the redstone circuit team needs this entry before it can move on.",
+      "Complete the item use objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          180,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the baked potato provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:baked_potato",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: arrow",
+      "item": {
+        "id": "minecraft:arrow",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_07_04_00",
+    "qg_07_03_01"
+  ]
+}

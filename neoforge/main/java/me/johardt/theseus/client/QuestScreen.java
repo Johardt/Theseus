@@ -13,6 +13,8 @@ import me.johardt.theseus.core.QuestDiagnostics;
 import me.johardt.theseus.core.QuestMutationCoordinator;
 import me.johardt.theseus.core.EditorTypeRegistry;
 import me.johardt.theseus.core.QuestNetwork;
+import me.johardt.theseus.client.QuestClientSnapshot.ChapterDisplay;
+import me.johardt.theseus.client.QuestClientSnapshot.ClientQuest;
 import me.johardt.theseus.client.description.MarkdownEditBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -26,6 +28,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import static me.johardt.theseus.client.QuestDraftValidation.*;
 import static me.johardt.theseus.client.QuestEditorCatalog.*;
 
@@ -70,15 +73,14 @@ public final class QuestScreen extends Screen {
     static final Identifier SHOW_GRID_SELECTED = QuestScreenRenderer.sprite("heading/show_grid_selected");
     static final Identifier SNAP_TO_GRID = QuestScreenRenderer.sprite("heading/snap_to_grid");
     static final Identifier SNAP_TO_GRID_SELECTED = QuestScreenRenderer.sprite("heading/snap_to_grid_selected");
-    final List<ClientQuest> quests = new ArrayList<>();
-    final List<String> chapters = new ArrayList<>();
-    final Map<String, ChapterDisplay> chapterDisplays = new HashMap<>();
-    final Set<String> loadedChapters = new LinkedHashSet<>();
-    final Set<String> pendingChapterLoads = new LinkedHashSet<>();
+    final List<ClientQuest> quests;
+    final List<String> chapters;
+    final Map<String, ChapterDisplay> chapterDisplays;
+    final Set<String> loadedChapters;
     final ChapterListState chapterListState;
-    final Set<String> serverTaskTypes = new LinkedHashSet<>();
-    final Set<String> serverRewardTypes = new LinkedHashSet<>();
-    final Set<String> serverIconTypes = new LinkedHashSet<>();
+    final Set<String> serverTaskTypes;
+    final Set<String> serverRewardTypes;
+    final Set<String> serverIconTypes;
     final Map<String, Set<String>> rewardSelections = new HashMap<>();
     final QuestGraphLayout.ViewportMemory graphViewport;
     String selectedQuestId;
@@ -139,7 +141,7 @@ public final class QuestScreen extends Screen {
     String pendingQuestFileId;
     QuestModalHost.ProgressResetTarget progressResetTarget;
 
-    final QuestScreenSnapshot snapshots = new QuestScreenSnapshot(this);
+    final QuestClientSnapshot snapshots;
     final QuestScreenLayout layout = new QuestScreenLayout(this);
     final QuestScreenWidgets widgets = new QuestScreenWidgets(this);
     final QuestScreenEditor editor = new QuestScreenEditor(this);
@@ -200,7 +202,7 @@ public final class QuestScreen extends Screen {
             ClientQuest quest = actions.selected();
             output.add(NarratedElementType.TITLE, Component.translatable(
                 "gui.theseus.quest.graph_selection",
-                quest.definition.title(),
+                quest.definition().title(),
                 QuestPresentation.status(quest.unlocked(), quest.claimed(), quest.complete())
             ));
             output.add(NarratedElementType.USAGE, Component.translatable(
@@ -212,11 +214,23 @@ public final class QuestScreen extends Screen {
     }
 
     public QuestScreen(JsonObject snapshot) {
-        this(snapshot, null);
+        this(new QuestClientSnapshot(snapshot), null);
     }
 
     public QuestScreen(JsonObject snapshot, QuestScreen previous) {
+        this(new QuestClientSnapshot(snapshot), previous);
+    }
+
+    QuestScreen(QuestClientSnapshot snapshots, QuestScreen previous) {
         super(Component.translatable("gui.theseus.editor.theseus_quests"));
+        this.snapshots = snapshots;
+        this.quests = snapshots.quests();
+        this.chapters = snapshots.chapters();
+        this.chapterDisplays = snapshots.chapterDisplays();
+        this.loadedChapters = snapshots.loadedChapters();
+        this.serverTaskTypes = snapshots.serverTaskTypes();
+        this.serverRewardTypes = snapshots.serverRewardTypes();
+        this.serverIconTypes = snapshots.serverIconTypes();
         this.authoring = previous == null
             ? new AuthorMode(QuestSurfaceLayout.DEFAULT_ICON_SIZE)
             : previous.authoring.copy();
@@ -258,7 +272,6 @@ public final class QuestScreen extends Screen {
         this.diagnostics = previous == null ? List.of() : previous.diagnostics;
         this.diagnosticsScroll = previous == null ? 0 : previous.diagnosticsScroll;
         this.importScroll = previous == null ? 0 : previous.importScroll;
-        snapshots.readSnapshot(snapshot);
         Set<String> groups = actions.groups();
         this.group =
             previous != null && groups.contains(previous.group)
@@ -295,11 +308,24 @@ public final class QuestScreen extends Screen {
 
     /** Requests full task/reward/description data for the active chapter. */
     public void requestActiveChapter() {
-        snapshots.requestActiveChapter();
+        requestChapter(group);
+    }
+
+    void requestChapter(String chapter) {
+        if (snapshots.requestChapter(chapter)) {
+            ClientPacketDistributor.sendToServer(new QuestNetwork.ActionPayload("load_chapter", chapter));
+        }
     }
 
     public void mergeSnapshot(JsonObject snapshot) {
-        snapshots.mergeSnapshot(snapshot);
+        if (snapshot == null) return;
+        snapshots.accept(snapshot);
+        snapshotChanged();
+    }
+
+    void snapshotChanged() {
+        graphViewport.activateChapter(group, layout.graphCanvasBounds(), layout.graphWorldBounds());
+        rebuildWidgets();
     }
 
     @Override
@@ -498,16 +524,4 @@ public final class QuestScreen extends Screen {
         int canvasTop
     ) {}
 
-    record ChapterDisplay(String icon, String background, boolean iconEnabled, int backgroundOpacity) {}
-
-    record ClientQuest(
-        QuestDefinition definition,
-        Map<String, Integer> progress,
-        boolean unlocked,
-        boolean complete,
-        boolean claimed,
-        boolean pinned,
-        Set<String> claimedRewards,
-        JsonObject raw
-    ) {}
 }

@@ -1,0 +1,168 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:chest_minecart"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 32,
+    "title": "Recover Bastion Archive",
+    "subtitle": "09 · Relics Below the Surface · field report 04.4",
+    "description": "The vault door has opened just wide enough; the bastion archive team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_09_25_0"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 3,
+          "xpType": "points",
+          "collectionType": "consume"
+        },
+        "trail_2": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from the nether to the end.",
+          "from": "minecraft:the_nether",
+          "to": "minecraft:the_end"
+        },
+        "trail_3": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:deep_dark",
+            "position": {
+              "x": {
+                "min": -204,
+                "max": 340
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:recipe",
+              "title": "Learn the shield pattern",
+              "description": "Unlock the listed recipe before the workshop closes for the night.",
+              "recipes": [
+                "minecraft:shield"
+              ]
+            },
+            "trail_2": {
+              "type": "theseus:xp",
+              "title": "Bank expedition experience",
+              "description": "Build the requested experience reserve before the next leg.",
+              "amount": 5,
+              "xpType": "points",
+              "collectionType": "manual"
+            },
+            "trail_3": {
+              "type": "theseus:changed_dimension",
+              "title": "Cross a dimensional boundary",
+              "description": "Travel from overworld to the nether.",
+              "from": "minecraft:overworld",
+              "to": "minecraft:the_nether",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:book"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:ender_pearl"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 36
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: bone",
+          "item": {
+            "id": "minecraft:bone",
+            "count": 3
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_09_03_03"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_03_01",
+    "qg_09_03_02",
+    "qg_09_02_03"
+  ]
+}

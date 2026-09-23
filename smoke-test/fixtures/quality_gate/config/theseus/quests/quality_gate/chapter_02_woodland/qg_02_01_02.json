@@ -1,0 +1,55 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:oak_sapling"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 24,
+    "title": "Plant Seed Stores",
+    "subtitle": "02 · Woodland Provisions · field report 02.3",
+    "description": "The mill wheel has started turning; the seed stores team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          360,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "show_dependency_arrow": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record damage dealt",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:damage_dealt",
+      "target": 64
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in desert",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:desert"
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_02_01_02"
+    }
+  },
+  "dependencies": [
+    "qg_02_01_00",
+    "qg_02_00_02"
+  ]
+}

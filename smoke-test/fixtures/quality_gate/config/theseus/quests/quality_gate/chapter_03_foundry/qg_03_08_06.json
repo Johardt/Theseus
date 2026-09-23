@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:iron_ingot"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 20,
+    "title": "Light Foundry Gate",
+    "subtitle": "03 · Stonework and Smithing · field report 09.7",
+    "description": [
+      "The quarry face has exposed a new layer; the foundry gate team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          1080,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 39
+    }
+  },
+  "dependencies": [
+    "qg_03_08_04",
+    "qg_03_08_05",
+    "qg_03_07_06"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lantern"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 24,
+    "title": "Survey Coastal Beacon",
+    "subtitle": "08 · Tides and Open Water · field report 08.5",
+    "description": [
+      "The coastal beacon lost its upper lamp; the coastal beacon team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          720,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": true,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 5
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_07_03",
+    "qg_08_06_04"
+  ]
+}

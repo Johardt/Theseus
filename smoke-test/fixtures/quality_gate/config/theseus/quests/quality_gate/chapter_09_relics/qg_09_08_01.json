@@ -1,0 +1,83 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:gold_block"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 20,
+    "title": "Carry Stronghold Ring",
+    "subtitle": "09 · Relics Below the Surface · field report 09.2",
+    "description": "A quiet pulse came from the ancient city; the stronghold ring team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          180,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure emerald",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:emerald",
+      "amount": 2,
+      "collection": "consume"
+    },
+    "supporting_note": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 20
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 2
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_08_01"
+    }
+  },
+  "dependencies": [
+    "qg_09_08_00",
+    "qg_09_07_01"
+  ]
+}

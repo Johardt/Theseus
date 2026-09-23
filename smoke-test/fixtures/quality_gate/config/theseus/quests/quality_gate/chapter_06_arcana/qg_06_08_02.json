@@ -1,0 +1,78 @@
+{
+  "display": {
+    "icon": "minecraft:enchanted_book",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 32,
+    "title": "Test Brewing Bench",
+    "subtitle": "06 · The Arcane Workshop · field report 09.3",
+    "description": [
+      "A trial note contradicts the old index; the brewing bench team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          360,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the drowned trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:drowned",
+      "amount": 2,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the bone meal",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:bone_meal",
+      "components": {},
+      "fixture_extension": {
+        "retained": true,
+        "slot": 1
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 34
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_08_02"
+    }
+  },
+  "dependencies": [
+    "qg_06_08_00",
+    "qg_06_07_02"
+  ]
+}

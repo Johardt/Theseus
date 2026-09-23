@@ -1,0 +1,120 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:compass"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 48,
+    "title": {
+      "text": "Sound River Crossing",
+      "color": "green"
+    },
+    "subtitle": "04 · Roads Beyond the Valley · field report 01.1",
+    "description": "The river ford has shifted overnight; the river crossing team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "minecraft:stronghold",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item_use",
+          "title": "Use the golden apple provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:golden_apple",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_04_01_3",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:trident"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:structure",
+              "title": "Find a landmark",
+              "description": "Locate the structure marker and confirm it on the route map.",
+              "structures": "#minecraft:village"
+            },
+            "trail_2": {
+              "type": "theseus:advancement",
+              "title": "Log a milestone",
+              "description": "Earn the named vanilla advancement to verify the expedition record.",
+              "advancements": [
+                "minecraft:nether/obtain_blaze_rod"
+              ]
+            },
+            "trail_3": {
+              "type": "theseus:entity_interaction",
+              "title": "Speak with the fox",
+              "description": "Interact with the listed character or creature and record the meeting.",
+              "entity": "minecraft:fox",
+              "components": {},
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:book"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:elytra"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_03_09_06"
+  ]
+}

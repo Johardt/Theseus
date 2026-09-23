@@ -1,0 +1,62 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:ender_pearl"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 16,
+    "title": "Sound Sailor's Route",
+    "subtitle": "04 · Roads Beyond the Valley · field report 01.4",
+    "description": "A wreck marker appeared on the chart; the sailor's route team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          540,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the mooshroom",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:mooshroom",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 33
+    }
+  },
+  "dependencies": [
+    "qg_04_00_01",
+    "qg_04_00_02"
+  ]
+}

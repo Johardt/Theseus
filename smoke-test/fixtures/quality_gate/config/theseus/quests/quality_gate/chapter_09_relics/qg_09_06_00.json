@@ -1,0 +1,69 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:chest_minecart"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 16,
+    "title": "Secure Mineshaft Seal",
+    "subtitle": "09 · Relics Below the Surface · field report 07.1",
+    "description": "The vault door has opened just wide enough; the mineshaft seal team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          0,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 5,
+      "xpType": "points",
+      "collectionType": "manual"
+    },
+    "supporting_note": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the chicken",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:chicken",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 23
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: shield",
+      "item": {
+        "id": "minecraft:shield",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_05_06"
+  ]
+}

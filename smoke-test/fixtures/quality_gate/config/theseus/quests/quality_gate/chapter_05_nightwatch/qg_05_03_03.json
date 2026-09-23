@@ -1,0 +1,134 @@
+{
+  "display": {
+    "icon": "minecraft:crossbow",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 24,
+    "title": "Fortify Creeper Ward",
+    "subtitle": "05 · The Night Watch · field report 04.4",
+    "description": "A reef beacon is blinking beneath the waves; the creeper ward team needs this entry before it can move on.",
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:savanna",
+        "position": {
+          "x": {
+            "min": -212,
+            "max": 300
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the lever station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:lever",
+          "state": {
+            "powered": "false"
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:trident"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item_use",
+          "title": "Use the baked potato provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:baked_potato",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_05_25_4"
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:item",
+              "title": "Secure emerald",
+              "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+              "item": "minecraft:emerald",
+              "amount": 4,
+              "collection": "automatic",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:spyglass"
+              }
+            },
+            "trail_2": {
+              "type": "theseus:block_interaction",
+              "title": "Inspect the oak door station",
+              "description": "Interact with the marked block to verify this part of the route.",
+              "block": "minecraft:oak_door"
+            },
+            "trail_3": {
+              "type": "theseus:item_use",
+              "title": "Use the mushroom stew provision",
+              "description": "Consume the selected provision and report the result.",
+              "item": "minecraft:mushroom_stew",
+              "components": {}
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:glass_bottle"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_05_03_03"
+    }
+  },
+  "dependencies": [
+    "qg_05_03_01",
+    "qg_05_03_02",
+    "qg_05_02_03"
+  ]
+}

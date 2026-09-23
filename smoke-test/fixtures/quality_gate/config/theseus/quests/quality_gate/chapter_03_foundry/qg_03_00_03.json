@@ -1,0 +1,85 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:rail"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 12,
+    "title": "Survey Stonecutters",
+    "subtitle": "03 · Stonework and Smithing · field report 01.4",
+    "description": "Fresh stone is waiting at the cutting table; the stonecutters team needs this entry before it can move on.",
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          540,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the bread pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:bread"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/trade"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 20
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 2
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_00_03"
+    }
+  },
+  "dependencies": [
+    "qg_03_00_01",
+    "qg_03_00_02"
+  ]
+}

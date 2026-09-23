@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import me.johardt.theseus.Theseus;
+import me.johardt.theseus.client.QuestClientSnapshot.ClientQuest;
 import me.johardt.theseus.core.QuestDefinition;
 import me.johardt.theseus.core.QuestDraft;
 import me.johardt.theseus.core.QuestMutation;
@@ -155,12 +156,7 @@ final class QuestScreenActions {
     }
 
     Set<String> groups() {
-        Set<String> result = new LinkedHashSet<>();
-        result.addAll(screen.chapters);
-        screen.quests.forEach(quest ->
-            result.addAll(quest.definition().display().groups().keySet())
-        );
-        return result;
+        return screen.snapshots.groups();
     }
 
     ClientQuest selected() {
@@ -179,13 +175,13 @@ final class QuestScreenActions {
         screen.chapterListState.ensureVisible(index);
         String candidate = ordered.get(index);
         if (candidate.equals(screen.group)) {
-            screen.snapshots.requestChapter(candidate);
+            screen.requestChapter(candidate);
             screen.rebuildWidgets();
             return;
         }
         screen.editor.requestDiscard(() -> {
             screen.group = candidate;
-            screen.snapshots.requestChapter(screen.group);
+            screen.requestChapter(screen.group);
             screen.linkSourceId = null;
             screen.editor.closeDraft();
             screen.chapterListState.ensureVisible(index);

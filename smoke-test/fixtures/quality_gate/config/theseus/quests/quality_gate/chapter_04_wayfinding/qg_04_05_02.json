@@ -1,0 +1,69 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:compass"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": "Open Taiga Pass",
+    "subtitle": "04 · Roads Beyond the Valley · field report 06.3",
+    "description": [
+      "The river ford has shifted overnight; the taiga pass team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          360,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/ol_betsy"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the golden apple provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:golden_apple",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 29
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_04_05_00",
+    "qg_04_04_02"
+  ]
+}

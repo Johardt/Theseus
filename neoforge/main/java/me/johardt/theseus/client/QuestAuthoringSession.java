@@ -12,6 +12,11 @@ import me.johardt.theseus.core.QuestDraft;
 import me.johardt.theseus.core.QuestIconDefinition;
 import me.johardt.theseus.core.RegistryValidation;
 
+import static me.johardt.theseus.client.QuestDraftValidation.nestedRewards;
+import static me.johardt.theseus.client.QuestDraftValidation.nestedTasks;
+import static me.johardt.theseus.client.QuestDraftValidation.setNestedRewards;
+import static me.johardt.theseus.client.QuestDraftValidation.setNestedTasks;
+
 /**
  * Mutable state for authoring one quest.
  *
@@ -52,8 +57,8 @@ class QuestAuthoringSession {
     final List<TaskDraft> tasks = new ArrayList<>();
     int editingTaskIndex = -1;
     TaskDraft editingTask;
-    final List<TaskDraft> taskEditorParents = new ArrayList<>();
-    final List<Integer> taskEditorParentIndexes = new ArrayList<>();
+    private final List<TaskDraft> taskEditorParents = new ArrayList<>();
+    private final List<Integer> taskEditorParentIndexes = new ArrayList<>();
     int nestedTaskScroll;
     String taskEditorError = "";
     int taskDeleteConfirmation = -1;
@@ -127,11 +132,113 @@ class QuestAuthoringSession {
         open = true;
     }
 
+    void beginExisting(QuestDefinition definition, JsonObject snapshot, String group) {
+        editingExisting = true;
+        originalId = definition.id();
+        id = definition.id();
+        title = definition.title();
+        subtitle = definition.subtitle();
+        body = String.join("\n", definition.description());
+        icon = definition.display().icon().item();
+        iconSize = definition.display().iconSize();
+        iconSizeText = Integer.toString(iconSize);
+        iconSizeTouched = false;
+        iconSizeInvalid = false;
+        descriptionTouched = false;
+        iconTouched = false;
+        background = definition.display().iconBackground();
+        individualProgress = definition.settings().individualProgress();
+        hiddenUntil = definition.settings().hiddenUntil();
+        unlockNotification = definition.settings().unlockNotification();
+        showDependencyArrow = definition.settings().showDependencyArrow();
+        repeatable = definition.settings().repeatable();
+        autoClaimRewards = definition.settings().autoClaimRewards();
+        groups = new JsonObject();
+        definition.display().groups().forEach((name, position) -> {
+            JsonObject placement = new JsonObject();
+            com.google.gson.JsonArray coordinates = new com.google.gson.JsonArray();
+            coordinates.add(position.x());
+            coordinates.add(position.y());
+            placement.add("position", coordinates);
+            groups.add(name, placement);
+        });
+        QuestDefinition.GroupDisplay position = definition.position(group);
+        x = position.x();
+        y = position.y();
+        xText = Integer.toString(x);
+        yText = Integer.toString(y);
+        xInvalid = false;
+        yInvalid = false;
+        tasks.clear();
+        definition.tasks().values().forEach(task -> tasks.add(new TaskDraft(task.id(), task.type(), task.source().deepCopy())));
+        rewards.clear();
+        definition.rewards().values().forEach(reward -> rewards.add(new RewardDraft(reward.id(), reward.type(), reward.source().deepCopy())));
+        resetEditors();
+        begin(QuestDraft.fromClientSnapshot(definition.id(), snapshot));
+        acceptCurrentAsBaseline();
+    }
+
+    void beginNew(String group, int x, int y) {
+        id = "";
+        title = "";
+        subtitle = "";
+        body = "";
+        icon = "minecraft:map";
+        iconSize = QuestSurfaceLayout.DEFAULT_ICON_SIZE;
+        iconSizeText = Integer.toString(iconSize);
+        iconSizeTouched = false;
+        iconSizeInvalid = false;
+        descriptionTouched = false;
+        iconTouched = false;
+        background = "theseus:textures/gui/quest_backgrounds/default.png";
+        individualProgress = false;
+        hiddenUntil = QuestDefinition.Visibility.LOCKED;
+        unlockNotification = false;
+        showDependencyArrow = true;
+        repeatable = false;
+        autoClaimRewards = false;
+        tasks.clear();
+        rewards.clear();
+        editingExisting = false;
+        originalId = null;
+        groups = new JsonObject();
+        this.x = x;
+        this.y = y;
+        xText = Integer.toString(x);
+        yText = Integer.toString(y);
+        xInvalid = false;
+        yInvalid = false;
+        resetEditors();
+        baseline = null;
+        setGroupPosition(group, x, y);
+        begin(QuestDraft.create(null));
+    }
+
+    private void acceptCurrentAsBaseline() {
+        QuestDraft initial = draft();
+        initial.accept();
+        begin(initial);
+    }
+
+    private void resetEditors() {
+        editingTask = null;
+        editingTaskIndex = -1;
+        taskEditorParents.clear();
+        taskEditorParentIndexes.clear();
+        taskEditorError = "";
+        editingReward = null;
+        editingRewardIndex = -1;
+        editingNestedReward = null;
+        editingNestedRewardIndex = -1;
+        rewardEditorError = "";
+    }
+
     void discard() {
         open = false;
         editingExisting = false;
         originalId = null;
         baseline = null;
+        resetEditors();
     }
 
     boolean hasBaseline() {
@@ -139,7 +246,189 @@ class QuestAuthoringSession {
     }
 
     void setGroupPosition(String group, int x, int y) {
+        JsonObject placement = groups.has(group) && groups.get(group).isJsonObject()
+            ? groups.getAsJsonObject(group) : new JsonObject();
+        com.google.gson.JsonArray coordinates = new com.google.gson.JsonArray();
+        coordinates.add(x);
+        coordinates.add(y);
+        placement.add("position", coordinates);
+        groups.add(group, placement);
         if (baseline != null) baseline.setGroupPosition(group, x, y);
+    }
+
+    void editTask(int index) {
+        editingTaskIndex = index;
+        editingTask = tasks.get(index).copy();
+        taskEditorParents.clear();
+        taskEditorParentIndexes.clear();
+        taskEditorError = "";
+    }
+
+    void createTask(TaskDraft task) {
+        editingTaskIndex = -1;
+        editingTask = task;
+        taskEditorParents.clear();
+        taskEditorParentIndexes.clear();
+        taskEditorError = "";
+    }
+
+    void editChildTask(int index) {
+        List<TaskDraft> children = nestedTasks(editingTask);
+        taskEditorParents.add(editingTask);
+        taskEditorParentIndexes.add(editingTaskIndex);
+        editingTask = children.get(index).copy();
+        editingTaskIndex = index;
+        taskEditorError = "";
+    }
+
+    void createChildTask(TaskDraft task) {
+        taskEditorParents.add(editingTask);
+        taskEditorParentIndexes.add(editingTaskIndex);
+        editingTask = task;
+        editingTaskIndex = -1;
+        taskEditorError = "";
+    }
+
+    String taskBreadcrumbs() {
+        if (taskEditorParents.isEmpty()) return editingTask.id;
+        return taskEditorParents.stream().map(parent -> parent.id)
+            .collect(java.util.stream.Collectors.joining(" › ")) + " › " + editingTask.id;
+    }
+
+    void moveNestedTask(int index, int direction) {
+        List<TaskDraft> children = nestedTasks(editingTask);
+        int target = index + direction;
+        if (target < 0 || target >= children.size()) return;
+        java.util.Collections.swap(children, index, target);
+        setNestedTasks(editingTask, children);
+    }
+
+    void removeNestedTask(int index) {
+        List<TaskDraft> children = nestedTasks(editingTask);
+        children.remove(index);
+        setNestedTasks(editingTask, children);
+        nestedTaskScroll = Math.min(nestedTaskScroll, Math.max(0, children.size() - 4));
+    }
+
+    void removeTask(int index) {
+        if (index >= 0 && index < tasks.size()) tasks.remove(index);
+    }
+
+    boolean saveTask(QuestDraftValidation.RegistryLookup registries) {
+        List<TaskDraft> peers = taskEditorParents.isEmpty() ? tasks : nestedTasks(taskEditorParents.getLast());
+        taskEditorError = QuestDraftValidation.validateTaskDraft(editingTask, peers, editingTaskIndex, registries);
+        if (!taskEditorError.isEmpty()) return false;
+        if (taskEditorParents.isEmpty()) {
+            if (editingTaskIndex < 0) tasks.add(editingTask.copy());
+            else tasks.set(editingTaskIndex, editingTask.copy());
+        } else {
+            TaskDraft parent = taskEditorParents.getLast();
+            List<TaskDraft> children = nestedTasks(parent);
+            if (editingTaskIndex < 0) children.add(editingTask.copy());
+            else children.set(editingTaskIndex, editingTask.copy());
+            setNestedTasks(parent, children);
+        }
+        return true;
+    }
+
+    String validateTask(int index, QuestDraftValidation.RegistryLookup registries) {
+        return QuestDraftValidation.validateTaskDraft(tasks.get(index).copy(), tasks, index, registries);
+    }
+
+    /** Returns whether an open parent task remains after closing this editor. */
+    boolean closeTaskEditor() {
+        boolean hasParent = !taskEditorParents.isEmpty();
+        if (hasParent) {
+            editingTask = taskEditorParents.removeLast();
+            editingTaskIndex = taskEditorParentIndexes.removeLast();
+        } else {
+            editingTask = null;
+            editingTaskIndex = -1;
+        }
+        taskEditorError = "";
+        return hasParent;
+    }
+
+    void editReward(int index) {
+        editingRewardIndex = index;
+        editingReward = rewards.get(index).copy();
+        rewardEditorError = "";
+    }
+
+    void createReward(RewardDraft reward) {
+        editingRewardIndex = -1;
+        editingReward = reward;
+        rewardEditorError = "";
+    }
+
+    void editNestedReward(int index) {
+        editingNestedRewardIndex = index;
+        editingNestedReward = nestedRewards(editingReward).get(index).copy();
+        rewardEditorError = "";
+    }
+
+    void createNestedReward(RewardDraft reward) {
+        editingNestedRewardIndex = -1;
+        editingNestedReward = reward;
+        rewardEditorError = "";
+    }
+
+    void moveNestedReward(int index, int direction) {
+        List<RewardDraft> children = nestedRewards(editingReward);
+        int target = index + direction;
+        if (target < 0 || target >= children.size()) return;
+        java.util.Collections.swap(children, index, target);
+        setNestedRewards(editingReward, children);
+    }
+
+    void removeNestedReward(int index) {
+        List<RewardDraft> children = nestedRewards(editingReward);
+        children.remove(index);
+        setNestedRewards(editingReward, children);
+        nestedRewardScroll = Math.min(nestedRewardScroll, Math.max(0, children.size() - 4));
+    }
+
+    void removeReward(int index) {
+        rewards.remove(index);
+    }
+
+    boolean saveReward(boolean nested, QuestDraftValidation.RegistryLookup registries) {
+        RewardDraft reward = nested ? editingNestedReward : editingReward;
+        List<RewardDraft> peers = nested ? nestedRewards(editingReward) : rewards;
+        int index = nested ? editingNestedRewardIndex : editingRewardIndex;
+        rewardEditorError = QuestDraftValidation.validateRewardDraft(reward, peers, index, nested, registries);
+        if (!rewardEditorError.isEmpty()) return false;
+        if (nested) {
+            if (index < 0) peers.add(reward.copy());
+            else peers.set(index, reward.copy());
+            setNestedRewards(editingReward, peers);
+        } else if (index < 0) rewards.add(reward.copy());
+        else rewards.set(index, reward.copy());
+        return true;
+    }
+
+    void closeRewardEditor(boolean nested) {
+        rewardEditorError = "";
+        if (nested) {
+            editingNestedReward = null;
+            editingNestedRewardIndex = -1;
+        } else {
+            editingReward = null;
+            editingRewardIndex = -1;
+        }
+    }
+
+    boolean hasUnsavedEditorChanges() {
+        if (editingTask != null && editingTaskIndex >= 0 && editingTaskIndex < tasks.size()
+            && !editingTask.sameAs(tasks.get(editingTaskIndex))) return true;
+        if (editingReward != null && editingRewardIndex >= 0 && editingRewardIndex < rewards.size()
+            && !editingReward.sameAs(rewards.get(editingRewardIndex))) return true;
+        if (editingNestedReward != null) {
+            List<RewardDraft> nested = nestedRewards(editingReward);
+            if (editingNestedRewardIndex >= 0 && editingNestedRewardIndex < nested.size()
+                && !editingNestedReward.sameAs(nested.get(editingNestedRewardIndex))) return true;
+        }
+        return false;
     }
 
     QuestDraft draft() {

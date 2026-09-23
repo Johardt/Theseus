@@ -1,0 +1,69 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:boat"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Mark Sailor's Route",
+    "subtitle": "04 · Roads Beyond the Valley · field report 02.4",
+    "description": [
+      "The summit path is clear at noon; the sailor's route team needs this entry before it can move on.",
+      "Complete the entity interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          540,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the horse",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:horse",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_04_11_1"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 26
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_04_01_01",
+    "qg_04_01_02",
+    "qg_04_00_03"
+  ]
+}

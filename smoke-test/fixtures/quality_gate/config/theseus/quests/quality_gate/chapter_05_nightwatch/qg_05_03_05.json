@@ -1,0 +1,74 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:blaze_rod"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 48,
+    "title": {
+      "text": "Fortify Nether Patrol",
+      "color": "white"
+    },
+    "subtitle": "05 · The Night Watch · field report 04.6",
+    "description": [
+      "Tracks lead back toward the gate; the nether patrol team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          900,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 74,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in meadow",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:meadow"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 5
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_05_03_03",
+    "qg_05_02_05"
+  ]
+}

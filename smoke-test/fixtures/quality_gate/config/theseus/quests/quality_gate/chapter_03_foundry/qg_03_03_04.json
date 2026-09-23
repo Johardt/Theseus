@@ -1,0 +1,66 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:iron_ingot"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 16,
+    "title": "Shape Furnace Hall",
+    "subtitle": "03 · Stonework and Smithing · field report 04.5",
+    "description": [
+      "The quarry face has exposed a new layer; the furnace hall team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          720,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the pig trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:pig",
+      "amount": 3,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the brush",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:brush",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_03_03",
+    "qg_03_02_04"
+  ]
+}

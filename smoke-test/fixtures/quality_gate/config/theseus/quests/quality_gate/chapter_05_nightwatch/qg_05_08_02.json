@@ -1,0 +1,70 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:shield"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 20,
+    "title": "Escort Skeleton Bluff",
+    "subtitle": "05 · The Night Watch · field report 09.3",
+    "description": [
+      "A damaged wall needs one more brace; the skeleton bluff team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          360,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record jump",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:jump",
+      "target": 36
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in river",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:river",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: spyglass",
+      "item": {
+        "id": "minecraft:spyglass",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_05_08_02"
+    }
+  },
+  "dependencies": [
+    "qg_05_08_00",
+    "qg_05_07_02"
+  ]
+}

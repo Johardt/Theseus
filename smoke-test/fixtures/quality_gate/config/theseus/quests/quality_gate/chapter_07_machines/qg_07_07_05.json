@@ -1,0 +1,62 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:redstone_lamp"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 20,
+    "title": "Automate Quarry Lift",
+    "subtitle": "07 · Machines and Materials · field report 08.6",
+    "description": "The lift cable has reached the upper landing; the quarry lift team needs this entry before it can move on.",
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          900,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "unlock_notification": false,
+    "show_dependency_arrow": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/kill_a_mob"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the milk bucket provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:milk_bucket",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 3
+    }
+  },
+  "dependencies": [
+    "qg_07_07_03",
+    "qg_07_06_05"
+  ]
+}

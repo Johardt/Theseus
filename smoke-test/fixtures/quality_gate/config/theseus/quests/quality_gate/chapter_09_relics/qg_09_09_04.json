@@ -1,0 +1,67 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:chest_minecart"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 48,
+    "title": "Archive End Portal",
+    "subtitle": "09 · Relics Below the Surface · field report 10.5",
+    "description": [
+      "The vault door has opened just wide enough; the end portal team needs this entry before it can move on.",
+      "Complete the item use objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          720,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the mushroom stew provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:mushroom_stew",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 3,
+      "xpType": "points",
+      "collectionType": "consume"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_09_03",
+    "qg_09_08_04"
+  ]
+}

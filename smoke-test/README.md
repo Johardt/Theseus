@@ -149,7 +149,45 @@ server log. Registry and dependency failures should be returned as structured
 diagnostics to the client; there should be no stack trace and no half-written
 import directory.
 
-## 8. Cleanup
+## 8. Quality-gate scale pack
+
+`fixtures/quality_gate/config/theseus/` contains a deterministic, self-contained
+700-quest pack: ten chapters with 70 quests each. The same generated quest
+documents and chapter metadata are also written to `run/config/theseus/` by
+`generate_quality_gate.py`. The six existing `Getting Started` dev quests are
+left in place, so the current dev profile contains 706 quests in total.
+
+The pack covers every built-in task type and reward type, different task and
+reward bundles, selectable rewards, nested composite tasks, dependency
+branches and merges, chapter transitions, all nine card backgrounds, varied
+item icons, task settings, chapter textures, and extension fields. The quest
+JSON payload is about 1.5 MB, spread across many independent files to exercise
+directory loading as well as the graph UI.
+
+To restore the quality pack if the dev `run/` directory is removed, copy the
+fixture config back into the development profile:
+
+```sh
+mkdir -p run/config/theseus
+cp -R smoke-test/fixtures/quality_gate/config/theseus/. run/config/theseus/
+```
+
+To regenerate both identical copies after editing the generator:
+
+```sh
+python3 smoke-test/generate_quality_gate.py
+```
+
+For the manual gate, start `runClient`, open Theseus, and inspect each of the
+ten quality-gate chapters. Confirm the chapter order and themed backgrounds,
+pan and zoom through the 70-quest graphs, follow the branch and merge arrows,
+and open quests with multiple tasks, composite children, and selectable
+rewards. The first chapter starts without prerequisites; each later chapter
+is gated by the previous chapter's final quest. On a clean profile containing
+only the restored fixture pack, the runtime should load 700 quests; with the
+existing six dev quests it should load 706.
+
+## 9. Cleanup
 
 Delete the generated oversized file and remove the imported smoke quests from
 the editor. If you moved the dev config at the start, close Minecraft and

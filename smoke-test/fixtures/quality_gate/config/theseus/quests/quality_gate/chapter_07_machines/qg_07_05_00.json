@@ -1,0 +1,76 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:redstone_lamp"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 32,
+    "title": "Test Piston Yard",
+    "subtitle": "07 · Machines and Materials · field report 06.1",
+    "description": [
+      "The lift cable has reached the upper landing; the piston yard team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          0,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure ender pearl",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:ender_pearl",
+      "amount": 2,
+      "collection": "consume"
+    },
+    "supporting_note": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 4
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bone",
+      "item": {
+        "id": "minecraft:bone",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_05_00"
+    }
+  },
+  "dependencies": [
+    "qg_07_04_06"
+  ]
+}

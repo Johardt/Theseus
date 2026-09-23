@@ -1,0 +1,62 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:furnace"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 32,
+    "title": "Stock Kiln Yard",
+    "subtitle": "03 · Stonework and Smithing · field report 06.2",
+    "description": "The foreman has opened the foundry gate; the kiln yard team needs this entry before it can move on.",
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          180,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record damage dealt",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:damage_dealt",
+      "target": 42,
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 5
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_05_00",
+    "qg_03_04_01"
+  ]
+}

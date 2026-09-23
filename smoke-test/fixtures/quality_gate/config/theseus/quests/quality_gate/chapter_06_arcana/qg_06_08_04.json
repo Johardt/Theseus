@@ -1,0 +1,58 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:knowledge_book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 12,
+    "title": "Test Ancient Script",
+    "subtitle": "06 · The Arcane Workshop · field report 09.5",
+    "description": "The archive lock responds to a new key; the ancient script team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          720,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in taiga",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:taiga"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 14
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_08_03",
+    "qg_06_07_04"
+  ]
+}

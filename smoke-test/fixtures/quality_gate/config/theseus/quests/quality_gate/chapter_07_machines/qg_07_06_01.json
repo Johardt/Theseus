@@ -1,0 +1,78 @@
+{
+  "display": {
+    "icon": "minecraft:observer",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 48,
+    "title": "Balance Redstone Circuit",
+    "subtitle": "07 · Machines and Materials · field report 07.2",
+    "description": [
+      "A test pulse stopped short of the marker; the redstone circuit team needs this entry before it can move on.",
+      "Complete the entity interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          180,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the horse",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:horse",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_07_44_1"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 8
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 6
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_06_01"
+    }
+  },
+  "dependencies": [
+    "qg_07_06_00",
+    "qg_07_05_01"
+  ]
+}

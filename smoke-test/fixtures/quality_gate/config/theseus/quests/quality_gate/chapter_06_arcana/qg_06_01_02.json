@@ -1,0 +1,88 @@
+{
+  "display": {
+    "icon": "minecraft:enchanted_book",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 32,
+    "title": "Copy Brewing Bench",
+    "subtitle": "06 · The Arcane Workshop · field report 02.3",
+    "description": "A trial note contradicts the old index; the brewing bench team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          360,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 5,
+      "xpType": "points",
+      "collectionType": "manual"
+    },
+    "supporting_note": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the chicken",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:chicken",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 42
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: bow",
+          "item": {
+            "id": "minecraft:bow",
+            "count": 3
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_06_01_02"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_01_00",
+    "qg_06_00_02"
+  ]
+}

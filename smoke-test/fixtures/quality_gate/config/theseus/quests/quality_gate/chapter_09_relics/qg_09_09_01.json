@@ -1,0 +1,92 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:ender_pearl"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 20,
+    "title": "Archive Stronghold Ring",
+    "subtitle": "09 · Relics Below the Surface · field report 10.2",
+    "description": [
+      "An archive shelf survived the bastion fire; the stronghold ring team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          180,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the horse",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:horse",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:stat",
+          "title": "Record damage dealt",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:damage_dealt",
+          "target": 18
+        },
+        "trail_3": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the iron golem trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:iron_golem",
+          "amount": 4,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:nether_star"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_09_01"
+    }
+  },
+  "dependencies": [
+    "qg_09_09_00",
+    "qg_09_08_01"
+  ]
+}

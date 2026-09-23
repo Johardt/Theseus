@@ -1,0 +1,101 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:enchanted_book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 16,
+    "title": "Restore Archivist's Key",
+    "subtitle": "06 · The Arcane Workshop · field report 06.6",
+    "description": [
+      "A trial note contradicts the old index; the archivist's key team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          900,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure logs",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "#minecraft:logs",
+      "amount": 4,
+      "collection": "manual",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:check",
+          "title": "Submit the field report",
+          "description": "Use the manual check action to sign off this expedition note.",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:recipe",
+          "title": "Learn the bow pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:bow"
+          ]
+        },
+        "trail_3": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 1,
+          "xpType": "points",
+          "collectionType": "automatic",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "trail_4": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from the end to overworld.",
+          "from": "minecraft:the_end",
+          "to": "minecraft:overworld"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_05_03",
+    "qg_06_04_05"
+  ]
+}

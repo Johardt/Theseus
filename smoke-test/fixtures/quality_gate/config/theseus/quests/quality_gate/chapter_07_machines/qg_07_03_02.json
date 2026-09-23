@@ -1,0 +1,92 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:redstone_lamp"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 12,
+    "title": "Route Rail Station",
+    "subtitle": "07 · Machines and Materials · field report 04.3",
+    "description": [
+      "The lift cable has reached the upper landing; the rail station team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          360,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in taiga",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:taiga"
+    },
+    "supporting_note": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:the_nether",
+        "biomes": "minecraft:warped_forest",
+        "position": {
+          "x": {
+            "min": -254,
+            "max": 322
+          },
+          "y": {
+            "min": 48,
+            "max": 110
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 40
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: prismarine shard",
+      "item": {
+        "id": "minecraft:prismarine_shard",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_03_02"
+    }
+  },
+  "dependencies": [
+    "qg_07_03_00",
+    "qg_07_02_02"
+  ]
+}

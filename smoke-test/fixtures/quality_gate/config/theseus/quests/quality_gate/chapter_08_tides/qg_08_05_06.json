@@ -1,0 +1,89 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lantern"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 48,
+    "title": "Mark Open Water",
+    "subtitle": "08 · Tides and Open Water · field report 06.7",
+    "description": [
+      "The coastal beacon lost its upper lamp; the open water team needs this entry before it can move on.",
+      "Complete the location objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          1080,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:taiga",
+        "position": {
+          "x": {
+            "min": -196,
+            "max": 316
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the enderman trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:enderman",
+      "amount": 4
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 41
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_05_04",
+    "qg_08_05_05",
+    "qg_08_04_06"
+  ]
+}

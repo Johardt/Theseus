@@ -1,0 +1,78 @@
+{
+  "display": {
+    "icon": "minecraft:map",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 12,
+    "title": "Trace Tent Lines",
+    "subtitle": "01 · Trailhead and Shelter · field report 08.1",
+    "description": [
+      "The weather is turning; the tent lines team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          0,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure golden apple",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:golden_apple",
+      "amount": 6,
+      "collection": "consume"
+    },
+    "supporting_note": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 38
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 2
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_01_07_00"
+    }
+  },
+  "dependencies": [
+    "qg_01_06_06"
+  ]
+}

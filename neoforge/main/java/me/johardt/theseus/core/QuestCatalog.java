@@ -4,10 +4,13 @@ import me.johardt.theseus.Theseus;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +53,15 @@ public final class QuestCatalog {
         this.chapterSettings = Map.copyOf(chapterSettings);
         this.conflictingPaths = Map.copyOf(conflictingPaths);
         List<QuestDefinition.ValidationIssue> allIssues = new java.util.ArrayList<>(storageIssues);
+        int dependencyEdges = quests.values().stream().mapToInt(quest -> quest.dependencies().size()).sum();
+        long validationStarted = System.nanoTime();
+        Theseus.LOGGER.info("Validating {} quest definitions and {} dependency edges", quests.size(), dependencyEdges);
         allIssues.addAll(validate(quests));
+        Theseus.LOGGER.info(
+            "Validated quest definitions and dependency graph in {} ms ({} issues)",
+            elapsedMillis(validationStarted),
+            allIssues.size() - storageIssues.size()
+        );
         conflictingPaths.forEach((id, paths) -> allIssues.add(new QuestDefinition.ValidationIssue(
             QuestDefinition.Severity.ERROR, id, "Duplicate quest ID '" + id + "' in " + paths.stream().map(Path::toString).collect(java.util.stream.Collectors.joining(" and "))
         )));
@@ -59,9 +70,23 @@ public final class QuestCatalog {
 
     public static QuestCatalog load(Path configDirectory) {
         QuestDocumentStore documents = new QuestDocumentStore(configDirectory);
+        long loadStarted = System.nanoTime();
         try {
             Map<String, QuestDefinition> quests = new LinkedHashMap<>();
+            Theseus.LOGGER.info(
+                "Loading quest documents from {}",
+                configDirectory.toAbsolutePath().normalize().resolve(Theseus.MOD_ID).resolve("quests")
+            );
+            long documentReadStarted = System.nanoTime();
             QuestDocumentStore.Snapshot snapshot = documents.load();
+            long documentReadMillis = elapsedMillis(documentReadStarted);
+            Theseus.LOGGER.info(
+                "Read {} quest documents in {} ms ({} load failures, {} duplicate IDs)",
+                snapshot.documents().size(),
+                documentReadMillis,
+                snapshot.failures().size(),
+                snapshot.conflictingPaths().size()
+            );
             Set<String> failedQuestIds = new HashSet<>();
             snapshot.failures().stream()
                 .map(QuestDocumentStore.LoadFailure::id)
@@ -73,8 +98,13 @@ public final class QuestCatalog {
                     failure.path().toString(),
                     failure.message()
                 ))
-                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
-            snapshot.documents().forEach((id, document) -> {
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+            Theseus.LOGGER.info("Parsing {} quest definitions", snapshot.documents().size());
+            long definitionParseStarted = System.nanoTime();
+            int parsedCount = 0;
+            for (var entry : snapshot.documents().entrySet()) {
+                String id = entry.getKey();
+                QuestDocumentStore.Document document = entry.getValue();
                 try {
                     quests.put(id, QuestDefinition.parse(id, document.root()));
                 } catch (RuntimeException exception) {
@@ -87,7 +117,23 @@ public final class QuestCatalog {
                         "Failed to parse quest definition: " + message
                     ));
                 }
-            });
+                parsedCount++;
+                if (parsedCount % 100 == 0 && parsedCount < snapshot.documents().size()) {
+                    Theseus.LOGGER.info(
+                        "Parsed {}/{} quest definitions in {} ms",
+                        parsedCount,
+                        snapshot.documents().size(),
+                        elapsedMillis(definitionParseStarted)
+                    );
+                }
+            }
+            long definitionParseMillis = elapsedMillis(definitionParseStarted);
+            Theseus.LOGGER.info(
+                "Parsed {} quest definitions in {} ms ({} parse failures)",
+                quests.size(),
+                definitionParseMillis,
+                failedQuestIds.size()
+            );
             QuestCatalog catalog = new QuestCatalog(
                 documents,
                 quests,
@@ -98,7 +144,14 @@ public final class QuestCatalog {
                 snapshot.conflictingPaths(),
                 storageIssues
             );
-            Theseus.LOGGER.info("Loaded {} core quests ({} validation issues)", quests.size(), catalog.issues.size());
+            Theseus.LOGGER.info(
+                "Loaded {} core quests ({} validation issues) in {} ms total (documents={} ms, definition_parse={} ms)",
+                quests.size(),
+                catalog.issues.size(),
+                elapsedMillis(loadStarted),
+                documentReadMillis,
+                definitionParseMillis
+            );
             catalog.issues.forEach(issue -> {
                 if (issue.severity() == QuestDefinition.Severity.ERROR) {
                     Theseus.LOGGER.error("Quest validation: {}: {}", issue.path(), issue.message());
@@ -242,12 +295,19 @@ public final class QuestCatalog {
 
     private static List<QuestDefinition.ValidationIssue> validate(Map<String, QuestDefinition> quests) {
         List<QuestDefinition.ValidationIssue> issues = new java.util.ArrayList<>();
+        Set<String> cyclicQuestIds = dependencyCycleMembers(quests);
         quests.forEach((id, quest) -> {
             quest.issues().forEach(issue -> issues.add(new QuestDefinition.ValidationIssue(
                 issue.severity(), id + "." + issue.path(), issue.message())));
             quest.dependencies().stream().filter(dependency -> !quests.containsKey(dependency)).forEach(dependency ->
                 issues.add(new QuestDefinition.ValidationIssue(QuestDefinition.Severity.ERROR, id + ".dependencies", "Missing quest " + dependency)));
-            detectCycle(id, id, quests, new HashSet<>(), issues);
+            if (cyclicQuestIds.contains(id)) {
+                issues.add(new QuestDefinition.ValidationIssue(
+                    QuestDefinition.Severity.ERROR,
+                    id + ".dependencies",
+                    "Dependency cycle detected"
+                ));
+            }
         });
         return List.copyOf(issues);
     }
@@ -263,6 +323,8 @@ public final class QuestCatalog {
                     id + ".dependencies",
                     "Missing quest " + dependency
                 )));
+        });
+        for (String id : dependencyCycleMembers(quests)) {
             List<String> cycle = dependencyCyclePath(quests, id);
             if (!cycle.isEmpty()) {
                 issues.add(new QuestDefinition.ValidationIssue(
@@ -271,40 +333,94 @@ public final class QuestCatalog {
                     "Dependency cycle: " + String.join(" → ", cycle)
                 ));
             }
-        });
+        }
         return issues.stream().distinct().toList();
     }
 
     private static List<String> dependencyCyclePath(Map<String, QuestDefinition> quests, String origin) {
-        return findCyclePath(quests, origin, origin, new LinkedHashSet<>());
+        List<String> path = new ArrayList<>();
+        if (!findCyclePath(quests, origin, origin, new HashSet<>(), path)) return List.of();
+        return List.copyOf(path);
     }
 
-    private static List<String> findCyclePath(Map<String, QuestDefinition> quests, String origin, String current, Set<String> path) {
-        if (!path.add(current)) return current.equals(origin) ? List.of(origin) : List.of();
+    private static boolean findCyclePath(
+        Map<String, QuestDefinition> quests,
+        String origin,
+        String current,
+        Set<String> visited,
+        List<String> path
+    ) {
+        if (!visited.add(current)) return false;
+        path.add(current);
         QuestDefinition quest = quests.get(current);
         if (quest != null) {
             for (String dependency : quest.dependencies()) {
                 if (dependency.equals(origin)) {
-                    List<String> cycle = new java.util.ArrayList<>(path);
-                    cycle.add(origin);
-                    return List.copyOf(cycle);
+                    path.add(origin);
+                    return true;
                 }
-                List<String> nested = findCyclePath(quests, origin, dependency, new LinkedHashSet<>(path));
-                if (!nested.isEmpty()) return nested;
+                if (findCyclePath(quests, origin, dependency, visited, path)) return true;
             }
         }
-        return List.of();
+        path.removeLast();
+        return false;
     }
 
-    private static void detectCycle(String origin, String current, Map<String, QuestDefinition> quests, Set<String> path, List<QuestDefinition.ValidationIssue> issues) {
-        if (!path.add(current)) {
-            if (current.equals(origin)) {
-                QuestDefinition.ValidationIssue issue = new QuestDefinition.ValidationIssue(QuestDefinition.Severity.ERROR, origin + ".dependencies", "Dependency cycle detected");
-                if (!issues.contains(issue)) issues.add(issue);
-            }
-            return;
+    private static Set<String> dependencyCycleMembers(Map<String, QuestDefinition> quests) {
+        DependencyCycleFinder finder = new DependencyCycleFinder(quests);
+        for (String questId : quests.keySet()) {
+            if (!finder.indices.containsKey(questId)) finder.visit(questId);
         }
-        QuestDefinition quest = quests.get(current);
-        if (quest != null) quest.dependencies().forEach(dependency -> detectCycle(origin, dependency, quests, new HashSet<>(path), issues));
+        return Set.copyOf(finder.cyclicQuestIds);
+    }
+
+    private static long elapsedMillis(long startedAt) {
+        return java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
+    }
+
+    private static final class DependencyCycleFinder {
+        private final Map<String, QuestDefinition> quests;
+        private final Map<String, Integer> indices = new HashMap<>();
+        private final Map<String, Integer> lowLinks = new HashMap<>();
+        private final Deque<String> stack = new ArrayDeque<>();
+        private final Set<String> onStack = new HashSet<>();
+        private final Set<String> cyclicQuestIds = new LinkedHashSet<>();
+        private int nextIndex;
+
+        private DependencyCycleFinder(Map<String, QuestDefinition> quests) {
+            this.quests = quests;
+        }
+
+        private void visit(String questId) {
+            int index = nextIndex++;
+            indices.put(questId, index);
+            lowLinks.put(questId, index);
+            stack.push(questId);
+            onStack.add(questId);
+
+            for (String dependency : quests.get(questId).dependencies()) {
+                if (!quests.containsKey(dependency)) continue;
+                if (!indices.containsKey(dependency)) {
+                    visit(dependency);
+                    lowLinks.put(questId, Math.min(lowLinks.get(questId), lowLinks.get(dependency)));
+                } else if (onStack.contains(dependency)) {
+                    lowLinks.put(questId, Math.min(lowLinks.get(questId), indices.get(dependency)));
+                }
+            }
+
+            if (lowLinks.get(questId).equals(indices.get(questId))) {
+                List<String> component = new ArrayList<>();
+                String member;
+                do {
+                    member = stack.pop();
+                    onStack.remove(member);
+                    component.add(member);
+                } while (!member.equals(questId));
+
+                boolean selfCycle = component.size() == 1
+                    && quests.get(questId).dependencies().contains(questId);
+                if (component.size() > 1 || selfCycle) cyclicQuestIds.addAll(component);
+            }
+        }
     }
 }

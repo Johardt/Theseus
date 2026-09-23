@@ -1,0 +1,66 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:iron_ingot"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 24,
+    "title": "Inspect Copper Seam",
+    "subtitle": "03 · Stonework and Smithing · field report 08.1",
+    "description": [
+      "The quarry face has exposed a new layer; the copper seam team needs this entry before it can move on.",
+      "Complete the item use objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          0,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the chorus fruit provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:chorus_fruit",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 3,
+      "xpType": "points",
+      "collectionType": "consume"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: arrow",
+      "item": {
+        "id": "minecraft:arrow",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_06_06"
+  ]
+}

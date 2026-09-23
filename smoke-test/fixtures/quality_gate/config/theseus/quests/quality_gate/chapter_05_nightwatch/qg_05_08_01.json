@@ -1,0 +1,72 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:trident"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 16,
+    "title": "Escort Zombie Trail",
+    "subtitle": "05 · The Night Watch · field report 09.2",
+    "description": "Arrows struck the bluff's warning post; the zombie trail team needs this entry before it can move on.",
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          180,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the shield pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:shield"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:nether/obtain_blaze_rod"
+      ]
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 10
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bow",
+      "item": {
+        "id": "minecraft:bow",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_05_08_01"
+    }
+  },
+  "dependencies": [
+    "qg_05_08_00",
+    "qg_05_07_01"
+  ]
+}

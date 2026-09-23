@@ -1,0 +1,78 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:prismarine_shard"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 32,
+    "title": {
+      "text": "Follow Deep Current",
+      "color": "green"
+    },
+    "subtitle": "08 · Tides and Open Water · field report 04.6",
+    "description": [
+      "A reef shelf is visible at low tide; the deep current team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          900,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the piston pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:piston"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:story/upgrade_tools"
+      ]
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 44
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_03_03",
+    "qg_08_02_05"
+  ]
+}

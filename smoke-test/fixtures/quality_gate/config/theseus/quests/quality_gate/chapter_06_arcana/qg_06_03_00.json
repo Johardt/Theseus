@@ -1,0 +1,88 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:enchanted_book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 20,
+    "title": "Translate Librarian's Desk",
+    "subtitle": "06 · The Arcane Workshop · field report 04.1",
+    "description": "A trial note contradicts the old index; the librarian's desk team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          0,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record walk one cm",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:walk_one_cm",
+      "target": 90
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in river",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:river",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 6
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: spyglass",
+          "item": {
+            "id": "minecraft:spyglass",
+            "count": 7
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_06_03_00"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_02_06"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:tripwire_hook"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 16,
+    "title": "Brew Archivist's Key",
+    "subtitle": "06 · The Arcane Workshop · field report 03.6",
+    "description": [
+      "A loose page turned up in the map drawer; the archivist's key team needs this entry before it can move on.",
+      "Complete the location objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          900,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:the_nether",
+        "biomes": "minecraft:warped_forest",
+        "position": {
+          "x": {
+            "min": -196,
+            "max": 316
+          },
+          "y": {
+            "min": 48,
+            "max": 110
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the spider trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:spider",
+      "amount": 3
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_02_03",
+    "qg_06_01_05"
+  ]
+}

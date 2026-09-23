@@ -1,0 +1,77 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lever"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 12,
+    "title": "Power Rail Station",
+    "subtitle": "07 · Machines and Materials · field report 05.3",
+    "description": "The workshop core is waiting for a stable signal; the rail station team needs this entry before it can move on.",
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          360,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:forest",
+        "position": {
+          "x": {
+            "min": -228,
+            "max": 316
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the pig trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:pig",
+      "amount": 1
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 33
+    }
+  },
+  "dependencies": [
+    "qg_07_04_00",
+    "qg_07_03_02"
+  ]
+}

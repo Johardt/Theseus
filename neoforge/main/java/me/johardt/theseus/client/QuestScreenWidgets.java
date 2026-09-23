@@ -7,6 +7,8 @@ import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.ArrayList;
 import java.util.List;
+import me.johardt.theseus.client.QuestClientSnapshot.ChapterDisplay;
+import me.johardt.theseus.client.QuestClientSnapshot.ClientQuest;
 import me.johardt.theseus.core.QuestMutation;
 import me.johardt.theseus.client.description.MarkdownEditBox;
 import net.minecraft.client.Minecraft;
@@ -539,8 +541,7 @@ final class QuestScreenWidgets {
         action.addProperty("operation", "reorder");
         action.add("order", GSON.toJsonTree(order));
         sendChapterAction(action);
-        screen.chapters.clear();
-        screen.chapters.addAll(order);
+        screen.snapshots.reorderChapters(order);
         screen.chapterListState.setChapterCount(order.size());
         if (screen.group.equals(order.get(target))) screen.chapterListState.ensureVisible(target);
         else screen.chapterListState.ensureVisible(order.indexOf(screen.group));

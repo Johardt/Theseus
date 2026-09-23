@@ -1,0 +1,68 @@
+{
+  "display": {
+    "icon": "minecraft:blast_furnace",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 16,
+    "title": "Temper Rail Spur",
+    "subtitle": "03 · Stonework and Smithing · field report 05.6",
+    "description": "A damaged tool has reached the repair bench; the rail spur team needs this entry before it can move on.",
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          900,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the milk bucket provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:milk_bucket",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 14
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_04_03",
+    "qg_03_03_05"
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stonecutter"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": "Temper Furnace Hall",
+    "subtitle": "03 · Stonework and Smithing · field report 05.5",
+    "description": [
+      "The kiln crew needs fuel before dusk; the furnace hall team needs this entry before it can move on.",
+      "Complete the item interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          720,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the brush",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:brush",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from the nether to the end.",
+          "from": "minecraft:the_nether",
+          "to": "minecraft:the_end"
+        },
+        "trail_2": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:deep_dark",
+            "position": {
+              "x": {
+                "min": -220,
+                "max": 292
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:blaze_rod"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:item",
+          "title": "Secure golden apple",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:golden_apple",
+          "amount": 6,
+          "collection": "consume"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:elytra"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: prismarine shard",
+      "item": {
+        "id": "minecraft:prismarine_shard",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_04_04"
+    }
+  },
+  "dependencies": [
+    "qg_03_04_03",
+    "qg_03_03_04"
+  ]
+}

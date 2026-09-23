@@ -1,0 +1,65 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:glass_bottle"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Annotate Archivist's Key",
+    "subtitle": "06 · The Arcane Workshop · field report 07.6",
+    "description": [
+      "An inscription is still legible under the dust; the archivist's key team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          900,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_06_05"
+    }
+  },
+  "dependencies": [
+    "qg_06_06_03",
+    "qg_06_05_05"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:compass"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 32,
+    "title": "Retrace Portal Return",
+    "subtitle": "04 · Roads Beyond the Valley · field report 09.7",
+    "description": [
+      "The river ford has shifted overnight; the portal return team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          1080,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the bread pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:bread"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:story/mine_stone"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_04_08_04",
+    "qg_04_08_05",
+    "qg_04_07_06"
+  ]
+}

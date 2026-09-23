@@ -1,0 +1,72 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:echo_shard"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 20,
+    "title": "Compare Stronghold Ring",
+    "subtitle": "09 · Relics Below the Surface · field report 08.2",
+    "description": [
+      "The stronghold ring is missing one marker; the stronghold ring team needs this entry before it can move on.",
+      "Complete the item interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          180,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the bow",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:bow",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:item",
+      "title": "Secure bow",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:bow",
+      "amount": 2,
+      "collection": "consume",
+      "fixture_extension": {
+        "retained": true,
+        "slot": 1
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: carrot",
+      "item": {
+        "id": "minecraft:carrot",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_07_01"
+    }
+  },
+  "dependencies": [
+    "qg_09_07_00",
+    "qg_09_06_01"
+  ]
+}

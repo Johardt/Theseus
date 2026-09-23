@@ -1,0 +1,70 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:rail"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 48,
+    "title": "Quarry Iron Works",
+    "subtitle": "03 · Stonework and Smithing · field report 02.3",
+    "description": "Fresh stone is waiting at the cutting table; the iron works team needs this entry before it can move on.",
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          360,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the enderman trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:enderman",
+      "amount": 1
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the shears",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:shears",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 44
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_01_00",
+    "qg_03_00_02"
+  ]
+}

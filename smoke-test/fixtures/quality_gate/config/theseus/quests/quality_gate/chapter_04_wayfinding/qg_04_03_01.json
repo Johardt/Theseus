@@ -1,0 +1,88 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:boat"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 12,
+    "title": "Navigate Desert Wells",
+    "subtitle": "04 · Roads Beyond the Valley · field report 04.2",
+    "description": [
+      "The summit path is clear at noon; the desert wells team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          180,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in meadow",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:meadow"
+    },
+    "supporting_note": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:the_nether",
+        "biomes": "minecraft:nether_wastes",
+        "position": {
+          "x": {
+            "min": -254,
+            "max": 290
+          },
+          "y": {
+            "min": 48,
+            "max": 110
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      },
+      "fixture_extension": {
+        "retained": true,
+        "slot": 1
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 32
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_04_03_00",
+    "qg_04_02_01"
+  ]
+}

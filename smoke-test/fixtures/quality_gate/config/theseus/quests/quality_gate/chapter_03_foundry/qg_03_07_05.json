@@ -1,0 +1,86 @@
+{
+  "display": {
+    "icon": "minecraft:raw_copper",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 16,
+    "title": "Inspect Rail Spur",
+    "subtitle": "03 · Stonework and Smithing · field report 08.6",
+    "description": "The rail spur needs a final inspection; the rail spur team needs this entry before it can move on.",
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          900,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_03_55_0"
+    },
+    "supporting_note": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from overworld to the nether.",
+      "from": "minecraft:overworld",
+      "to": "minecraft:the_nether",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 36
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: bone",
+          "item": {
+            "id": "minecraft:bone",
+            "count": 7
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_03_07_05"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_07_03",
+    "qg_03_06_05"
+  ]
+}

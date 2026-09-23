@@ -1,0 +1,78 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stone_pickaxe"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 16,
+    "title": "Prepare River Stones",
+    "subtitle": "01 · Trailhead and Shelter · field report 04.3",
+    "description": [
+      "A supply crate waits beyond camp; the river stones team needs this entry before it can move on.",
+      "Complete the changed dimension objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          360,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record jump",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:jump",
+      "target": 36,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_01_03_00",
+    "qg_01_02_02"
+  ],
+  "fixture_extension": {
+    "source": "theseus-quality-gate",
+    "ordinal": 23,
+    "preserve": {
+      "enabled": true,
+      "labels": [
+        "fixture",
+        "compatibility",
+        "performance"
+      ]
+    }
+  }
+}

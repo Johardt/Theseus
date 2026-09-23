@@ -1,0 +1,71 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:blast_furnace"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 12,
+    "title": "Lay Stonecutters",
+    "subtitle": "03 · Stonework and Smithing · field report 07.4",
+    "description": "A damaged tool has reached the repair bench; the stonecutters team needs this entry before it can move on.",
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          540,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 30,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 20
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_06_01",
+    "qg_03_06_02",
+    "qg_03_05_03"
+  ]
+}

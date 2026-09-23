@@ -1,0 +1,71 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:campfire"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 16,
+    "title": "Cross River Stones",
+    "subtitle": "01 · Trailhead and Shelter · field report 05.3",
+    "description": "The ridge is clear for a short time; the river stones team needs this entry before it can move on.",
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          360,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "unlock_notification": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record jump",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:jump",
+      "target": 29,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in river",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:river",
+      "fixture_extension": {
+        "retained": true,
+        "slot": 1
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_01_04_02"
+    }
+  },
+  "dependencies": [
+    "qg_01_04_00",
+    "qg_01_03_02"
+  ]
+}

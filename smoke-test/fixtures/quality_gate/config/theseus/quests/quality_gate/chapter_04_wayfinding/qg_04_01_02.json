@@ -1,0 +1,66 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:ender_pearl"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 16,
+    "title": "Mark Taiga Pass",
+    "subtitle": "04 · Roads Beyond the Valley · field report 02.3",
+    "description": "A wreck marker appeared on the chart; the taiga pass team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          360,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bow",
+      "item": {
+        "id": "minecraft:bow",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_04_01_02"
+    }
+  },
+  "dependencies": [
+    "qg_04_01_00",
+    "qg_04_00_02"
+  ]
+}

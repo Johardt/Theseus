@@ -1,0 +1,60 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:recovery_compass"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 12,
+    "title": "Descend Dragon Echo",
+    "subtitle": "09 · Relics Below the Surface · field report 01.6",
+    "description": [
+      "An old dragon record has surfaced; the dragon echo team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          900,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the shield pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:shield"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:husbandry/plant_seed"
+      ]
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_09_00_03"
+  ]
+}

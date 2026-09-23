@@ -1,0 +1,93 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:iron_sword"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 20,
+    "title": "Clear Skeleton Bluff",
+    "subtitle": "05 · The Night Watch · field report 03.3",
+    "description": [
+      "Webs have covered the lower passage; the skeleton bluff team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          360,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "unlock_notification": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:nether/obtain_blaze_rod"
+      ]
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:recipe",
+          "title": "Learn the piston pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:piston"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bread"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 3,
+          "xpType": "points",
+          "collectionType": "consume"
+        },
+        "trail_3": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from the nether to the end.",
+          "from": "minecraft:the_nether",
+          "to": "minecraft:the_end"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:prismarine_shard"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 21
+    }
+  },
+  "dependencies": [
+    "qg_05_02_00",
+    "qg_05_01_02"
+  ]
+}

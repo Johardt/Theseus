@@ -1,0 +1,60 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:oak_log"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 32,
+    "title": "Cross First Tools",
+    "subtitle": "01 · Trailhead and Shelter · field report 05.6",
+    "description": "The last torch is burning low; the first tools team needs this entry before it can move on.",
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          900,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure oak planks",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:oak_planks",
+      "amount": 4,
+      "collection": "consume",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_01_04_03",
+    "qg_01_03_05"
+  ]
+}

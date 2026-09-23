@@ -1,0 +1,96 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:torch"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 20,
+    "title": "Mark Trail Rations",
+    "subtitle": "01 · Trailhead and Shelter · field report 01.4",
+    "description": "A fresh trail marker has appeared; the trail rations team needs this entry before it can move on.",
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          540,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the iron golem trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:iron_golem",
+      "amount": 2,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the bone meal",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:bone_meal",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 37
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: string",
+          "item": {
+            "id": "minecraft:string",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_01_00_03"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 13
+    }
+  },
+  "dependencies": [
+    "qg_01_00_01",
+    "qg_01_00_02"
+  ]
+}

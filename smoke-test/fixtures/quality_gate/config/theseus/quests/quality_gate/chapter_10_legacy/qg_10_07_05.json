@@ -1,0 +1,57 @@
+{
+  "display": {
+    "icon": "minecraft:book",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 16,
+    "title": "Witness Nether Accord",
+    "subtitle": "10 · Wayfinder's Legacy · field report 08.6",
+    "description": "The nether accord waits for a witness; the nether accord team needs this entry before it can move on.",
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          900,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the drowned trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:drowned",
+      "amount": 3,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the brush",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:brush",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_10_07_03",
+    "qg_10_06_05"
+  ]
+}

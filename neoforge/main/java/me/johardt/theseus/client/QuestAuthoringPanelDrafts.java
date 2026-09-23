@@ -98,7 +98,7 @@ final class QuestAuthoringPanelDrafts {
                 widget.withPosition(deleteX, actionY).withSize(QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH, QuestAuthoringPanel.EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(panel.listActionRenderer("delete"));
                 widget.withCallback(() -> {
-                    panel.authoring.rewards.remove(rewardIndex);
+                    panel.authoring.removeReward(rewardIndex);
                     panel.createRewardScroll = Math.min(panel.createRewardScroll, maxCreateRewardScroll());
                     if (panel.modalHost.isRewardChooserOpen()) panel.modalHost.close();
                     panel.host.dispatch(new RebuildWidgets());
@@ -355,19 +355,13 @@ final class QuestAuthoringPanelDrafts {
     void addDraftTask(TaskChoice choice) {
         QuestAuthoringSession.TaskDraft task = createTaskDraft(choice, panel.authoring.tasks);
         if (task == null) return;
-        panel.authoring.editingTaskIndex = -1;
-        panel.authoring.editingTask = task;
-        panel.authoring.taskEditorError = "";
+        panel.authoring.createTask(task);
     }
 
     void addNestedDraftTask(TaskChoice choice) {
         QuestAuthoringSession.TaskDraft task = createTaskDraft(choice, nestedTasks(panel.authoring.editingTask));
         if (task == null) return;
-        panel.authoring.taskEditorParents.add(panel.authoring.editingTask);
-        panel.authoring.taskEditorParentIndexes.add(panel.authoring.editingTaskIndex);
-        panel.authoring.editingTaskIndex = -1;
-        panel.authoring.editingTask = task;
-        panel.authoring.taskEditorError = "";
+        panel.authoring.createChildTask(task);
     }
 
     QuestAuthoringSession.TaskDraft createTaskDraft(
@@ -391,13 +385,11 @@ final class QuestAuthoringPanelDrafts {
         List<QuestAuthoringSession.RewardDraft> rewards = nested ? nestedRewards(panel.authoring.editingReward) : panel.authoring.rewards;
         QuestAuthoringSession.RewardDraft reward = QuestEditorCatalog.createRewardDraft(choice, rewards);
         if (nested) {
-            panel.authoring.editingNestedRewardIndex = -1;
-            panel.authoring.editingNestedReward = reward;
+            panel.authoring.createNestedReward(reward);
             panel.modalHost.close();
             panel.modalHost.open(QuestModalHost.Modal.NESTED_REWARD_EDITOR);
         } else {
-            panel.authoring.editingRewardIndex = -1;
-            panel.authoring.editingReward = reward;
+            panel.authoring.createReward(reward);
             panel.modalHost.close();
             panel.modalHost.open(QuestModalHost.Modal.REWARD_EDITOR);
         }

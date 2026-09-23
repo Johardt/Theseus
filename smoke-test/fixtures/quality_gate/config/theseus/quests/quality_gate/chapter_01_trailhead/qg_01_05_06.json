@@ -1,0 +1,77 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:bread"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 48,
+    "title": "Secure Map Notes",
+    "subtitle": "01 · Trailhead and Shelter · field report 06.7",
+    "description": [
+      "The first night will be here soon; the map notes team needs this entry before it can move on.",
+      "Complete the entity interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          1080,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the cow",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:cow",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_01_42_1",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 34
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_01_05_06"
+    }
+  },
+  "dependencies": [
+    "qg_01_05_04",
+    "qg_01_05_05",
+    "qg_01_04_06"
+  ]
+}

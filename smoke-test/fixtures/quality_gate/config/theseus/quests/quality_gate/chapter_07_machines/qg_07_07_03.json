@@ -1,0 +1,66 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:rail"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Automate Sorting Loft",
+      "color": "green"
+    },
+    "subtitle": "07 · Machines and Materials · field report 08.4",
+    "description": [
+      "Two storage lines are sharing a hopper; the sorting loft team needs this entry before it can move on.",
+      "Complete the xp objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          540,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 3,
+      "xpType": "points",
+      "collectionType": "consume"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 23
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: shield",
+      "item": {
+        "id": "minecraft:shield",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_07_07_01",
+    "qg_07_07_02",
+    "qg_07_06_03"
+  ]
+}

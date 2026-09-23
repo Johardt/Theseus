@@ -1,0 +1,101 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:crossbow"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 12,
+    "title": "Reinforce Guardian Reef",
+    "subtitle": "05 · The Night Watch · field report 08.7",
+    "description": [
+      "A reef beacon is blinking beneath the waves; the guardian reef team needs this entry before it can move on.",
+      "Complete the item use objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          1080,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the baked potato provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:baked_potato",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 31
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: blaze rod",
+          "item": {
+            "id": "minecraft:blaze_rod",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_05_07_06"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 7
+    }
+  },
+  "dependencies": [
+    "qg_05_07_04",
+    "qg_05_07_05",
+    "qg_05_06_06"
+  ]
+}

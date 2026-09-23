@@ -1,0 +1,68 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:shield"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Fortify Night Watch",
+    "subtitle": "05 · The Night Watch · field report 04.1",
+    "description": "A damaged wall needs one more brace; the night watch team needs this entry before it can move on.",
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          0,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the horse",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:horse",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_05_22_1"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 34
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_05_03_00"
+    }
+  },
+  "dependencies": [
+    "qg_05_02_06"
+  ]
+}

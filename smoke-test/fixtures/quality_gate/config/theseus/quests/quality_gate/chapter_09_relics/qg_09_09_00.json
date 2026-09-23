@@ -1,0 +1,69 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:gold_block"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": "Archive Mineshaft Seal",
+    "subtitle": "09 · Relics Below the Surface · field report 10.1",
+    "description": "A quiet pulse came from the ancient city; the mineshaft seal team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          0,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record mob kills",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:mob_kills",
+      "target": 69,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 44
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_08_06"
+  ]
+}

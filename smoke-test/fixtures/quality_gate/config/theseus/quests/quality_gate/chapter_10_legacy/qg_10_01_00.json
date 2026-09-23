@@ -1,0 +1,72 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:emerald"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 24,
+    "title": "Raise Wayfinder's Oath",
+    "subtitle": "10 · Wayfinder's Legacy · field report 02.1",
+    "description": [
+      "The banner is ready for its final pattern; the wayfinder's oath team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          0,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:nether/obtain_blaze_rod"
+      ],
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the mushroom stew provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:mushroom_stew",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 29
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_00_06"
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:spyglass"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 48,
+    "title": "Retrace River Crossing",
+    "subtitle": "04 · Roads Beyond the Valley · field report 09.1",
+    "description": [
+      "A dry well sits just beyond the dunes; the river crossing team needs this entry before it can move on.",
+      "Complete the changed dimension objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          0,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 1,
+          "xpType": "points",
+          "collectionType": "automatic",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:blaze_rod"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from the end to overworld.",
+          "from": "minecraft:the_end",
+          "to": "minecraft:overworld"
+        },
+        "trail_3": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:river",
+            "position": {
+              "x": {
+                "min": -194,
+                "max": 350
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          }
+        },
+        "trail_4": {
+          "type": "theseus:item",
+          "title": "Secure spyglass",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:spyglass",
+          "amount": 4,
+          "collection": "consume",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 28
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: glass bottle",
+      "item": {
+        "id": "minecraft:glass_bottle",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_04_08_00"
+    }
+  },
+  "dependencies": [
+    "qg_04_07_06"
+  ]
+}

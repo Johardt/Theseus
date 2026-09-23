@@ -1,0 +1,70 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:tripwire_hook"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Copy Research Hall",
+      "color": "green"
+    },
+    "subtitle": "06 · The Arcane Workshop · field report 02.7",
+    "description": [
+      "A loose page turned up in the map drawer; the research hall team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          1080,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the lever station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:lever",
+      "state": {
+        "powered": "false"
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:recipe",
+      "title": "Learn the crafting table pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:crafting_table"
+      ]
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_01_06"
+    }
+  },
+  "dependencies": [
+    "qg_06_01_04",
+    "qg_06_01_05",
+    "qg_06_00_06"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "display": {
+    "icon": "minecraft:chest_minecart",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 16,
+    "title": "Compare Relic Vault",
+    "subtitle": "09 · Relics Below the Surface · field report 08.7",
+    "description": [
+      "The vault door has opened just wide enough; the relic vault team needs this entry before it can move on.",
+      "Complete the structure objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          1080,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "minecraft:stronghold",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the lectern station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:lectern"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: wheat seeds",
+      "item": {
+        "id": "minecraft:wheat_seeds",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_07_04",
+    "qg_09_07_05",
+    "qg_09_06_06"
+  ]
+}

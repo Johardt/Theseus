@@ -1,0 +1,125 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:wheat"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 16,
+    "title": "Measure Orchard Rows",
+    "subtitle": "02 · Woodland Provisions · field report 09.1",
+    "description": [
+      "A bee route now crosses the footpath; the orchard rows team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          0,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the piston pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:piston"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:plains",
+            "position": {
+              "x": {
+                "min": -198,
+                "max": 282
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item",
+          "title": "Secure carrot",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:carrot",
+          "amount": 2,
+          "collection": "consume"
+        },
+        "trail_3": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the lever station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:lever",
+          "state": {
+            "powered": "false"
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:trident"
+          }
+        },
+        "trail_4": {
+          "type": "theseus:item_use",
+          "title": "Use the baked potato provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:baked_potato",
+          "components": {}
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 44
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_02_07_06"
+  ]
+}

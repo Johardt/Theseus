@@ -1,0 +1,66 @@
+{
+  "display": {
+    "icon": "minecraft:beehive",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Plant Harvest Table",
+      "color": "yellow"
+    },
+    "subtitle": "02 · Woodland Provisions · field report 02.7",
+    "description": [
+      "The orchard needs another season of care; the harvest table team needs this entry before it can move on.",
+      "Complete the xp objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          1080,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 5,
+      "xpType": "points",
+      "collectionType": "manual"
+    },
+    "supporting_note": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the chicken",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:chicken",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 33
+    }
+  },
+  "dependencies": [
+    "qg_02_01_04",
+    "qg_02_01_05",
+    "qg_02_00_06"
+  ]
+}

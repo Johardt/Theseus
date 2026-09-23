@@ -1,0 +1,68 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:map"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 20,
+    "title": "Repair Ice Floe",
+    "subtitle": "08 · Tides and Open Water · field report 07.4",
+    "description": "The ship's chart survived the wreck; the ice floe team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          540,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_08_46_0"
+    },
+    "supporting_note": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_06_01",
+    "qg_08_06_02",
+    "qg_08_05_03"
+  ]
+}

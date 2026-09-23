@@ -1,0 +1,95 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:recovery_compass"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 48,
+    "title": "Trace End Portal",
+    "subtitle": "09 · Relics Below the Surface · field report 02.5",
+    "description": [
+      "An old dragon record has surfaced; the end portal team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          720,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the zombie trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:zombie",
+      "amount": 1
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the shears",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:shears",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 19
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: diamond",
+          "item": {
+            "id": "minecraft:diamond",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_09_01_04"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 37
+    }
+  },
+  "dependencies": [
+    "qg_09_01_03",
+    "qg_09_00_04"
+  ]
+}

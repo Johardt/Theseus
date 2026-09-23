@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:trident"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 20,
+    "title": "Reinforce Skeleton Bluff",
+    "subtitle": "05 · The Night Watch · field report 08.3",
+    "description": "Arrows struck the bluff's warning post; the skeleton bluff team needs this entry before it can move on.",
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          360,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "completed",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the end to overworld.",
+      "from": "minecraft:the_end",
+      "to": "minecraft:overworld"
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record jump",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:jump",
+      "target": 43
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: shield",
+      "item": {
+        "id": "minecraft:shield",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_05_07_00",
+    "qg_05_06_02"
+  ]
+}

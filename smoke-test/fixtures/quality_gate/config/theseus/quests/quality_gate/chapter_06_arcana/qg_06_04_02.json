@@ -1,0 +1,80 @@
+{
+  "display": {
+    "icon": "minecraft:written_book",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 32,
+    "title": "Compare Brewing Bench",
+    "subtitle": "06 · The Arcane Workshop · field report 05.3",
+    "description": "The research hall is ready for a final review; the brewing bench team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          360,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": false,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record damage dealt",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:damage_dealt",
+      "target": 78,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 20
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 6
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_04_02"
+    }
+  },
+  "dependencies": [
+    "qg_06_04_00",
+    "qg_06_03_02"
+  ]
+}

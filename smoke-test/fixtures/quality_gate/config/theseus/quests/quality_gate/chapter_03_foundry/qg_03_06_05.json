@@ -1,0 +1,55 @@
+{
+  "display": {
+    "icon": "minecraft:anvil",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 16,
+    "title": "Lay Rail Spur",
+    "subtitle": "03 · Stonework and Smithing · field report 07.6",
+    "description": [
+      "The furnace has cooled between shifts; the rail spur team needs this entry before it can move on.",
+      "Complete the entity interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          900,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the horse",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:horse",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_03_48_1"
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_03_06_03",
+    "qg_03_05_05"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:glass_bottle"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 12,
+    "title": "Bind Ancient Script",
+    "subtitle": "06 · The Arcane Workshop · field report 08.5",
+    "description": [
+      "An inscription is still legible under the dust; the ancient script team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          720,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 52
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in forest",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:forest"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 21
+    }
+  },
+  "dependencies": [
+    "qg_06_07_03",
+    "qg_06_06_04"
+  ]
+}

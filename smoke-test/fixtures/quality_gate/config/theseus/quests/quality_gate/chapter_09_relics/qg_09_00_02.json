@@ -1,0 +1,67 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:gold_block"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 24,
+    "title": "Descend Ancient City",
+    "subtitle": "09 · Relics Below the Surface · field report 01.3",
+    "description": [
+      "A quiet pulse came from the ancient city; the ancient city team needs this entry before it can move on.",
+      "Complete the item interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          360,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "unlock_notification": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the spyglass",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:spyglass",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:item",
+      "title": "Secure torch",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:torch",
+      "amount": 2,
+      "collection": "manual"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: prismarine shard",
+      "item": {
+        "id": "minecraft:prismarine_shard",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_00_02"
+    }
+  },
+  "dependencies": [
+    "qg_09_00_00"
+  ]
+}

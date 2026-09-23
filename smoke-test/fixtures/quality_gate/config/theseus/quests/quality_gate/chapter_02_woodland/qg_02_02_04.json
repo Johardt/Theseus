@@ -1,0 +1,74 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:apple"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 48,
+    "title": "Tend Hedge Paths",
+    "subtitle": "02 · Woodland Provisions · field report 03.5",
+    "description": "The harvest table has room for one more dish; the hedge paths team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          720,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the end to overworld.",
+      "from": "minecraft:the_end",
+      "to": "minecraft:overworld",
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 52
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 4
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bone",
+      "item": {
+        "id": "minecraft:bone",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_02_02_04"
+    }
+  },
+  "dependencies": [
+    "qg_02_02_03",
+    "qg_02_01_04"
+  ]
+}

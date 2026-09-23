@@ -1,0 +1,68 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:knowledge_book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 12,
+    "title": "Copy Ancient Script",
+    "subtitle": "06 · The Arcane Workshop · field report 02.5",
+    "description": [
+      "The archive lock responds to a new key; the ancient script team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          720,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:husbandry/balanced_diet"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the golden apple provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:golden_apple",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: spyglass",
+      "item": {
+        "id": "minecraft:spyglass",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_01_04"
+    }
+  },
+  "dependencies": [
+    "qg_06_01_03",
+    "qg_06_00_04"
+  ]
+}

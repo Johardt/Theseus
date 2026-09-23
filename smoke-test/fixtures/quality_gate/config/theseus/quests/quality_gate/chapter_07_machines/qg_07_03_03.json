@@ -1,0 +1,167 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lever"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 16,
+    "title": "Route Sorting Loft",
+    "subtitle": "07 · Machines and Materials · field report 04.4",
+    "description": "The workshop core is waiting for a stable signal; the sorting loft team needs this entry before it can move on.",
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "unlock_notification": false,
+    "auto_claim_rewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the lever station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:lever",
+      "state": {
+        "powered": "false"
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:forest",
+            "position": {
+              "x": {
+                "min": -208,
+                "max": 272
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item",
+          "title": "Secure redstone",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:redstone",
+          "amount": 4,
+          "collection": "consume",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the redstone lamp station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:redstone_lamp"
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:changed_dimension",
+              "title": "Cross a dimensional boundary",
+              "description": "Travel from the nether to the end.",
+              "from": "minecraft:the_nether",
+              "to": "minecraft:the_end"
+            },
+            "trail_2": {
+              "type": "theseus:location",
+              "title": "Reach the mapped coordinates",
+              "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+              "predicate": {
+                "dimension": "minecraft:overworld",
+                "biomes": "minecraft:taiga",
+                "position": {
+                  "x": {
+                    "min": -204,
+                    "max": 340
+                  },
+                  "y": {
+                    "min": 48,
+                    "max": 192
+                  },
+                  "z": {
+                    "min": -256,
+                    "max": 256
+                  }
+                }
+              },
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:trident"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:item",
+              "title": "Secure golden apple",
+              "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+              "item": "minecraft:golden_apple",
+              "amount": 6,
+              "collection": "manual"
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:spyglass"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bone",
+      "item": {
+        "id": "minecraft:bone",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_03_03"
+    }
+  },
+  "dependencies": [
+    "qg_07_03_01",
+    "qg_07_03_02",
+    "qg_07_02_03"
+  ]
+}

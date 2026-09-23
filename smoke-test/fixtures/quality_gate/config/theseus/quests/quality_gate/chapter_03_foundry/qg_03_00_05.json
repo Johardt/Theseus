@@ -1,0 +1,93 @@
+{
+  "display": {
+    "icon": "minecraft:raw_copper",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Survey Rail Spur",
+    "subtitle": "03 · Stonework and Smithing · field report 01.6",
+    "description": [
+      "The rail spur needs a final inspection; the rail spur team needs this entry before it can move on.",
+      "Complete the structure objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          900,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village",
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the chest station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:chest"
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 43
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: fishing rod",
+          "item": {
+            "id": "minecraft:fishing_rod",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_03_00_05"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 19
+    }
+  },
+  "dependencies": [
+    "qg_03_00_03"
+  ]
+}

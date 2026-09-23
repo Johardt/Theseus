@@ -1,0 +1,63 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:wheat"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 20,
+    "title": "Prune Bee Roads",
+    "subtitle": "02 · Woodland Provisions · field report 01.2",
+    "description": [
+      "A bee route now crosses the footpath; the bee roads team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          180,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the furnace station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:furnace"
+    },
+    "supporting_note": {
+      "type": "theseus:recipe",
+      "title": "Learn the furnace pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:furnace"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 27
+    }
+  },
+  "dependencies": [
+    "qg_02_00_00"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "display": {
+    "icon": "minecraft:water_bucket",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 20,
+    "title": "Retrace High Ridge",
+    "subtitle": "04 · Roads Beyond the Valley · field report 09.5",
+    "description": "A portal frame is missing one route marker; the high ridge team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          720,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the milk bucket provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:milk_bucket",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_04_08_03",
+    "qg_04_07_04"
+  ]
+}

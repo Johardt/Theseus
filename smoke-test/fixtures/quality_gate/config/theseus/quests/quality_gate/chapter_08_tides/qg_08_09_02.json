@@ -1,0 +1,76 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lantern"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Return Shipwreck Chart",
+      "color": "aqua"
+    },
+    "subtitle": "08 · Tides and Open Water · field report 10.3",
+    "description": [
+      "The coastal beacon lost its upper lamp; the shipwreck chart team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          360,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/ol_betsy"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the golden apple provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:golden_apple",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 11
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_09_00",
+    "qg_08_08_02"
+  ]
+}

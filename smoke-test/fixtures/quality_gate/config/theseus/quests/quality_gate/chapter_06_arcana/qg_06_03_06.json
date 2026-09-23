@@ -1,0 +1,75 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 16,
+    "title": "Translate Research Hall",
+    "subtitle": "06 · The Arcane Workshop · field report 04.7",
+    "description": "The brewing bench has a clean flask ready; the research hall team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          1080,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/trade"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the milk bucket provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:milk_bucket",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      },
+      "fixture_extension": {
+        "retained": true,
+        "slot": 1
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 29
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_03_04",
+    "qg_06_03_05",
+    "qg_06_02_06"
+  ]
+}

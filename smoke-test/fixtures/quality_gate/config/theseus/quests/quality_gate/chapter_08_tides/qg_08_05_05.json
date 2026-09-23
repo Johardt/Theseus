@@ -1,0 +1,96 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:packed_ice"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 32,
+    "title": "Mark Deep Current",
+    "subtitle": "08 · Tides and Open Water · field report 06.6",
+    "description": [
+      "A camp flag is frozen into the floe; the deep current team needs this entry before it can move on.",
+      "Complete the item use objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          900,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the mushroom stew provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:mushroom_stew",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:stat",
+          "title": "Record play time",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:play_time",
+          "target": 62,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:beacon"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the spider trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:spider",
+          "amount": 1
+        },
+        "trail_3": {
+          "type": "theseus:check",
+          "title": "Submit the field report",
+          "description": "Use the manual check action to sign off this expedition note.",
+          "components": {}
+        },
+        "trail_4": {
+          "type": "theseus:recipe",
+          "title": "Learn the furnace pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:furnace"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_08_05_03",
+    "qg_08_04_05"
+  ]
+}

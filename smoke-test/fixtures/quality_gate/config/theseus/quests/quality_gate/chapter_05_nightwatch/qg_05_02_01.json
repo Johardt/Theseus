@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:shield"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Clear Zombie Trail",
+    "subtitle": "05 · The Night Watch · field report 03.2",
+    "description": "A damaged wall needs one more brace; the zombie trail team needs this entry before it can move on.",
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          180,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the zombie trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:zombie",
+      "amount": 5
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the bow",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:bow",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_05_02_00",
+    "qg_05_01_01"
+  ]
+}

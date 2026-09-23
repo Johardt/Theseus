@@ -46,7 +46,7 @@ public final class TheseusClient {
     private static final SoundEvent QUEST_COMPLETE_SOUND = SoundEvent.createVariableRangeEvent(
         Identifier.fromNamespaceAndPath(Theseus.MOD_ID, "quest_complete")
     );
-    private static JsonObject snapshot = new JsonObject();
+    private static QuestClientSnapshot snapshots = new QuestClientSnapshot();
     private static boolean trackerCollapsed;
     private static QuestScreen disconnectedEditor;
     private static String disconnectedServer;
@@ -85,14 +85,16 @@ public final class TheseusClient {
     ) {
         event.register(QuestNetwork.SyncPayload.TYPE, (payload, context) -> {
             JsonObject incoming = JsonParser.parseString(payload.json()).getAsJsonObject();
-            if ("chapter".equals(snapshotKind(incoming))) {
-                mergeChapterSnapshot(incoming);
-                if (Minecraft.getInstance().gui.screen() instanceof QuestScreen screen) {
-                    screen.mergeSnapshot(incoming);
+            QuestClientSnapshot.Kind kind = QuestClientSnapshot.kindOf(incoming);
+            if (kind == QuestClientSnapshot.Kind.CHAPTER) {
+                snapshots.accept(incoming);
+                if (Minecraft.getInstance().gui.screen() instanceof QuestScreen screen
+                    && screen.snapshots == snapshots) {
+                    screen.snapshotChanged();
                 }
                 return;
             }
-            snapshot = incoming;
+            snapshots = new QuestClientSnapshot(incoming);
             if (
                 payload.open() ||
                 Minecraft.getInstance().gui.screen() instanceof QuestScreen
@@ -100,9 +102,9 @@ public final class TheseusClient {
                 QuestScreen previous = Minecraft.getInstance().gui.screen() instanceof QuestScreen screen
                     ? screen
                     : payload.open() ? takeDisconnectedEditor() : null;
-                QuestScreen screen = new QuestScreen(snapshot, previous);
+                QuestScreen screen = new QuestScreen(snapshots, previous);
                 Minecraft.getInstance().gui.setScreen(screen);
-                if ("index".equals(snapshotKind(snapshot))) screen.requestActiveChapter();
+                if (kind == QuestClientSnapshot.Kind.INDEX) screen.requestActiveChapter();
             }
         });
         event.register(
@@ -143,24 +145,8 @@ public final class TheseusClient {
             VanillaGuiLayers.CHAT,
             Identifier.fromNamespaceAndPath(Theseus.MOD_ID, "quest_tracker"),
             (graphics, delta) ->
-                QuestHud.render(graphics, snapshot, TheseusClientOptions.trackerCollapsed())
+                QuestHud.render(graphics, snapshots.raw(), TheseusClientOptions.trackerCollapsed())
         );
-    }
-
-    private static String snapshotKind(JsonObject value) {
-        return value.has("__snapshot_kind") && value.get("__snapshot_kind").isJsonPrimitive()
-            ? value.get("__snapshot_kind").getAsString()
-            : "full";
-    }
-
-    private static void mergeChapterSnapshot(JsonObject incoming) {
-        if (snapshot == null) snapshot = new JsonObject();
-        incoming.entrySet().forEach(entry -> {
-            String key = entry.getKey();
-            if (key.equals("__snapshot_kind") || key.equals("__chapter")) return;
-            if (key.startsWith("__") && snapshot.has(key)) return;
-            snapshot.add(key, entry.getValue().deepCopy());
-        });
     }
 
     private void clientTick(ClientTickEvent.Post event) {
@@ -174,7 +160,7 @@ public final class TheseusClient {
     }
 
     private void clientLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
-        snapshot = new JsonObject();
+        snapshots = new QuestClientSnapshot();
         if (!(Minecraft.getInstance().gui.screen() instanceof QuestScreen screen)) {
             clearDisconnectedEditor();
             return;

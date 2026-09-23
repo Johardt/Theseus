@@ -1,0 +1,67 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:water_bucket"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": "Navigate Taiga Pass",
+    "subtitle": "04 · Roads Beyond the Valley · field report 04.3",
+    "description": [
+      "A portal frame is missing one route marker; the taiga pass team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          360,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the bee nest station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:bee_nest",
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:recipe",
+      "title": "Learn the furnace pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:furnace"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_04_03_02"
+    }
+  },
+  "dependencies": [
+    "qg_04_03_00",
+    "qg_04_02_02"
+  ]
+}

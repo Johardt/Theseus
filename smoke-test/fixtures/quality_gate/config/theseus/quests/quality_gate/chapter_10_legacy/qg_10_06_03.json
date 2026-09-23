@@ -1,0 +1,63 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:map"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 12,
+    "title": "Unite Trade Concord",
+    "subtitle": "10 · Wayfinder's Legacy · field report 07.4",
+    "description": "The beacon platform needs a last inspection; the trade concord team needs this entry before it can move on.",
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          540,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the shears",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:shears",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item",
+      "title": "Secure prismarine shard",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:prismarine_shard",
+      "amount": 6,
+      "collection": "automatic"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 27
+    }
+  },
+  "dependencies": [
+    "qg_10_06_01",
+    "qg_10_06_02",
+    "qg_10_05_03"
+  ]
+}

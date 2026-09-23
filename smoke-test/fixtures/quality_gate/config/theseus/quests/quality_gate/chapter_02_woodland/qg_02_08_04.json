@@ -1,0 +1,53 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:golden_carrot"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 48,
+    "title": "Measure Hedge Paths",
+    "subtitle": "02 · Woodland Provisions · field report 09.5",
+    "description": "Young shoots need a safer fence; the hedge paths team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          720,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure oak planks",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:oak_planks",
+      "amount": 6,
+      "collection": "consume"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_02_08_03",
+    "qg_02_07_04"
+  ]
+}

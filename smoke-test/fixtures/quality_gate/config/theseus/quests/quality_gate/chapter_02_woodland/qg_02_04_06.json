@@ -1,0 +1,61 @@
+{
+  "display": {
+    "icon": "minecraft:oak_sapling",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 16,
+    "title": "Mill Harvest Table",
+    "subtitle": "02 · Woodland Provisions · field report 05.7",
+    "description": [
+      "The mill wheel has started turning; the harvest table team needs this entry before it can move on.",
+      "Complete the changed dimension objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          1080,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "in_progress",
+    "unlockNotification": true,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the nether to the end.",
+      "from": "minecraft:the_nether",
+      "to": "minecraft:the_end"
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record mob kills",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:mob_kills",
+      "target": 33,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_02_04_04",
+    "qg_02_04_05",
+    "qg_02_03_06"
+  ]
+}

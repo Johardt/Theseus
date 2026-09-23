@@ -1,0 +1,71 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stonecutter"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 48,
+    "title": "Lay Iron Works",
+    "subtitle": "03 · Stonework and Smithing · field report 07.3",
+    "description": [
+      "The kiln crew needs fuel before dusk; the iron works team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          360,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the redstone lamp station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:redstone_lamp"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bone",
+      "item": {
+        "id": "minecraft:bone",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_06_02"
+    }
+  },
+  "dependencies": [
+    "qg_03_06_00",
+    "qg_03_05_02"
+  ],
+  "fixture_extension": {
+    "source": "theseus-quality-gate",
+    "ordinal": 184,
+    "preserve": {
+      "enabled": true,
+      "labels": [
+        "fixture",
+        "compatibility",
+        "performance"
+      ]
+    }
+  }
+}

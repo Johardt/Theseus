@@ -1,0 +1,78 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:glass_bottle"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 48,
+    "title": "Copy Trial Notes",
+    "subtitle": "06 · The Arcane Workshop · field report 02.4",
+    "description": [
+      "An inscription is still legible under the dust; the trial notes team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          540,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the spider trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:spider",
+      "amount": 1,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the shears",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:shears",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 10
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bow",
+      "item": {
+        "id": "minecraft:bow",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_01_03"
+    }
+  },
+  "dependencies": [
+    "qg_06_01_01",
+    "qg_06_01_02",
+    "qg_06_00_03"
+  ]
+}

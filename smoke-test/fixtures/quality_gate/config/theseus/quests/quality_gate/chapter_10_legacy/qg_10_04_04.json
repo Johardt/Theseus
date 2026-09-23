@@ -1,0 +1,116 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:emerald"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": "Complete Overworld Atlas",
+    "subtitle": "10 · Wayfinder's Legacy · field report 05.5",
+    "description": [
+      "The banner is ready for its final pattern; the overworld atlas team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          720,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the bread pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:bread"
+      ]
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:desert",
+            "position": {
+              "x": {
+                "min": -246,
+                "max": 298
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item",
+          "title": "Secure spyglass",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:spyglass",
+          "amount": 6,
+          "collection": "manual"
+        },
+        "trail_3": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the oak log station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:oak_log"
+        },
+        "trail_4": {
+          "type": "theseus:item_use",
+          "title": "Use the baked potato provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:baked_potato",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:spyglass"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_04_03",
+    "qg_10_03_04"
+  ]
+}

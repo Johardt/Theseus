@@ -1,0 +1,74 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:gold_block"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 48,
+    "title": {
+      "text": "Listen End Portal",
+      "color": "aqua"
+    },
+    "subtitle": "09 · Relics Below the Surface · field report 06.5",
+    "description": "A quiet pulse came from the ancient city; the end portal team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          720,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    },
+    "supporting_note": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the lever station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:lever",
+      "state": {
+        "powered": "false"
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 32
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_05_03",
+    "qg_09_04_04"
+  ]
+}

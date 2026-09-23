@@ -1,0 +1,79 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:beacon"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 20,
+    "title": "Dedicate Endward Door",
+    "subtitle": "10 · Wayfinder's Legacy · field report 09.7",
+    "description": [
+      "The expedition's original map has one blank corner; the endward door team needs this entry before it can move on.",
+      "Complete the item use objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          1080,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the milk bucket provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:milk_bucket",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 4
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bone",
+      "item": {
+        "id": "minecraft:bone",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_10_08_06"
+    }
+  },
+  "dependencies": [
+    "qg_10_08_04",
+    "qg_10_08_05",
+    "qg_10_07_06"
+  ]
+}

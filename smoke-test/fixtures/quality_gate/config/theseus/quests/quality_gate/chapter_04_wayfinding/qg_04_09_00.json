@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:flint_and_steel"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 48,
+    "title": "Chart River Crossing",
+    "subtitle": "04 · Roads Beyond the Valley · field report 10.1",
+    "description": "The snowline has moved higher; the river crossing team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          0,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record damage dealt",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:damage_dealt",
+      "target": 20,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in meadow",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:meadow"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 21
+    }
+  },
+  "dependencies": [
+    "qg_04_08_06"
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "display": {
+    "icon": "minecraft:conduit",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 12,
+    "title": "Mark Reed Delta",
+    "subtitle": "08 · Tides and Open Water · field report 06.1",
+    "description": [
+      "The deep current has changed direction; the reed delta team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          0,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the lever station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:lever",
+      "state": {
+        "powered": "false"
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:recipe",
+      "title": "Learn the crafting table pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:crafting_table"
+      ]
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 18
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: glass bottle",
+          "item": {
+            "id": "minecraft:glass_bottle",
+            "count": 3
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_08_05_00"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_04_06"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "display": {
+    "icon": "minecraft:book",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 32,
+    "title": "Bind Brewing Bench",
+    "subtitle": "06 · The Arcane Workshop · field report 08.3",
+    "description": "The brewing bench has a clean flask ready; the brewing bench team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          360,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "completed",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:desert",
+        "position": {
+          "x": {
+            "min": -228,
+            "max": 284
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the zombie trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:zombie",
+      "amount": 2,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 41
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_07_00",
+    "qg_06_06_02"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:bread"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": "Harvest Orchard Rows",
+    "subtitle": "02 · Woodland Provisions · field report 10.1",
+    "description": "Winter stores are running thin; the orchard rows team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          0,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/kill_a_mob"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the golden apple provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:golden_apple",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: shield",
+      "item": {
+        "id": "minecraft:shield",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_02_08_06"
+  ]
+}

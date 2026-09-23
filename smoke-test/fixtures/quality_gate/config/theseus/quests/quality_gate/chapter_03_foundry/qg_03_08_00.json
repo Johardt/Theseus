@@ -1,0 +1,97 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stonecutter"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 24,
+    "title": "Light Copper Seam",
+    "subtitle": "03 · Stonework and Smithing · field report 09.1",
+    "description": [
+      "The kiln crew needs fuel before dusk; the copper seam team needs this entry before it can move on.",
+      "Complete the xp objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          0,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": true,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 3,
+      "xpType": "points",
+      "collectionType": "consume"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "#minecraft:village"
+        },
+        "trail_2": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:story/smelt_iron"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the horse",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:horse",
+          "components": {}
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:glass_bottle"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bow",
+      "item": {
+        "id": "minecraft:bow",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_08_00"
+    }
+  },
+  "dependencies": [
+    "qg_03_07_06"
+  ]
+}

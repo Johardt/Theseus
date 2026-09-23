@@ -1,0 +1,70 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stone_pickaxe"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 24,
+    "title": "Test Cairn Markers",
+    "subtitle": "01 · Trailhead and Shelter · field report 09.5",
+    "description": "A supply crate waits beyond camp; the cairn markers team needs this entry before it can move on.",
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          720,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "unlock_notification": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:desert",
+        "position": {
+          "x": {
+            "min": -196,
+            "max": 316
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 33
+    }
+  },
+  "dependencies": [
+    "qg_01_08_03",
+    "qg_01_07_04"
+  ]
+}

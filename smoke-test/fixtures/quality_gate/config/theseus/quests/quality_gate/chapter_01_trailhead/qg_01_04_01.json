@@ -1,0 +1,79 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stone_pickaxe"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 16,
+    "title": "Cross Signal Fires",
+    "subtitle": "01 · Trailhead and Shelter · field report 05.2",
+    "description": [
+      "A supply crate waits beyond camp; the signal fires team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          180,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the bread pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:bread"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:nether/obtain_blaze_rod"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 28
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: glass bottle",
+      "item": {
+        "id": "minecraft:glass_bottle",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_01_04_01"
+    }
+  },
+  "dependencies": [
+    "qg_01_04_00",
+    "qg_01_03_01"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "display": {
+    "icon": "minecraft:stonecutter",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Shape Rail Spur",
+      "color": "green"
+    },
+    "subtitle": "03 · Stonework and Smithing · field report 04.6",
+    "description": [
+      "The kiln crew needs fuel before dusk; the rail spur team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          900,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": true,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/kill_a_mob"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the milk bucket provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:milk_bucket",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 21
+    }
+  },
+  "dependencies": [
+    "qg_03_03_03",
+    "qg_03_02_05"
+  ]
+}

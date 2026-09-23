@@ -1,0 +1,90 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:enchanting_table"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 16,
+    "title": "Publish Research Hall",
+    "subtitle": "06 · The Arcane Workshop · field report 10.7",
+    "description": "The enchantment shelf is missing a label; the research hall team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          1080,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record mob kills",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:mob_kills",
+      "target": 33
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in nether wastes",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:nether_wastes",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 30
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: prismarine shard",
+          "item": {
+            "id": "minecraft:prismarine_shard",
+            "count": 7
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_06_09_06"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_09_04",
+    "qg_06_09_05",
+    "qg_06_08_06"
+  ]
+}

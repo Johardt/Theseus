@@ -1,0 +1,69 @@
+{
+  "display": {
+    "icon": "minecraft:iron_sword",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 24,
+    "title": "Escort Creeper Ward",
+    "subtitle": "05 · The Night Watch · field report 09.4",
+    "description": [
+      "Webs have covered the lower passage; the creeper ward team needs this entry before it can move on.",
+      "Complete the structure objective and follow the connected route markers."
+    ],
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          540,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "minecraft:stronghold",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the crafting table station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:crafting_table"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 32
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_05_08_01",
+    "qg_05_08_02",
+    "qg_05_07_03"
+  ]
+}

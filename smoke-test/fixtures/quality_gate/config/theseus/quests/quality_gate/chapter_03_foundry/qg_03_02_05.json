@@ -1,0 +1,76 @@
+{
+  "display": {
+    "icon": "minecraft:iron_ingot",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 16,
+    "title": "Smelt Rail Spur",
+    "subtitle": "03 · Stonework and Smithing · field report 03.6",
+    "description": [
+      "The quarry face has exposed a new layer; the rail spur team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          900,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the piston pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:piston"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:nether/enter_nether"
+      ]
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 28
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: glass bottle",
+      "item": {
+        "id": "minecraft:glass_bottle",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_02_05"
+    }
+  },
+  "dependencies": [
+    "qg_03_02_03",
+    "qg_03_01_05"
+  ]
+}

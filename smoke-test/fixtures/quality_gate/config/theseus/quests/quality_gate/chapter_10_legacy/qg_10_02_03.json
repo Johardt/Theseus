@@ -1,0 +1,63 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 12,
+    "title": "Light Trade Concord",
+    "subtitle": "10 · Wayfinder's Legacy · field report 03.4",
+    "description": [
+      "The nether accord waits for a witness; the trade concord team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          540,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "dependencies_visible",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record mob kills",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:mob_kills",
+      "target": 38
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in meadow",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:meadow",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_10_02_03"
+    }
+  },
+  "dependencies": [
+    "qg_10_02_01",
+    "qg_10_02_02",
+    "qg_10_01_03"
+  ]
+}

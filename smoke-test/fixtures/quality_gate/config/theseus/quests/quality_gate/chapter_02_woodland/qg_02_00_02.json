@@ -1,0 +1,85 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:bread"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 24,
+    "title": "Prune Seed Stores",
+    "subtitle": "02 · Woodland Provisions · field report 01.3",
+    "description": [
+      "Winter stores are running thin; the seed stores team needs this entry before it can move on.",
+      "Complete the changed dimension objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          360,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from overworld to the nether.",
+      "from": "minecraft:overworld",
+      "to": "minecraft:the_nether",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record damage dealt",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:damage_dealt",
+      "target": 71
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 38
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 6
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_02_00_02"
+    }
+  },
+  "dependencies": [
+    "qg_02_00_00"
+  ]
+}

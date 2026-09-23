@@ -1,0 +1,68 @@
+{
+  "display": {
+    "icon": "minecraft:apple",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Prune Harvest Table",
+    "subtitle": "02 · Woodland Provisions · field report 01.7",
+    "description": "The harvest table has room for one more dish; the harvest table team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          1080,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the milk bucket provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:milk_bucket",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 5,
+      "xpType": "points",
+      "collectionType": "manual"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 40
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: prismarine shard",
+      "item": {
+        "id": "minecraft:prismarine_shard",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_02_00_06"
+    }
+  },
+  "dependencies": [
+    "qg_02_00_04",
+    "qg_02_00_05"
+  ]
+}

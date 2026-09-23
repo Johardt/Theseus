@@ -1,0 +1,77 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:enchanted_book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 12,
+    "title": "Annotate Ancient Script",
+    "subtitle": "06 · The Arcane Workshop · field report 07.5",
+    "description": [
+      "A trial note contradicts the old index; the ancient script team needs this entry before it can move on.",
+      "Complete the changed dimension objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          720,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from overworld to the nether.",
+      "from": "minecraft:overworld",
+      "to": "minecraft:the_nether",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 59
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 28
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: glass bottle",
+      "item": {
+        "id": "minecraft:glass_bottle",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_06_04"
+    }
+  },
+  "dependencies": [
+    "qg_06_06_03",
+    "qg_06_05_04"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:emerald"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 48,
+    "title": "Unite Beacon Summit",
+    "subtitle": "10 · Wayfinder's Legacy · field report 07.3",
+    "description": [
+      "The banner is ready for its final pattern; the beacon summit team needs this entry before it can move on.",
+      "Complete the entity interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          360,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the cow",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:cow",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_06_00",
+    "qg_10_05_02"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:iron_ingot"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 48,
+    "title": "Stock Iron Works",
+    "subtitle": "03 · Stonework and Smithing · field report 06.3",
+    "description": [
+      "The quarry face has exposed a new layer; the iron works team needs this entry before it can move on.",
+      "Complete the structure objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          360,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "minecraft:stronghold",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the redstone lamp station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:redstone_lamp"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_05_00",
+    "qg_03_04_02"
+  ]
+}

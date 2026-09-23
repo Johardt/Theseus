@@ -1,0 +1,64 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:trident"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 24,
+    "title": "Return Coastal Beacon",
+    "subtitle": "08 · Tides and Open Water · field report 10.5",
+    "description": [
+      "The horizon is clear enough for a long crossing; the coastal beacon team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          720,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the chest station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:chest"
+    },
+    "supporting_note": {
+      "type": "theseus:recipe",
+      "title": "Learn the furnace pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:furnace"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 33
+    }
+  },
+  "dependencies": [
+    "qg_08_09_03",
+    "qg_08_08_04"
+  ]
+}

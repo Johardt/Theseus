@@ -1,0 +1,61 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:nether_star"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 24,
+    "title": "Seal Wayfinder's Oath",
+    "subtitle": "10 · Wayfinder's Legacy · field report 04.1",
+    "description": "Traders from every road have arrived; the wayfinder's oath team needs this entry before it can move on.",
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          0,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": false,
+    "repeatable": true,
+    "unlock_notification": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the mooshroom",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:mooshroom",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 15
+    }
+  },
+  "dependencies": [
+    "qg_10_02_06"
+  ]
+}

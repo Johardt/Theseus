@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:trident"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 16,
+    "title": "Anchor Shipwreck Chart",
+    "subtitle": "08 · Tides and Open Water · field report 05.3",
+    "description": "The horizon is clear enough for a long crossing; the shipwreck chart team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          360,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure emerald",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:emerald",
+      "amount": 6,
+      "collection": "automatic"
+    },
+    "supporting_note": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bucket",
+      "item": {
+        "id": "minecraft:bucket",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_04_00",
+    "qg_08_03_02"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:raw_copper"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Quarry Furnace Hall",
+    "subtitle": "03 · Stonework and Smithing · field report 02.5",
+    "description": [
+      "The rail spur needs a final inspection; the furnace hall team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          720,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in plains",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:plains"
+    },
+    "supporting_note": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:river",
+        "position": {
+          "x": {
+            "min": -222,
+            "max": 290
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_03_01_03",
+    "qg_03_00_04"
+  ]
+}

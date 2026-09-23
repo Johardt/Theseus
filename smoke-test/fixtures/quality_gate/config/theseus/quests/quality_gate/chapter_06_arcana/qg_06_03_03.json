@@ -1,0 +1,130 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:written_book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 48,
+    "title": "Translate Trial Notes",
+    "subtitle": "06 · The Arcane Workshop · field report 04.4",
+    "description": "The research hall is ready for a final review; the trial notes team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure leather",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:leather",
+      "amount": 2,
+      "collection": "consume"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the mooshroom",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:mooshroom",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:stat",
+          "title": "Record jump",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:jump",
+          "target": 34
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:recipe",
+              "title": "Learn the piston pattern",
+              "description": "Unlock the listed recipe before the workshop closes for the night.",
+              "recipes": [
+                "minecraft:piston"
+              ],
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:amethyst_shard"
+              },
+              "fixture_extension": {
+                "retained": true,
+                "slot": 1
+              }
+            },
+            "trail_2": {
+              "type": "theseus:xp",
+              "title": "Bank expedition experience",
+              "description": "Build the requested experience reserve before the next leg.",
+              "amount": 3,
+              "xpType": "points",
+              "collectionType": "consume"
+            },
+            "trail_3": {
+              "type": "theseus:changed_dimension",
+              "title": "Cross a dimensional boundary",
+              "description": "Travel from the nether to the end.",
+              "from": "minecraft:the_nether",
+              "to": "minecraft:the_end"
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:spyglass"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bow"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 38
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_03_01",
+    "qg_06_03_02",
+    "qg_06_02_03"
+  ]
+}

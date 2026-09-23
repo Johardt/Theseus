@@ -1,0 +1,70 @@
+{
+  "display": {
+    "icon": "minecraft:oak_log",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 12,
+    "title": "Chart Tent Lines",
+    "subtitle": "01 · Trailhead and Shelter · field report 03.1",
+    "description": [
+      "The last torch is burning low; the tent lines team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          0,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record mob kills",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:mob_kills",
+      "target": 48
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in warped forest",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:warped_forest",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: arrow",
+      "item": {
+        "id": "minecraft:arrow",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_01_01_06"
+  ]
+}

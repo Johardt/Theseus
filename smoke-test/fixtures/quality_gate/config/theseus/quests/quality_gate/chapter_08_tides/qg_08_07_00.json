@@ -1,0 +1,68 @@
+{
+  "display": {
+    "icon": "minecraft:fishing_rod",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 12,
+    "title": "Survey Reed Delta",
+    "subtitle": "08 · Tides and Open Water · field report 08.1",
+    "description": [
+      "The delta has split into a new channel; the reed delta team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          0,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:story/mine_stone"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the baked potato provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:baked_potato",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: prismarine shard",
+      "item": {
+        "id": "minecraft:prismarine_shard",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_07_00"
+    }
+  },
+  "dependencies": [
+    "qg_08_06_06"
+  ]
+}

@@ -17,6 +17,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.AdvancementEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -37,6 +38,7 @@ public final class Theseus {
     public Theseus(IEventBus modBus) {
         modBus.addListener(this::onRegisterPayloadHandlers);
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
+        NeoForge.EVENT_BUS.addListener(this::onServerStarted);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
@@ -53,7 +55,13 @@ public final class Theseus {
     }
 
     private void onServerAboutToStart(ServerAboutToStartEvent event) {
+        LOGGER.info("Theseus setup beginning during server startup");
         runtime = QuestRuntime.create(event.getServer());
+        LOGGER.info("Theseus setup complete; Minecraft server startup is continuing");
+    }
+
+    private void onServerStarted(ServerStartedEvent event) {
+        LOGGER.info("Minecraft server startup completed after Theseus initialization");
     }
 
     private void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {

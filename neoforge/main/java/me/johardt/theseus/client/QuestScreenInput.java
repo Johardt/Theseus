@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import me.johardt.theseus.client.QuestClientSnapshot.ClientQuest;
 import me.johardt.theseus.core.QuestDefinition;
 import me.johardt.theseus.core.QuestIconDefinition;
 import me.johardt.theseus.core.QuestMutation;

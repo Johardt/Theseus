@@ -1,0 +1,148 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:ender_eye"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Descend Mineshaft Seal",
+      "color": "green"
+    },
+    "subtitle": "09 · Relics Below the Surface · field report 01.1",
+    "description": "A minecart track disappears beneath the seal; the mineshaft seal team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item_interaction",
+          "title": "Present the brush",
+          "description": "Interact while carrying the selected item to complete the handoff.",
+          "item": "minecraft:brush",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "#minecraft:village"
+        },
+        "trail_3": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:story/mine_stone"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:blaze_rod"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:biome",
+              "title": "Read the signs in warped forest",
+              "description": "Travel through the selected biome and update the field map.",
+              "biomes": "minecraft:warped_forest"
+            },
+            "trail_2": {
+              "type": "theseus:item_interaction",
+              "title": "Present the shears",
+              "description": "Interact while carrying the selected item to complete the handoff.",
+              "item": "minecraft:shears",
+              "components": {}
+            },
+            "trail_3": {
+              "type": "theseus:structure",
+              "title": "Find a landmark",
+              "description": "Locate the structure marker and confirm it on the route map.",
+              "structures": "minecraft:stronghold",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:amethyst_shard"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:nether_star"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 24
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: torch",
+          "item": {
+            "id": "minecraft:torch",
+            "count": 3
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_09_00_00"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_09_06"
+  ]
+}

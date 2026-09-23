@@ -1,0 +1,57 @@
+{
+  "display": {
+    "icon": "minecraft:dragon_breath",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": "Listen Relic Vault",
+    "subtitle": "09 · Relics Below the Surface · field report 06.7",
+    "description": [
+      "The portal room needs a verified route; the relic vault team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          1080,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure logs",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "#minecraft:logs",
+      "amount": 6,
+      "collection": "automatic"
+    },
+    "supporting_note": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_09_05_04",
+    "qg_09_05_05",
+    "qg_09_04_06"
+  ]
+}

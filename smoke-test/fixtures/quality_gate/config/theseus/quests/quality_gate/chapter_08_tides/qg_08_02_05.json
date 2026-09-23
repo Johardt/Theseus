@@ -1,0 +1,64 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:fishing_rod"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 32,
+    "title": "Recover Deep Current",
+    "subtitle": "08 · Tides and Open Water · field report 03.6",
+    "description": [
+      "The delta has split into a new channel; the deep current team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          900,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the oak log station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:oak_log"
+    },
+    "supporting_note": {
+      "type": "theseus:recipe",
+      "title": "Learn the furnace pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:furnace"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 9
+    }
+  },
+  "dependencies": [
+    "qg_08_02_03",
+    "qg_08_01_05"
+  ]
+}

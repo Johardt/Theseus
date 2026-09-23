@@ -1,0 +1,104 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:chest_minecart"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 12,
+    "title": "Carry Dragon Echo",
+    "subtitle": "09 · Relics Below the Surface · field report 09.6",
+    "description": [
+      "The vault door has opened just wide enough; the dragon echo team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          900,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in desert",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:desert",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:plains",
+        "position": {
+          "x": {
+            "min": -238,
+            "max": 306
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 22
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: carrot",
+      "item": {
+        "id": "minecraft:carrot",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_08_05"
+    }
+  },
+  "dependencies": [
+    "qg_09_08_03",
+    "qg_09_07_05"
+  ],
+  "fixture_extension": {
+    "source": "theseus-quality-gate",
+    "ordinal": 621,
+    "preserve": {
+      "enabled": true,
+      "labels": [
+        "fixture",
+        "compatibility",
+        "performance"
+      ]
+    }
+  }
+}

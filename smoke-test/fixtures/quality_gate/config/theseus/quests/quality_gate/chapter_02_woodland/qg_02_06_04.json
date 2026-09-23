@@ -1,0 +1,63 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:oak_sapling"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 48,
+    "title": "Trade Hedge Paths",
+    "subtitle": "02 · Woodland Provisions · field report 07.5",
+    "description": [
+      "The mill wheel has started turning; the hedge paths team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          720,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the zombie trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:zombie",
+      "amount": 4
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the spyglass",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:spyglass",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_02_06_03",
+    "qg_02_05_04"
+  ]
+}

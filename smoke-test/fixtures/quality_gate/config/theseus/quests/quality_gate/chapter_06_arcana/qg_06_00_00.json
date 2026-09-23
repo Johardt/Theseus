@@ -1,0 +1,122 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:tripwire_hook"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 20,
+    "title": {
+      "text": "Catalogue Librarian's Desk",
+      "color": "white"
+    },
+    "subtitle": "06 · The Arcane Workshop · field report 01.1",
+    "description": "A loose page turned up in the map drawer; the librarian's desk team needs this entry before it can move on.",
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the cow",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:cow",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item",
+          "title": "Secure torch",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:torch",
+          "amount": 6,
+          "collection": "consume"
+        },
+        "trail_2": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the sea lantern station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:sea_lantern"
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:biome",
+              "title": "Read the signs in nether wastes",
+              "description": "Travel through the selected biome and update the field map.",
+              "biomes": "minecraft:nether_wastes",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:bread"
+              }
+            },
+            "trail_2": {
+              "type": "theseus:item_interaction",
+              "title": "Present the shears",
+              "description": "Interact while carrying the selected item to complete the handoff.",
+              "item": "minecraft:shears",
+              "components": {}
+            },
+            "trail_3": {
+              "type": "theseus:structure",
+              "title": "Find a landmark",
+              "description": "Locate the structure marker and confirm it on the route map.",
+              "structures": "#minecraft:village"
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:diamond"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 26
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_05_09_06"
+  ]
+}

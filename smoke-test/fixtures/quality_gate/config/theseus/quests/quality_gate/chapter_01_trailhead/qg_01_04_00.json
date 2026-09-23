@@ -1,0 +1,94 @@
+{
+  "display": {
+    "icon": "minecraft:bread",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 12,
+    "title": "Cross Tent Lines",
+    "subtitle": "01 · Trailhead and Shelter · field report 05.1",
+    "description": [
+      "The first night will be here soon; the tent lines team needs this entry before it can move on.",
+      "Complete the location objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          0,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:the_nether",
+        "biomes": "minecraft:warped_forest",
+        "position": {
+          "x": {
+            "min": -228,
+            "max": 348
+          },
+          "y": {
+            "min": 48,
+            "max": 110
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 18
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: glass bottle",
+          "item": {
+            "id": "minecraft:glass_bottle",
+            "count": 7
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_01_04_00"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_01_03_06"
+  ]
+}

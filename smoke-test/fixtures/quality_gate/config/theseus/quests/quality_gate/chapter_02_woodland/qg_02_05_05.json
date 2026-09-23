@@ -1,0 +1,149 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:oak_sapling"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 12,
+    "title": "Protect Compost Yard",
+    "subtitle": "02 · Woodland Provisions · field report 06.6",
+    "description": [
+      "The mill wheel has started turning; the compost yard team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          900,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the bread pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:bread"
+      ]
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:taiga",
+            "position": {
+              "x": {
+                "min": -214,
+                "max": 298
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:trident"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item",
+          "title": "Secure spyglass",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:spyglass",
+          "amount": 6,
+          "collection": "automatic"
+        },
+        "trail_3": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the furnace station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:furnace"
+        },
+        "trail_4": {
+          "type": "theseus:item_use",
+          "title": "Use the mushroom stew provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:mushroom_stew",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:piston"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 37
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: string",
+          "item": {
+            "id": "minecraft:string",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_02_05_05"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 13
+    }
+  },
+  "dependencies": [
+    "qg_02_05_03",
+    "qg_02_04_05"
+  ]
+}

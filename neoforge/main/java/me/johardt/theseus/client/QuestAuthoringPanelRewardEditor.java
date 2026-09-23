@@ -33,9 +33,7 @@ final class QuestAuthoringPanelRewardEditor {
             panel.host.dispatch(new ShowMessage(panel.unavailableReason(EditorTypeRegistry.Kind.REWARD, panel.authoring.rewards.get(index).type) + ". It is preserved read-only."));
             return;
         }
-        panel.authoring.editingRewardIndex = index;
-        panel.authoring.editingReward = panel.authoring.rewards.get(index).copy();
-        panel.authoring.rewardEditorError = "";
+        panel.authoring.editReward(index);
         panel.modalHost.open(QuestModalHost.Modal.REWARD_EDITOR);
         panel.host.dispatch(new RebuildWidgets());
     }
@@ -151,16 +149,12 @@ final class QuestAuthoringPanelRewardEditor {
     }
 
     void closeRewardEditor(boolean nested) {
-        panel.authoring.rewardEditorError = "";
+        panel.authoring.closeRewardEditor(nested);
         panel.host.dispatch(new ClosePicker());
         if (panel.modalHost.is(QuestModalHost.Modal.PICKER)) panel.modalHost.close();
         if (nested) {
-            panel.authoring.editingNestedReward = null;
-            panel.authoring.editingNestedRewardIndex = -1;
             if (panel.modalHost.is(QuestModalHost.Modal.NESTED_REWARD_EDITOR)) panel.modalHost.close();
         } else {
-            panel.authoring.editingReward = null;
-            panel.authoring.editingRewardIndex = -1;
             if (panel.modalHost.is(QuestModalHost.Modal.NESTED_REWARDS)) panel.modalHost.close();
             if (panel.modalHost.is(QuestModalHost.Modal.REWARD_EDITOR)) panel.modalHost.close();
         }
@@ -168,25 +162,9 @@ final class QuestAuthoringPanelRewardEditor {
     }
 
     void saveRewardEditor(boolean nested) {
-        QuestAuthoringSession.RewardDraft reward = nested ? panel.authoring.editingNestedReward : panel.authoring.editingReward;
-        String error = validateRewardDraft(reward, nested);
-        if (!error.isEmpty()) {
-            panel.authoring.rewardEditorError = error;
-            return;
-        }
-        if (nested) {
-            List<QuestAuthoringSession.RewardDraft> rewards = nestedRewards(panel.authoring.editingReward);
-            if (panel.authoring.editingNestedRewardIndex < 0) rewards.add(reward.copy());
-            else rewards.set(panel.authoring.editingNestedRewardIndex, reward.copy());
-            setNestedRewards(panel.authoring.editingReward, rewards);
-        } else {
-            if (panel.authoring.editingRewardIndex < 0) {
-                panel.authoring.rewards.add(reward.copy());
-                panel.createRewardScroll = panel.draftUi.maxCreateRewardScroll();
-            } else {
-                panel.authoring.rewards.set(panel.authoring.editingRewardIndex, reward.copy());
-            }
-        }
+        int previousCount = panel.authoring.rewards.size();
+        if (!panel.authoring.saveReward(nested, panel.host.registryLookup())) return;
+        if (panel.authoring.rewards.size() > previousCount) panel.createRewardScroll = panel.draftUi.maxCreateRewardScroll();
         closeRewardEditor(nested);
     }
 
@@ -206,8 +184,7 @@ final class QuestAuthoringPanelRewardEditor {
                     QuestEditorCatalog.editorTypeLabel(EditorTypeRegistry.Kind.REWARD, rewards.get(nestedIndex).type, rewardChoice(rewards.get(nestedIndex)).label())
                 )));
                 widget.withCallback(() -> {
-                    panel.authoring.editingNestedRewardIndex = nestedIndex;
-                    panel.authoring.editingNestedReward = rewards.get(nestedIndex).copy();
+                    panel.authoring.editNestedReward(nestedIndex);
                     panel.modalHost.open(QuestModalHost.Modal.NESTED_REWARD_EDITOR);
                     panel.host.dispatch(new RebuildWidgets());
                 });
@@ -232,10 +209,7 @@ final class QuestAuthoringPanelRewardEditor {
                 widget.withPosition(left + 256, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("×")));
                 widget.withCallback(() -> {
-                    List<QuestAuthoringSession.RewardDraft> updated = nestedRewards(panel.authoring.editingReward);
-                    updated.remove(nestedIndex);
-                    setNestedRewards(panel.authoring.editingReward, updated);
-                    panel.authoring.nestedRewardScroll = Math.min(panel.authoring.nestedRewardScroll, Math.max(0, updated.size() - 4));
+                    panel.authoring.removeNestedReward(nestedIndex);
                     panel.host.dispatch(new RebuildWidgets());
                 });
                 widget.withTooltip(Component.translatable("gui.theseus.editor.delete_choice"));
@@ -268,11 +242,7 @@ final class QuestAuthoringPanelRewardEditor {
     }
 
     void moveNestedReward(int index, int direction) {
-        List<QuestAuthoringSession.RewardDraft> rewards = nestedRewards(panel.authoring.editingReward);
-        int target = index + direction;
-        if (target < 0 || target >= rewards.size()) return;
-        java.util.Collections.swap(rewards, index, target);
-        setNestedRewards(panel.authoring.editingReward, rewards);
+        panel.authoring.moveNestedReward(index, direction);
         panel.host.dispatch(new RebuildWidgets());
     }
 
@@ -342,12 +312,6 @@ final class QuestAuthoringPanelRewardEditor {
         QuestDefinition.Reward parsed = QuestDefinition.parse("editor", rewardRoot(draft)).rewards().get(draft.id);
         if (parsed == null) graphics.item(new ItemStack(rewardDisplayIcon(draft)), x, y);
         else QuestPresentation.renderRewardIcon(graphics, parsed, x, y);
-    }
-
-    String validateRewardDraft(QuestAuthoringSession.RewardDraft reward, boolean nested) {
-        List<QuestAuthoringSession.RewardDraft> peers = nested ? nestedRewards(panel.authoring.editingReward) : panel.authoring.rewards;
-        int editedIndex = nested ? panel.authoring.editingNestedRewardIndex : panel.authoring.editingRewardIndex;
-        return QuestDraftValidation.validateRewardDraft(reward, peers, editedIndex, nested, panel.host.registryLookup());
     }
 
     boolean isRewardEditable(QuestAuthoringSession.RewardDraft reward) {

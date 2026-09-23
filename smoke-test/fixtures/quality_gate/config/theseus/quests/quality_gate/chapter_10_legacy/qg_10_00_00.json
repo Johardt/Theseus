@@ -1,0 +1,161 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:beacon"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 24,
+    "title": {
+      "text": "Renew Wayfinder's Oath",
+      "color": "yellow"
+    },
+    "subtitle": "10 · Wayfinder's Legacy · field report 01.1",
+    "description": "The expedition's original map has one blank corner; the wayfinder's oath team needs this entry before it can move on.",
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the piston pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:piston"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:recipe",
+          "title": "Learn the bow pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:bow"
+          ]
+        },
+        "trail_2": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 1,
+          "xpType": "points",
+          "collectionType": "automatic",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:beacon"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:item",
+              "title": "Secure redstone",
+              "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+              "item": "minecraft:redstone",
+              "amount": 6,
+              "collection": "manual"
+            },
+            "trail_2": {
+              "type": "theseus:block_interaction",
+              "title": "Inspect the furnace station",
+              "description": "Interact with the marked block to verify this part of the route.",
+              "block": "minecraft:furnace"
+            },
+            "trail_3": {
+              "type": "theseus:item_use",
+              "title": "Use the mushroom stew provision",
+              "description": "Consume the selected provision and report the result.",
+              "item": "minecraft:mushroom_stew",
+              "components": {},
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:piston"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:glass_bottle"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 37
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: string",
+          "item": {
+            "id": "minecraft:string",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_10_00_00"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 13
+    }
+  },
+  "dependencies": [
+    "qg_09_09_06"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:nether_star"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 12,
+    "title": "Renew Trade Concord",
+    "subtitle": "10 · Wayfinder's Legacy · field report 01.4",
+    "description": "Traders from every road have arrived; the trade concord team needs this entry before it can move on.",
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          540,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_10_04_0",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from the end to overworld.",
+      "from": "minecraft:the_end",
+      "to": "minecraft:overworld"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: carrot",
+      "item": {
+        "id": "minecraft:carrot",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_10_00_03"
+    }
+  },
+  "dependencies": [
+    "qg_10_00_01",
+    "qg_10_00_02"
+  ]
+}

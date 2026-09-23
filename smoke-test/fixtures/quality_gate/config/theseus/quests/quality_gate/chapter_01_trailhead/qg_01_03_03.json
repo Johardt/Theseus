@@ -1,0 +1,126 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:campfire"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 20,
+    "title": "Prepare Trail Rations",
+    "subtitle": "01 · Trailhead and Shelter · field report 04.4",
+    "description": "The ridge is clear for a short time; the trail rations team needs this entry before it can move on.",
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item_interaction",
+          "title": "Present the brush",
+          "description": "Interact while carrying the selected item to complete the handoff.",
+          "item": "minecraft:brush",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "minecraft:stronghold",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bread"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:adventure/trade"
+          ]
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:biome",
+              "title": "Read the signs in ocean",
+              "description": "Travel through the selected biome and update the field map.",
+              "biomes": "minecraft:ocean"
+            },
+            "trail_2": {
+              "type": "theseus:item_interaction",
+              "title": "Present the shears",
+              "description": "Interact while carrying the selected item to complete the handoff.",
+              "item": "minecraft:shears",
+              "components": {},
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:blaze_rod"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:structure",
+              "title": "Find a landmark",
+              "description": "Locate the structure marker and confirm it on the route map.",
+              "structures": "#minecraft:village",
+              "fixture_extension": {
+                "retained": true,
+                "slot": 3
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 15
+    }
+  },
+  "dependencies": [
+    "qg_01_03_01",
+    "qg_01_03_02",
+    "qg_01_02_03"
+  ]
+}

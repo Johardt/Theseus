@@ -1,0 +1,57 @@
+{
+  "display": {
+    "icon": "minecraft:trident",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 12,
+    "title": "Repair Reed Delta",
+    "subtitle": "08 · Tides and Open Water · field report 07.1",
+    "description": "The horizon is clear enough for a long crossing; the reed delta team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          0,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the shield pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:shield"
+      ]
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:husbandry/plant_seed"
+      ]
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_08_05_06"
+  ]
+}

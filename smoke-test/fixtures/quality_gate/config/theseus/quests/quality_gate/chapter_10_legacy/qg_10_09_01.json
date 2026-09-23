@@ -1,0 +1,119 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:nether_star"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 32,
+    "title": "Remember Banner Hall",
+    "subtitle": "10 · Wayfinder's Legacy · field report 10.2",
+    "description": [
+      "Traders from every road have arrived; the banner hall team needs this entry before it can move on.",
+      "Complete the recipe objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          180,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the shield pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:shield"
+      ]
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:the_nether",
+            "biomes": "minecraft:nether_wastes",
+            "position": {
+              "x": {
+                "min": -214,
+                "max": 266
+              },
+              "y": {
+                "min": 48,
+                "max": 110
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item",
+          "title": "Secure logs",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "#minecraft:logs",
+          "amount": 4,
+          "collection": "consume",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bread"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the barrel station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:barrel"
+        },
+        "trail_4": {
+          "type": "theseus:item_use",
+          "title": "Use the milk bucket provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:milk_bucket",
+          "components": {}
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 26
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_09_00",
+    "qg_10_08_01"
+  ]
+}

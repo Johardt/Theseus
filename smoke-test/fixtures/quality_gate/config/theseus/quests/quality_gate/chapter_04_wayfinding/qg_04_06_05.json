@@ -1,0 +1,62 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:boat"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 24,
+    "title": "Cross Nether Link",
+    "subtitle": "04 · Roads Beyond the Valley · field report 07.6",
+    "description": [
+      "The summit path is clear at noon; the nether link team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          900,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record walk one cm",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:walk_one_cm",
+      "target": 39
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in savanna",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:savanna",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_04_06_05"
+    }
+  },
+  "dependencies": [
+    "qg_04_06_03",
+    "qg_04_05_05"
+  ]
+}

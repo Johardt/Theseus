@@ -1,0 +1,68 @@
+{
+  "Getting Started": {
+    "icon": "minecraft:map",
+    "iconEnabled": true,
+    "background": "",
+    "backgroundOpacity": 100
+  },
+  "01 · Trailhead and Shelter": {
+    "icon": "minecraft:compass",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/oak_planks.png",
+    "backgroundOpacity": 22
+  },
+  "02 · Woodland Provisions": {
+    "icon": "minecraft:wheat",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/moss_block.png",
+    "backgroundOpacity": 23
+  },
+  "03 · Stonework and Smithing": {
+    "icon": "minecraft:iron_ingot",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/polished_deepslate.png",
+    "backgroundOpacity": 20
+  },
+  "04 · Roads Beyond the Valley": {
+    "icon": "minecraft:spyglass",
+    "iconEnabled": false,
+    "background": "minecraft:textures/block/sandstone.png",
+    "backgroundOpacity": 21
+  },
+  "05 · The Night Watch": {
+    "icon": "minecraft:shield",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/deepslate_bricks.png",
+    "backgroundOpacity": 21
+  },
+  "06 · The Arcane Workshop": {
+    "icon": "minecraft:enchanted_book",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/enchanting_table_side.png",
+    "backgroundOpacity": 18
+  },
+  "07 · Machines and Materials": {
+    "icon": "minecraft:redstone",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/redstone_block.png",
+    "backgroundOpacity": 16
+  },
+  "08 · Tides and Open Water": {
+    "icon": "minecraft:prismarine_shard",
+    "iconEnabled": false,
+    "background": "minecraft:textures/block/prismarine_bricks.png",
+    "backgroundOpacity": 18
+  },
+  "09 · Relics Below the Surface": {
+    "icon": "minecraft:recovery_compass",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/ancient_debris_side.png",
+    "backgroundOpacity": 17
+  },
+  "10 · Wayfinder's Legacy": {
+    "icon": "minecraft:beacon",
+    "iconEnabled": true,
+    "background": "minecraft:textures/block/end_stone_bricks.png",
+    "backgroundOpacity": 17
+  }
+}

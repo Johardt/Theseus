@@ -1,0 +1,65 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:anvil"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 12,
+    "title": "Quarry Stonecutters",
+    "subtitle": "03 · Stonework and Smithing · field report 02.4",
+    "description": [
+      "The furnace has cooled between shifts; the stonecutters team needs this entry before it can move on.",
+      "Complete the advancement objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          540,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:husbandry/plant_seed"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item_use",
+      "title": "Use the golden apple provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:golden_apple",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_01_03"
+    }
+  },
+  "dependencies": [
+    "qg_03_01_01",
+    "qg_03_01_02",
+    "qg_03_00_03"
+  ]
+}

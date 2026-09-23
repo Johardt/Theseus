@@ -1,0 +1,73 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:redstone"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 32,
+    "title": "Commission Piston Yard",
+    "subtitle": "07 · Machines and Materials · field report 10.1",
+    "description": "The station is ready for its first cart; the piston yard team needs this entry before it can move on.",
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          0,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the piston pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:piston"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:story/upgrade_tools"
+      ]
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_07_08_06"
+  ],
+  "fixture_extension": {
+    "source": "theseus-quality-gate",
+    "ordinal": 483,
+    "preserve": {
+      "enabled": true,
+      "labels": [
+        "fixture",
+        "compatibility",
+        "performance"
+      ]
+    }
+  }
+}

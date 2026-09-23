@@ -1,0 +1,88 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:compass"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 24,
+    "title": "Cross Cairn Markers",
+    "subtitle": "01 · Trailhead and Shelter · field report 05.5",
+    "description": [
+      "The river is rising; the cairn markers team needs this entry before it can move on.",
+      "Complete the dummy objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          720,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_01_33_0"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item",
+          "title": "Secure emerald",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:emerald",
+          "amount": 4,
+          "collection": "manual",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the lectern station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:lectern"
+        },
+        "trail_3": {
+          "type": "theseus:item_use",
+          "title": "Use the golden apple provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:golden_apple",
+          "components": {}
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bow"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_01_04_04"
+    }
+  },
+  "dependencies": [
+    "qg_01_04_03",
+    "qg_01_03_04"
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:anvil"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 20,
+    "title": "Stock Foundry Gate",
+    "subtitle": "03 · Stonework and Smithing · field report 06.7",
+    "description": [
+      "The furnace has cooled between shifts; the foundry gate team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          1080,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the spider trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:spider",
+      "amount": 5
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the bow",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:bow",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 19
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: diamond",
+          "item": {
+            "id": "minecraft:diamond",
+            "count": 8
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_03_05_06"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 37
+    }
+  },
+  "dependencies": [
+    "qg_03_05_04",
+    "qg_03_05_05",
+    "qg_03_04_06"
+  ]
+}

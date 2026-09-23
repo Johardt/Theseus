@@ -1,0 +1,61 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stonecutter"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 20,
+    "title": "Smelt Foundry Gate",
+    "subtitle": "03 · Stonework and Smithing · field report 03.7",
+    "description": [
+      "The kiln crew needs fuel before dusk; the foundry gate team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          1080,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record walk one cm",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:walk_one_cm",
+      "target": 61
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_02_06"
+    }
+  },
+  "dependencies": [
+    "qg_03_02_04",
+    "qg_03_02_05",
+    "qg_03_01_06"
+  ]
+}

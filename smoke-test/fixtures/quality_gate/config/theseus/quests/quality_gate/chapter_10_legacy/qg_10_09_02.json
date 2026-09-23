@@ -1,0 +1,65 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:elytra"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 48,
+    "title": {
+      "text": "Remember Beacon Summit",
+      "color": "yellow"
+    },
+    "subtitle": "10 · Wayfinder's Legacy · field report 10.3",
+    "description": [
+      "The atlas now contains the full route; the beacon summit team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          360,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": true,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record damage dealt",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:damage_dealt",
+      "target": 78
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in desert",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:desert",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_10_09_02"
+    }
+  },
+  "dependencies": [
+    "qg_10_09_00",
+    "qg_10_08_02"
+  ]
+}

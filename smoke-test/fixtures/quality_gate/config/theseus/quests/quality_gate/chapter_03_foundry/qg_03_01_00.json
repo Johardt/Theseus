@@ -1,0 +1,76 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:stonecutter"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 24,
+    "title": "Quarry Copper Seam",
+    "subtitle": "03 · Stonework and Smithing · field report 02.1",
+    "description": [
+      "The kiln crew needs fuel before dusk; the copper seam team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          0,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure emerald",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:emerald",
+      "amount": 4,
+      "collection": "manual",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 22
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: carrot",
+      "item": {
+        "id": "minecraft:carrot",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_03_01_00"
+    }
+  },
+  "dependencies": [
+    "qg_03_00_06"
+  ]
+}

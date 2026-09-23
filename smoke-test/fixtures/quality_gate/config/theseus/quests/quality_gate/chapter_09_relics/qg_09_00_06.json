@@ -1,0 +1,65 @@
+{
+  "display": {
+    "icon": "minecraft:chest_minecart",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 16,
+    "title": "Descend Relic Vault",
+    "subtitle": "09 · Relics Below the Surface · field report 01.7",
+    "description": "The vault door has opened just wide enough; the relic vault team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          1080,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record jump",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:jump",
+      "target": 41
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in plains",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:plains",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 5
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bread",
+      "item": {
+        "id": "minecraft:bread",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_00_04",
+    "qg_09_00_05"
+  ]
+}

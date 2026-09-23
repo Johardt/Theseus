@@ -1,0 +1,160 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 20,
+    "title": "Unite Endward Door",
+    "subtitle": "10 · Wayfinder's Legacy · field report 07.7",
+    "description": "The nether accord waits for a witness; the endward door team needs this entry before it can move on.",
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          1080,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the piston pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:piston"
+      ],
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:recipe",
+          "title": "Learn the bow pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:bow"
+          ]
+        },
+        "trail_2": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 1,
+          "xpType": "points",
+          "collectionType": "automatic",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:item",
+              "title": "Secure logs",
+              "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+              "item": "#minecraft:logs",
+              "amount": 6,
+              "collection": "consume"
+            },
+            "trail_2": {
+              "type": "theseus:block_interaction",
+              "title": "Inspect the bee nest station",
+              "description": "Interact with the marked block to verify this part of the route.",
+              "block": "minecraft:bee_nest"
+            },
+            "trail_3": {
+              "type": "theseus:item_use",
+              "title": "Use the milk bucket provision",
+              "description": "Consume the selected provision and report the result.",
+              "item": "minecraft:milk_bucket",
+              "components": {},
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:amethyst_shard"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:prismarine_shard"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 19
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: diamond",
+          "item": {
+            "id": "minecraft:diamond",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_10_06_06"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 37
+    }
+  },
+  "dependencies": [
+    "qg_10_06_04",
+    "qg_10_06_05",
+    "qg_10_05_06"
+  ]
+}

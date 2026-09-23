@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": "minecraft:lever",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 48,
+    "title": "Test Redstone Circuit",
+    "subtitle": "07 · Machines and Materials · field report 06.2",
+    "description": "The workshop core is waiting for a stable signal; the redstone circuit team needs this entry before it can move on.",
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          180,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false,
+    "unlock_notification": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:xp",
+      "title": "Bank expedition experience",
+      "description": "Build the requested experience reserve before the next leg.",
+      "amount": 1,
+      "xpType": "points",
+      "collectionType": "automatic",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: bow",
+      "item": {
+        "id": "minecraft:bow",
+        "count": 3
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_05_01"
+    }
+  },
+  "dependencies": [
+    "qg_07_05_00",
+    "qg_07_04_01"
+  ]
+}

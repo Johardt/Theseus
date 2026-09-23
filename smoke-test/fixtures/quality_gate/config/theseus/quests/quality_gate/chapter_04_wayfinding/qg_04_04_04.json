@@ -1,0 +1,106 @@
+{
+  "display": {
+    "icon": "minecraft:spyglass",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 20,
+    "title": "Climb High Ridge",
+    "subtitle": "04 · Roads Beyond the Valley · field report 05.5",
+    "description": [
+      "A dry well sits just beyond the dunes; the high ridge team needs this entry before it can move on.",
+      "Complete the structure objective and follow the connected route markers."
+    ],
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          720,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "#minecraft:village"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item_interaction",
+          "title": "Present the brush",
+          "description": "Interact while carrying the selected item to complete the handoff.",
+          "item": "minecraft:brush",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:beacon"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "#minecraft:village"
+        },
+        "trail_3": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:husbandry/balanced_diet"
+          ]
+        },
+        "trail_4": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the chicken",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:chicken",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 16
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: spyglass",
+      "item": {
+        "id": "minecraft:spyglass",
+        "count": 7
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_04_04_04"
+    }
+  },
+  "dependencies": [
+    "qg_04_04_03",
+    "qg_04_03_04"
+  ]
+}

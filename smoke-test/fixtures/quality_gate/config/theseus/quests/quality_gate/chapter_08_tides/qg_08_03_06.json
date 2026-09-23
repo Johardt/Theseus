@@ -1,0 +1,56 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:map"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 48,
+    "title": "Follow Open Water",
+    "subtitle": "08 · Tides and Open Water · field report 04.7",
+    "description": "The ship's chart survived the wreck; the open water team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          1080,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 6
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in taiga",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:taiga"
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_03_06"
+    }
+  },
+  "dependencies": [
+    "qg_08_03_04",
+    "qg_08_03_05",
+    "qg_08_02_06"
+  ]
+}

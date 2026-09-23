@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": "minecraft:tripwire_hook",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 32,
+    "title": "Restore Brewing Bench",
+    "subtitle": "06 · The Arcane Workshop · field report 06.3",
+    "description": [
+      "A loose page turned up in the map drawer; the brewing bench team needs this entry before it can move on.",
+      "Complete the stat objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          360,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record damage dealt",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:damage_dealt",
+      "target": 71,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in desert",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:desert"
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_06_05_02"
+    }
+  },
+  "dependencies": [
+    "qg_06_05_00",
+    "qg_06_04_02"
+  ]
+}

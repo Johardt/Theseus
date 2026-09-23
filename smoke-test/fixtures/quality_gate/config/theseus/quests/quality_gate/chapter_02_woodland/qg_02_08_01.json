@@ -1,0 +1,55 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:bread"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 20,
+    "title": "Measure Bee Roads",
+    "subtitle": "02 · Woodland Provisions · field report 09.2",
+    "description": "Winter stores are running thin; the bee roads team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          180,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record jump",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:jump",
+      "target": 7
+    },
+    "supporting_note": {
+      "type": "theseus:biome",
+      "title": "Read the signs in ocean",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:ocean"
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_02_08_01"
+    }
+  },
+  "dependencies": [
+    "qg_02_08_00",
+    "qg_02_07_01"
+  ]
+}

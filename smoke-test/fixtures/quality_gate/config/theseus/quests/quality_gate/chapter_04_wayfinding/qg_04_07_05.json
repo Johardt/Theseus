@@ -1,0 +1,115 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:water_bucket"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 24,
+    "title": "Resupply Nether Link",
+    "subtitle": "04 · Roads Beyond the Valley · field report 08.6",
+    "description": "A portal frame is missing one route marker; the nether link team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          900,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in river",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:river",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      },
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "biomes": "minecraft:taiga",
+        "position": {
+          "x": {
+            "min": -222,
+            "max": 258
+          },
+          "y": {
+            "min": 48,
+            "max": 192
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 7
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: oak log",
+          "item": {
+            "id": "minecraft:oak_log",
+            "count": 8
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_04_07_05"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 25
+    }
+  },
+  "dependencies": [
+    "qg_04_07_03",
+    "qg_04_06_05"
+  ]
+}

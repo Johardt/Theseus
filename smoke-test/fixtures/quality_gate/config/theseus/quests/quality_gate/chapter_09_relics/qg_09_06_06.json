@@ -1,0 +1,148 @@
+{
+  "display": {
+    "icon": "minecraft:recovery_compass",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 16,
+    "title": "Secure Relic Vault",
+    "subtitle": "09 · Relics Below the Surface · field report 07.7",
+    "description": "An old dragon record has surfaced; the relic vault team needs this entry before it can move on.",
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          1080,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "repeatable": true,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item_interaction",
+          "title": "Present the spyglass",
+          "description": "Interact while carrying the selected item to complete the handoff.",
+          "item": "minecraft:spyglass",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "#minecraft:village",
+          "fixture_extension": {
+            "retained": true,
+            "slot": 3
+          }
+        },
+        "trail_3": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:story/smelt_iron"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:trident"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:biome",
+              "title": "Read the signs in forest",
+              "description": "Travel through the selected biome and update the field map.",
+              "biomes": "minecraft:forest"
+            },
+            "trail_2": {
+              "type": "theseus:item_interaction",
+              "title": "Present the bone meal",
+              "description": "Interact while carrying the selected item to complete the handoff.",
+              "item": "minecraft:bone_meal",
+              "components": {}
+            },
+            "trail_3": {
+              "type": "theseus:structure",
+              "title": "Find a landmark",
+              "description": "Locate the structure marker and confirm it on the route map.",
+              "structures": "minecraft:stronghold",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:spyglass"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:oak_log"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 6
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: spyglass",
+          "item": {
+            "id": "minecraft:spyglass",
+            "count": 3
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_09_06_06"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_09_06_04",
+    "qg_09_06_05",
+    "qg_09_05_06"
+  ]
+}

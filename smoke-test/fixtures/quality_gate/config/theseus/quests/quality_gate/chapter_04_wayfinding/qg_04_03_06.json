@@ -1,0 +1,63 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:flint_and_steel"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 32,
+    "title": "Navigate Portal Return",
+    "subtitle": "04 · Roads Beyond the Valley · field report 04.7",
+    "description": "The snowline has moved higher; the portal return team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          1080,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "unlock_notification": false,
+    "show_dependency_arrow": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the spyglass",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:spyglass",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:compass"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:item",
+      "title": "Secure bow",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:bow",
+      "amount": 6,
+      "collection": "manual"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 3
+    }
+  },
+  "dependencies": [
+    "qg_04_03_04",
+    "qg_04_03_05",
+    "qg_04_02_06"
+  ]
+}

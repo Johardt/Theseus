@@ -1,0 +1,61 @@
+{
+  "display": {
+    "icon": "minecraft:glass_bottle",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 32,
+    "title": {
+      "text": "Publish Brewing Bench",
+      "color": "white"
+    },
+    "subtitle": "06 · The Arcane Workshop · field report 10.3",
+    "description": [
+      "An inscription is still legible under the dust; the brewing bench team needs this entry before it can move on.",
+      "Complete the item interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          360,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "unlock_notification": true,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the bone meal",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:bone_meal",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:item",
+      "title": "Secure bone",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:bone",
+      "amount": 2,
+      "collection": "automatic"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 27
+    }
+  },
+  "dependencies": [
+    "qg_06_09_00",
+    "qg_06_08_02"
+  ]
+}

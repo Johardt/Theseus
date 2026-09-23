@@ -1,0 +1,69 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:torch"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": "Test River Stones",
+    "subtitle": "01 · Trailhead and Shelter · field report 09.3",
+    "description": [
+      "A fresh trail marker has appeared; the river stones team needs this entry before it can move on.",
+      "Complete the item interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          360,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the brush",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:brush",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:item",
+      "title": "Secure logs",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "#minecraft:logs",
+      "amount": 2,
+      "collection": "manual"
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 11
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_01_08_00",
+    "qg_01_07_02"
+  ]
+}

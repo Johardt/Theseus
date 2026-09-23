@@ -1,0 +1,100 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:packed_ice"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": "Return Reef Shelf",
+    "subtitle": "08 · Tides and Open Water · field report 10.2",
+    "description": [
+      "A camp flag is frozen into the floe; the reef shelf team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          180,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the spider trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:spider",
+      "amount": 1,
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the lever station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:lever",
+          "state": {
+            "powered": "false"
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:blaze_rod"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item_use",
+          "title": "Use the milk bucket provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:milk_bucket",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_08_65_3"
+        },
+        "trail_4": {
+          "type": "theseus:biome",
+          "title": "Read the signs in desert",
+          "description": "Travel through the selected biome and update the field map.",
+          "biomes": "minecraft:desert",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_08_09_00",
+    "qg_08_08_01"
+  ]
+}

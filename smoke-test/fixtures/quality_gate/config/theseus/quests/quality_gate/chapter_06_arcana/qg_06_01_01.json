@@ -1,0 +1,130 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 24,
+    "title": "Copy Enchantment Shelf",
+    "subtitle": "06 · The Arcane Workshop · field report 02.2",
+    "description": [
+      "The brewing bench has a clean flask ready; the enchantment shelf team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          180,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": true,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure ender pearl",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:ender_pearl",
+      "amount": 6,
+      "collection": "automatic"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:check",
+          "title": "Submit the field report",
+          "description": "Use the manual check action to sign off this expedition note.",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:recipe",
+          "title": "Learn the furnace pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:furnace"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:spyglass"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 3,
+          "xpType": "points",
+          "collectionType": "consume"
+        },
+        "trail_4": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from the nether to the end.",
+          "from": "minecraft:the_nether",
+          "to": "minecraft:the_end"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 31
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: blaze rod",
+          "item": {
+            "id": "minecraft:blaze_rod",
+            "count": 8
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_06_01_01"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 7
+    }
+  },
+  "dependencies": [
+    "qg_06_01_00",
+    "qg_06_00_01"
+  ]
+}

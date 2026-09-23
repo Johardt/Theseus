@@ -1,0 +1,89 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:echo_shard"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 48,
+    "title": "Map End Portal",
+    "subtitle": "09 · Relics Below the Surface · field report 05.5",
+    "description": [
+      "The stronghold ring is missing one marker; the end portal team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          720,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "unlock_notification": false,
+    "show_dependency_arrow": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the cow",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:cow",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:stat",
+          "title": "Record jump",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:jump",
+          "target": 56,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:trident"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the pig trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:pig",
+          "amount": 5
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:glass_bottle"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 39
+    }
+  },
+  "dependencies": [
+    "qg_09_04_03",
+    "qg_09_03_04"
+  ]
+}

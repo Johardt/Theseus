@@ -1,0 +1,53 @@
+{
+  "display": {
+    "icon": "minecraft:beacon",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 16,
+    "title": "Remember Nether Accord",
+    "subtitle": "10 · Wayfinder's Legacy · field report 10.6",
+    "description": [
+      "The expedition's original map has one blank corner; the nether accord team needs this entry before it can move on.",
+      "Complete the item objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          900,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "never",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item",
+      "title": "Secure logs",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "#minecraft:logs",
+      "amount": 2,
+      "collection": "consume"
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: shield",
+      "item": {
+        "id": "minecraft:shield",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_09_03",
+    "qg_10_08_05"
+  ]
+}

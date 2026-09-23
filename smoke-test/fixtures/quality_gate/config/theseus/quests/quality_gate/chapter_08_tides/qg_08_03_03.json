@@ -1,0 +1,131 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:trident"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 20,
+    "title": "Follow Ice Floe",
+    "subtitle": "08 · Tides and Open Water · field report 04.4",
+    "description": "The horizon is clear enough for a long crossing; the ice floe team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_use",
+      "title": "Use the chorus fruit provision",
+      "description": "Consume the selected provision and report the result.",
+      "item": "minecraft:chorus_fruit",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "minecraft:stronghold",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:story/obtain_armor"
+          ]
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:kill_entity",
+              "title": "Clear the enderman trail",
+              "description": "Defeat the listed creature to make the route safe for the next crew.",
+              "entity": "minecraft:enderman",
+              "amount": 1
+            },
+            "trail_2": {
+              "type": "theseus:check",
+              "title": "Submit the field report",
+              "description": "Use the manual check action to sign off this expedition note.",
+              "components": {},
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:blaze_rod"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:recipe",
+              "title": "Learn the shield pattern",
+              "description": "Unlock the listed recipe before the workshop closes for the night.",
+              "recipes": [
+                "minecraft:shield"
+              ]
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:ender_pearl"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:elytra"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 22
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: carrot",
+      "item": {
+        "id": "minecraft:carrot",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_03_03"
+    }
+  },
+  "dependencies": [
+    "qg_08_03_01",
+    "qg_08_03_02",
+    "qg_08_02_03"
+  ]
+}

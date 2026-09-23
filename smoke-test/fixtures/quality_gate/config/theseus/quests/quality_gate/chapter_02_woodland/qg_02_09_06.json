@@ -1,0 +1,55 @@
+{
+  "display": {
+    "icon": "minecraft:wheat",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 16,
+    "title": "Harvest Harvest Table",
+    "subtitle": "02 · Woodland Provisions · field report 10.7",
+    "description": "A bee route now crosses the footpath; the harvest table team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          1080,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the shears",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:shears",
+      "components": {}
+    },
+    "supporting_note": {
+      "type": "theseus:item",
+      "title": "Secure bone",
+      "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+      "item": "minecraft:bone",
+      "amount": 2,
+      "collection": "manual"
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_02_09_06"
+    }
+  },
+  "dependencies": [
+    "qg_02_09_04",
+    "qg_02_09_05",
+    "qg_02_08_06"
+  ]
+}

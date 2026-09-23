@@ -1,0 +1,66 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:hopper"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 16,
+    "title": "Automate Signal Tower",
+    "subtitle": "07 · Machines and Materials · field report 08.5",
+    "description": [
+      "The tower lamp needs a timing check; the signal tower team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          720,
+          700
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the iron golem trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:iron_golem",
+      "amount": 3
+    },
+    "supporting_note": {
+      "type": "theseus:item_interaction",
+      "title": "Present the brush",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:brush",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_07_07_03",
+    "qg_07_06_04"
+  ]
+}

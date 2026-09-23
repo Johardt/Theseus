@@ -1,0 +1,130 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:raw_copper"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 20,
+    "title": "Lay Foundry Gate",
+    "subtitle": "03 · Stonework and Smithing · field report 07.7",
+    "description": "The rail spur needs a final inspection; the foundry gate team needs this entry before it can move on.",
+    "groups": {
+      "03 · Stonework and Smithing": {
+        "position": [
+          1080,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:item_interaction",
+      "title": "Present the bow",
+      "description": "Interact while carrying the selected item to complete the handoff.",
+      "item": "minecraft:bow",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:check",
+          "title": "Submit the field report",
+          "description": "Use the manual check action to sign off this expedition note.",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:recipe",
+          "title": "Learn the bread pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:bread"
+          ]
+        },
+        "trail_3": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 1,
+          "xpType": "points",
+          "collectionType": "automatic",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:blaze_rod"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:kill_entity",
+              "title": "Clear the iron golem trail",
+              "description": "Defeat the listed creature to make the route safe for the next crew.",
+              "entity": "minecraft:iron_golem",
+              "amount": 1
+            },
+            "trail_2": {
+              "type": "theseus:check",
+              "title": "Submit the field report",
+              "description": "Use the manual check action to sign off this expedition note.",
+              "components": {}
+            },
+            "trail_3": {
+              "type": "theseus:recipe",
+              "title": "Learn the piston pattern",
+              "description": "Unlock the listed recipe before the workshop closes for the night.",
+              "recipes": [
+                "minecraft:piston"
+              ],
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:amethyst_shard"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:ender_pearl"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 11
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_03_06_04",
+    "qg_03_06_05",
+    "qg_03_05_06"
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "display": {
+    "icon": "minecraft:compass",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 12,
+    "title": "Test Tent Lines",
+    "subtitle": "01 · Trailhead and Shelter · field report 09.1",
+    "description": [
+      "The river is rising; the tent lines team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          0,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the fox",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:fox",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:stat",
+          "title": "Record jump",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:jump",
+          "target": 44
+        },
+        "trail_3": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the spider trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:spider",
+          "amount": 5
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:nether_star"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_01_08_00"
+    }
+  },
+  "dependencies": [
+    "qg_01_07_06"
+  ]
+}

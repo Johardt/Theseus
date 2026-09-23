@@ -1,0 +1,145 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:conduit"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 48,
+    "title": "Repair Open Water",
+    "subtitle": "08 · Tides and Open Water · field report 07.7",
+    "description": "The deep current has changed direction; the open water team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          1080,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the pig trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:pig",
+      "amount": 4
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from overworld to the nether.",
+          "from": "minecraft:overworld",
+          "to": "minecraft:the_nether",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:plains",
+            "position": {
+              "x": {
+                "min": -246,
+                "max": 330
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:item_use",
+              "title": "Use the milk bucket provision",
+              "description": "Consume the selected provision and report the result.",
+              "item": "minecraft:milk_bucket",
+              "components": {}
+            },
+            "trail_2": {
+              "type": "theseus:dummy",
+              "title": "Record the field marker",
+              "description": "Run the matching Theseus dummy trigger to close this report.",
+              "value": "quality_gate_08_52_2",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:compass"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:biome",
+              "title": "Read the signs in river",
+              "description": "Travel through the selected biome and update the field map.",
+              "biomes": "minecraft:river"
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:oak_log"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:glass_bottle"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 34
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_06_06"
+    }
+  },
+  "dependencies": [
+    "qg_08_06_04",
+    "qg_08_06_05",
+    "qg_08_05_06"
+  ]
+}

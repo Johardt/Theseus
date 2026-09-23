@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import me.johardt.theseus.Theseus;
+import me.johardt.theseus.client.QuestClientSnapshot.ChapterDisplay;
+import me.johardt.theseus.client.QuestClientSnapshot.ClientQuest;
 import me.johardt.theseus.core.QuestDefinition;
 import me.johardt.theseus.client.description.DescriptionDocument;
 import me.johardt.theseus.client.description.DescriptionParser;

@@ -7,6 +7,8 @@ import earth.terrarium.olympus.client.components.base.renderer.WidgetRenderer;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.ArrayList;
 import java.util.List;
+import me.johardt.theseus.client.QuestClientSnapshot.ChapterDisplay;
+import me.johardt.theseus.client.QuestClientSnapshot.ClientQuest;
 import me.johardt.theseus.core.QuestDefinition;
 import me.johardt.theseus.core.QuestNetwork;
 import me.johardt.theseus.client.theme.ClientThemeLoader;

@@ -1,0 +1,93 @@
+{
+  "display": {
+    "icon": "minecraft:ender_eye",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Trace Relic Vault",
+      "color": "gold"
+    },
+    "subtitle": "09 · Relics Below the Surface · field report 02.7",
+    "description": [
+      "A minecart track disappears beneath the seal; the relic vault team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          1080,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in meadow",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:meadow",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    },
+    "supporting_note": {
+      "type": "theseus:location",
+      "title": "Reach the mapped coordinates",
+      "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+      "predicate": {
+        "dimension": "minecraft:the_nether",
+        "biomes": "minecraft:nether_wastes",
+        "position": {
+          "x": {
+            "min": -222,
+            "max": 258
+          },
+          "y": {
+            "min": 48,
+            "max": 110
+          },
+          "z": {
+            "min": -256,
+            "max": 256
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 40
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: prismarine shard",
+      "item": {
+        "id": "minecraft:prismarine_shard",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_01_06"
+    }
+  },
+  "dependencies": [
+    "qg_09_01_04",
+    "qg_09_01_05",
+    "qg_09_00_06"
+  ]
+}

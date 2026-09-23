@@ -1,0 +1,123 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:water_bucket"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 32,
+    "title": "Cross Portal Return",
+    "subtitle": "04 · Roads Beyond the Valley · field report 07.7",
+    "description": "A portal frame is missing one route marker; the portal return team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          1080,
+          600
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:structure",
+      "title": "Find a landmark",
+      "description": "Locate the structure marker and confirm it on the route map.",
+      "structures": "minecraft:stronghold",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:spyglass"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item_use",
+          "title": "Use the mushroom stew provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:mushroom_stew",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_04_49_3",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:beacon"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:structure",
+              "title": "Find a landmark",
+              "description": "Locate the structure marker and confirm it on the route map.",
+              "structures": "#minecraft:village"
+            },
+            "trail_2": {
+              "type": "theseus:advancement",
+              "title": "Log a milestone",
+              "description": "Earn the named vanilla advancement to verify the expedition record.",
+              "advancements": [
+                "minecraft:adventure/trade"
+              ]
+            },
+            "trail_3": {
+              "type": "theseus:entity_interaction",
+              "title": "Speak with the fox",
+              "description": "Interact with the listed character or creature and record the meeting.",
+              "entity": "minecraft:fox",
+              "components": {},
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:piston"
+              },
+              "fixture_extension": {
+                "retained": true,
+                "slot": 3
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:map"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_04_06_04",
+    "qg_04_06_05",
+    "qg_04_05_06"
+  ]
+}

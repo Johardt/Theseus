@@ -1,0 +1,93 @@
+{
+  "display": {
+    "icon": "minecraft:glass_bottle",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 32,
+    "title": "Brew Brewing Bench",
+    "subtitle": "06 · The Arcane Workshop · field report 03.3",
+    "description": [
+      "An inscription is still legible under the dust; the brewing bench team needs this entry before it can move on.",
+      "Complete the entity interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          360,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:entity_interaction",
+      "title": "Speak with the fox",
+      "description": "Interact with the listed character or creature and record the meeting.",
+      "entity": "minecraft:fox",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:piston"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_06_17_1"
+        },
+        "trail_2": {
+          "type": "theseus:biome",
+          "title": "Read the signs in ocean",
+          "description": "Travel through the selected biome and update the field map.",
+          "biomes": "minecraft:ocean"
+        },
+        "trail_3": {
+          "type": "theseus:item_interaction",
+          "title": "Present the shears",
+          "description": "Interact while carrying the selected item to complete the handoff.",
+          "item": "minecraft:shears",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:blaze_rod"
+          }
+        },
+        "trail_4": {
+          "type": "theseus:structure",
+          "title": "Find a landmark",
+          "description": "Locate the structure marker and confirm it on the route map.",
+          "structures": "#minecraft:village"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 6
+      }
+    }
+  },
+  "dependencies": [
+    "qg_06_02_00",
+    "qg_06_01_02"
+  ]
+}

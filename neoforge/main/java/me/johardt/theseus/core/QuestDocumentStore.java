@@ -66,13 +66,26 @@ public final class QuestDocumentStore {
         Map<String, List<Path>> pathsById = new LinkedHashMap<>();
         Map<String, Document> documents = new LinkedHashMap<>();
         List<LoadFailure> failures = new ArrayList<>();
-        for (Path path : questFiles()) {
+        List<Path> files = questFiles();
+        long loadStarted = System.nanoTime();
+        Theseus.LOGGER.info("Found {} quest files to read", files.size());
+        int processedFiles = 0;
+        for (Path path : files) {
             String id = idFor(path);
             pathsById.computeIfAbsent(id, ignored -> new ArrayList<>()).add(path);
             try {
                 documents.putIfAbsent(id, readDocument(path, id));
             } catch (Exception exception) {
                 failures.add(new LoadFailure(path, id, message(exception)));
+            }
+            processedFiles++;
+            if (processedFiles % 100 == 0 && processedFiles < files.size()) {
+                Theseus.LOGGER.info(
+                    "Processed {}/{} quest files in {} ms",
+                    processedFiles,
+                    files.size(),
+                    elapsedMillis(loadStarted)
+                );
             }
         }
 
@@ -97,6 +110,10 @@ public final class QuestDocumentStore {
             chapterSettings = Map.of();
         }
         return new Snapshot(documents, conflicts, failures, groupOrder, chapterSettings);
+    }
+
+    private static long elapsedMillis(long startedAt) {
+        return java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
     }
 
     /** Returns a defensive copy of one lossless raw quest document. */

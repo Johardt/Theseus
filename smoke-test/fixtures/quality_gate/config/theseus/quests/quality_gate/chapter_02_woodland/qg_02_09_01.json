@@ -1,0 +1,132 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:oak_sapling"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 20,
+    "title": "Harvest Bee Roads",
+    "subtitle": "02 · Woodland Provisions · field report 10.2",
+    "description": [
+      "The mill wheel has started turning; the bee roads team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          180,
+          900
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in deep dark",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:deep_dark"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:adventure/ol_betsy"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:shield"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the mooshroom",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:mooshroom",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:stat",
+          "title": "Record play time",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:play_time",
+          "target": 19
+        },
+        "trail_4": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the spider trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:spider",
+          "amount": 1,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bread"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 7
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: oak log",
+          "item": {
+            "id": "minecraft:oak_log",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_02_09_01"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 25
+    }
+  },
+  "dependencies": [
+    "qg_02_09_00",
+    "qg_02_08_01"
+  ]
+}

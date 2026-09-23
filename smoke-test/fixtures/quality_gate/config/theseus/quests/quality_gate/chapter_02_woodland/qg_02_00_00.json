@@ -1,0 +1,119 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:beehive"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Prune Orchard Rows",
+      "color": "gold"
+    },
+    "subtitle": "02 · Woodland Provisions · field report 01.1",
+    "description": "The orchard needs another season of care; the orchard rows team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in nether wastes",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:nether_wastes"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:biome",
+          "title": "Read the signs in forest",
+          "description": "Travel through the selected biome and update the field map.",
+          "biomes": "minecraft:forest",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:spyglass"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item_interaction",
+          "title": "Present the bow",
+          "description": "Interact while carrying the selected item to complete the handoff.",
+          "item": "minecraft:bow",
+          "components": {}
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:entity_interaction",
+              "title": "Speak with the cow",
+              "description": "Interact with the listed character or creature and record the meeting.",
+              "entity": "minecraft:cow",
+              "components": {}
+            },
+            "trail_2": {
+              "type": "theseus:stat",
+              "title": "Record jump",
+              "description": "Reach the target statistic and add the result to the trip ledger.",
+              "stat": "minecraft:jump",
+              "target": 20,
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:trident"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:kill_entity",
+              "title": "Clear the zombie trail",
+              "description": "Defeat the listed creature to make the route safe for the next crew.",
+              "entity": "minecraft:zombie",
+              "amount": 5
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bow"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:prismarine_shard"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: amethyst shard",
+      "item": {
+        "id": "minecraft:amethyst_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_01_09_06"
+  ]
+}

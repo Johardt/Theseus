@@ -1,0 +1,118 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:torch"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 32,
+    "title": "Secure First Tools",
+    "subtitle": "01 · Trailhead and Shelter · field report 06.6",
+    "description": [
+      "A fresh trail marker has appeared; the first tools team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          900,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "show_dependency_arrow": false,
+    "auto_claim_rewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {}
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the cow",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:cow",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:stat",
+          "title": "Record mob kills",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:mob_kills",
+          "target": 63,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:shield"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the pig trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:pig",
+          "amount": 3
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 3,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "level",
+          "amount": 24
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: torch",
+          "item": {
+            "id": "minecraft:torch",
+            "count": 3
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:entities/skeleton"
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_01_05_05"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bundle"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_01_05_03",
+    "qg_01_04_05"
+  ]
+}

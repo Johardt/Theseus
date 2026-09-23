@@ -36,11 +36,7 @@ final class QuestAuthoringPanelTaskEditor {
             panel.host.dispatch(new ShowMessage(panel.unavailableReason(EditorTypeRegistry.Kind.TASK, panel.authoring.tasks.get(index).type) + ". It is preserved read-only."));
             return;
         }
-        panel.authoring.editingTaskIndex = index;
-        panel.authoring.editingTask = panel.authoring.tasks.get(index).copy();
-        panel.authoring.taskEditorParents.clear();
-        panel.authoring.taskEditorParentIndexes.clear();
-        panel.authoring.taskEditorError = "";
+        panel.authoring.editTask(index);
         panel.modalHost.open(QuestModalHost.Modal.TASK_EDITOR);
         panel.host.dispatch(new RebuildWidgets());
     }
@@ -252,8 +248,7 @@ final class QuestAuthoringPanelTaskEditor {
         int top = taskEditorTop();
         List<QuestAuthoringSession.TaskDraft> children = nestedTasks(panel.authoring.editingTask);
         int end = Math.min(children.size(), panel.authoring.nestedTaskScroll + 4);
-        String breadcrumbs = panel.authoring.taskEditorParents.isEmpty() ? panel.authoring.editingTask.id : panel.authoring.taskEditorParents.stream()
-            .map(parent -> parent.id).collect(java.util.stream.Collectors.joining(" › ")) + " › " + panel.authoring.editingTask.id;
+        String breadcrumbs = panel.authoring.taskBreadcrumbs();
         for (int index = panel.authoring.nestedTaskScroll; index < end; index++) {
             int childIndex = index;
             int rowY = top + 42 + (index - panel.authoring.nestedTaskScroll) * 42;
@@ -262,12 +257,8 @@ final class QuestAuthoringPanelTaskEditor {
                 widget.withPosition(left + 14, rowY).withSize(140, 34);
                 widget.withRenderer(WidgetRenderers.text(Component.literal(child.id + "  ·  " + taskDisplayLabel(child))));
                 widget.withCallback(() -> {
-                    panel.authoring.taskEditorParents.add(panel.authoring.editingTask);
-                    panel.authoring.taskEditorParentIndexes.add(panel.authoring.editingTaskIndex);
-                    panel.authoring.editingTask = children.get(childIndex).copy();
-                    panel.authoring.editingTaskIndex = childIndex;
+                    panel.authoring.editChildTask(childIndex);
                     panel.modalHost.open(QuestModalHost.Modal.TASK_EDITOR);
-                    panel.authoring.taskEditorError = "";
                     panel.host.dispatch(new RebuildWidgets());
                 });
                 widget.active = isTaskEditable(child);
@@ -291,10 +282,7 @@ final class QuestAuthoringPanelTaskEditor {
                 widget.withPosition(left + 216, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("×")));
                 widget.withCallback(() -> {
-                    List<QuestAuthoringSession.TaskDraft> updated = nestedTasks(panel.authoring.editingTask);
-                    updated.remove(childIndex);
-                    setNestedTasks(panel.authoring.editingTask, updated);
-                    panel.authoring.nestedTaskScroll = Math.min(panel.authoring.nestedTaskScroll, Math.max(0, updated.size() - 4));
+                    panel.authoring.removeNestedTask(childIndex);
                     panel.host.dispatch(new RebuildWidgets());
                 });
                 widget.withTooltip(Component.translatable("gui.theseus.editor.delete_child_task"));
@@ -329,11 +317,7 @@ final class QuestAuthoringPanelTaskEditor {
     }
 
     void moveNestedTask(int index, int direction) {
-        List<QuestAuthoringSession.TaskDraft> children = nestedTasks(panel.authoring.editingTask);
-        int target = index + direction;
-        if (target < 0 || target >= children.size()) return;
-        java.util.Collections.swap(children, index, target);
-        setNestedTasks(panel.authoring.editingTask, children);
+        panel.authoring.moveNestedTask(index, direction);
         panel.host.dispatch(new RebuildWidgets());
     }
 
@@ -384,15 +368,7 @@ final class QuestAuthoringPanelTaskEditor {
     }
 
     void closeTaskEditor() {
-        boolean hasParent = !panel.authoring.taskEditorParents.isEmpty();
-        if (hasParent) {
-            panel.authoring.editingTask = panel.authoring.taskEditorParents.removeLast();
-            panel.authoring.editingTaskIndex = panel.authoring.taskEditorParentIndexes.removeLast();
-        } else {
-            panel.authoring.editingTask = null;
-            panel.authoring.editingTaskIndex = -1;
-        }
-        panel.authoring.taskEditorError = "";
+        boolean hasParent = panel.authoring.closeTaskEditor();
         panel.host.dispatch(new ClosePicker());
         if (panel.modalHost.isOneOf(QuestModalHost.Modal.TASK_EDITOR, QuestModalHost.Modal.NESTED_TASKS)) {
             panel.modalHost.close();
@@ -402,25 +378,9 @@ final class QuestAuthoringPanelTaskEditor {
     }
 
     void saveTaskEditor() {
-        String error = validateTaskDraft(panel.authoring.editingTask, panel.authoring.editingTaskIndex);
-        if (!error.isEmpty()) {
-            panel.authoring.taskEditorError = error;
-            return;
-        }
-        if (panel.authoring.taskEditorParents.isEmpty()) {
-            if (panel.authoring.editingTaskIndex < 0) {
-                panel.authoring.tasks.add(panel.authoring.editingTask.copy());
-                panel.createTaskScroll = panel.draftUi.maxCreateTaskScroll();
-            } else {
-                panel.authoring.tasks.set(panel.authoring.editingTaskIndex, panel.authoring.editingTask.copy());
-            }
-        } else {
-            QuestAuthoringSession.TaskDraft parent = panel.authoring.taskEditorParents.getLast();
-            List<QuestAuthoringSession.TaskDraft> children = nestedTasks(parent);
-            if (panel.authoring.editingTaskIndex < 0) children.add(panel.authoring.editingTask.copy());
-            else children.set(panel.authoring.editingTaskIndex, panel.authoring.editingTask.copy());
-            setNestedTasks(parent, children);
-        }
+        int previousCount = panel.authoring.tasks.size();
+        if (!panel.authoring.saveTask(panel.host.registryLookup())) return;
+        if (panel.authoring.tasks.size() > previousCount) panel.createTaskScroll = panel.draftUi.maxCreateTaskScroll();
         closeTaskEditor();
     }
 
@@ -539,11 +499,6 @@ final class QuestAuthoringPanelTaskEditor {
         QuestDefinition.Task parsed = QuestDefinition.parse("editor", taskRoot(draft)).tasks().get(draft.id);
         if (parsed == null) graphics.item(new ItemStack(taskDisplayIcon(draft)), x, y);
         else QuestPresentation.renderTaskIcon(graphics, parsed, x, y);
-    }
-
-    String validateTaskDraft(QuestAuthoringSession.TaskDraft task, int editedIndex) {
-        List<QuestAuthoringSession.TaskDraft> peers = panel.authoring.taskEditorParents.isEmpty() ? panel.authoring.tasks : nestedTasks(panel.authoring.taskEditorParents.getLast());
-        return QuestDraftValidation.validateTaskDraft(task, peers, editedIndex, panel.host.registryLookup());
     }
 
     boolean isTaskEditable(QuestAuthoringSession.TaskDraft task) {

@@ -1,0 +1,108 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:lantern"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/diamonds.png",
+    "icon_size": 16,
+    "title": "Recover Shipwreck Chart",
+    "subtitle": "08 · Tides and Open Water · field report 03.3",
+    "description": [
+      "The coastal beacon lost its upper lamp; the shipwreck chart team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          360,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the sheep trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:sheep",
+      "amount": 5
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the lever station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:lever",
+          "state": {
+            "powered": "false"
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:shield"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item_use",
+          "title": "Use the mushroom stew provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:mushroom_stew",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_08_17_3"
+        },
+        "trail_4": {
+          "type": "theseus:biome",
+          "title": "Read the signs in meadow",
+          "description": "Travel through the selected biome and update the field map.",
+          "biomes": "minecraft:meadow",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bread"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_08_02_00",
+    "qg_08_01_02"
+  ],
+  "fixture_extension": {
+    "source": "theseus-quality-gate",
+    "ordinal": 506,
+    "preserve": {
+      "enabled": true,
+      "labels": [
+        "fixture",
+        "compatibility",
+        "performance"
+      ]
+    }
+  }
+}

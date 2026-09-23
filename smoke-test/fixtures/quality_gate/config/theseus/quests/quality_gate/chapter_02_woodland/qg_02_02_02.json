@@ -1,0 +1,136 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:composter"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hexagons.png",
+    "icon_size": 24,
+    "title": "Tend Seed Stores",
+    "subtitle": "02 · Woodland Provisions · field report 03.3",
+    "description": [
+      "A villager asked for the first surplus; the seed stores team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          360,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in ocean",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:ocean"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:adventure/kill_a_mob"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the mooshroom",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:mooshroom",
+          "components": {},
+          "fixture_extension": {
+            "retained": true,
+            "slot": 2
+          }
+        },
+        "trail_3": {
+          "type": "theseus:stat",
+          "title": "Record jump",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:jump",
+          "target": 76
+        },
+        "trail_4": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the sheep trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:sheep",
+          "amount": 5,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:spyglass"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "selectable_1": {
+      "type": "theseus:selectable",
+      "title": "Choose a trail provision",
+      "amount": 1,
+      "rewards": {
+        "field_xp": {
+          "type": "theseus:xp",
+          "title": "Expedition experience",
+          "xptype": "points",
+          "amount": 25
+        },
+        "ration_pack": {
+          "type": "theseus:item",
+          "title": "Supply crate: stone pickaxe",
+          "item": {
+            "id": "minecraft:stone_pickaxe",
+            "count": 4
+          }
+        },
+        "recovered_cache": {
+          "type": "theseus:loottable",
+          "title": "Field cache",
+          "loot_table": "minecraft:chests/simple_dungeon",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:chest"
+          }
+        },
+        "trail_notice": {
+          "type": "theseus:command",
+          "title": "Personal expedition notice",
+          "command": "tell @s Quality gate reward qg_02_02_02"
+        }
+      }
+    },
+    "xp_2": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 43
+    }
+  },
+  "dependencies": [
+    "qg_02_02_00",
+    "qg_02_01_02"
+  ]
+}

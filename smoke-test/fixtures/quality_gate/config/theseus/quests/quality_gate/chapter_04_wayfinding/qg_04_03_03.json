@@ -1,0 +1,137 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:leather_boots"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 16,
+    "title": "Navigate Sailor's Route",
+    "subtitle": "04 · Roads Beyond the Valley · field report 04.4",
+    "description": "A return signal came from the other side; the sailor's route team needs this entry before it can move on.",
+    "groups": {
+      "04 · Roads Beyond the Valley": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:changed_dimension",
+      "title": "Cross a dimensional boundary",
+      "description": "Travel from overworld to the nether.",
+      "from": "minecraft:overworld",
+      "to": "minecraft:the_nether",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the sheep trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:sheep",
+          "amount": 5
+        },
+        "trail_2": {
+          "type": "theseus:check",
+          "title": "Submit the field report",
+          "description": "Use the manual check action to sign off this expedition note.",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:shield"
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:changed_dimension",
+              "title": "Cross a dimensional boundary",
+              "description": "Travel from the end to overworld.",
+              "from": "minecraft:the_end",
+              "to": "minecraft:overworld"
+            },
+            "trail_2": {
+              "type": "theseus:location",
+              "title": "Reach the mapped coordinates",
+              "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+              "predicate": {
+                "dimension": "minecraft:overworld",
+                "biomes": "minecraft:meadow",
+                "position": {
+                  "x": {
+                    "min": -204,
+                    "max": 308
+                  },
+                  "y": {
+                    "min": 48,
+                    "max": 192
+                  },
+                  "z": {
+                    "min": -256,
+                    "max": 256
+                  }
+                }
+              }
+            },
+            "trail_3": {
+              "type": "theseus:item",
+              "title": "Secure redstone",
+              "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+              "item": "minecraft:redstone",
+              "amount": 4,
+              "collection": "consume",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:spyglass"
+              }
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:glass_bottle"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:amethyst_shard"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/skeleton"
+    }
+  },
+  "dependencies": [
+    "qg_04_03_01",
+    "qg_04_03_02",
+    "qg_04_02_03"
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:gold_block"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 20,
+    "title": "Trace Stronghold Ring",
+    "subtitle": "09 · Relics Below the Surface · field report 02.2",
+    "description": [
+      "A quiet pulse came from the ancient city; the stronghold ring team needs this entry before it can move on.",
+      "Complete the dummy objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          180,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": true,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_09_09_0"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item",
+          "title": "Secure golden apple",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:golden_apple",
+          "amount": 2,
+          "collection": "automatic"
+        },
+        "trail_2": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the lever station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:lever",
+          "state": {
+            "powered": "false"
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:item_use",
+          "title": "Use the golden apple provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:golden_apple",
+          "components": {}
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:elytra"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 27
+    }
+  },
+  "dependencies": [
+    "qg_09_01_00",
+    "qg_09_00_01"
+  ]
+}

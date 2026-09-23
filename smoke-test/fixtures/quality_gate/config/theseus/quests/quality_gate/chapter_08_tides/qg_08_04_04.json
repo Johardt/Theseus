@@ -1,0 +1,120 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:prismarine_shard"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 24,
+    "title": "Anchor Coastal Beacon",
+    "subtitle": "08 · Tides and Open Water · field report 05.5",
+    "description": [
+      "A reef shelf is visible at low tide; the coastal beacon team needs this entry before it can move on.",
+      "Complete the kill entity objective and follow the connected route markers."
+    ],
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          720,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the enderman trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:enderman",
+      "amount": 2,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:book"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the redstone lamp station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:redstone_lamp",
+          "fixture_extension": {
+            "retained": true,
+            "slot": 1
+          }
+        },
+        "trail_2": {
+          "type": "theseus:item_use",
+          "title": "Use the baked potato provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:baked_potato",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_08_33_3",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:shield"
+          }
+        },
+        "trail_4": {
+          "type": "theseus:biome",
+          "title": "Read the signs in warped forest",
+          "description": "Travel through the selected biome and update the field map.",
+          "biomes": "minecraft:warped_forest"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 26
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_3": {
+      "type": "theseus:item",
+      "title": "Supply crate: arrow",
+      "item": {
+        "id": "minecraft:arrow",
+        "count": 6
+      }
+    },
+    "command_4": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_04_04"
+    }
+  },
+  "dependencies": [
+    "qg_08_04_03",
+    "qg_08_03_04"
+  ]
+}

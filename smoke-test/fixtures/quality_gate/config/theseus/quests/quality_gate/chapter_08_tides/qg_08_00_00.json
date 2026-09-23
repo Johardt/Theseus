@@ -1,0 +1,147 @@
+{
+  "display": {
+    "icon": "minecraft:fishing_rod",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 12,
+    "title": {
+      "text": "Sound Reed Delta",
+      "color": "aqua"
+    },
+    "subtitle": "08 · Tides and Open Water · field report 01.1",
+    "description": "The delta has split into a new channel; the reed delta team needs this entry before it can move on.",
+    "groups": {
+      "08 · Tides and Open Water": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:kill_entity",
+      "title": "Clear the drowned trail",
+      "description": "Defeat the listed creature to make the route safe for the next crew.",
+      "entity": "minecraft:drowned",
+      "amount": 3
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from overworld to the nether.",
+          "from": "minecraft:overworld",
+          "to": "minecraft:the_nether",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bread"
+          },
+          "fixture_extension": {
+            "retained": true,
+            "slot": 2
+          }
+        },
+        "trail_2": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:the_nether",
+            "biomes": "minecraft:nether_wastes",
+            "position": {
+              "x": {
+                "min": -230,
+                "max": 282
+              },
+              "y": {
+                "min": 48,
+                "max": 110
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:item_use",
+              "title": "Use the mushroom stew provision",
+              "description": "Consume the selected provision and report the result.",
+              "item": "minecraft:mushroom_stew",
+              "components": {}
+            },
+            "trail_2": {
+              "type": "theseus:dummy",
+              "title": "Record the field marker",
+              "description": "Run the matching Theseus dummy trigger to close this report.",
+              "value": "quality_gate_08_04_2",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:beacon"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:biome",
+              "title": "Read the signs in savanna",
+              "description": "Travel through the selected biome and update the field map.",
+              "biomes": "minecraft:savanna"
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:nether_star"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:iron_ingot"
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 10
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: bow",
+      "item": {
+        "id": "minecraft:bow",
+        "count": 3
+      }
+    },
+    "command_3": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_08_00_00"
+    }
+  },
+  "dependencies": [
+    "qg_07_09_06"
+  ]
+}

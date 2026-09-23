@@ -1,0 +1,134 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:observer"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/octagons.png",
+    "icon_size": 32,
+    "title": {
+      "text": "Wire Piston Yard",
+      "color": "gold"
+    },
+    "subtitle": "07 · Machines and Materials · field report 01.1",
+    "description": "A test pulse stopped short of the marker; the piston yard team needs this entry before it can move on.",
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:stat",
+      "title": "Record play time",
+      "description": "Reach the target statistic and add the result to the trip ledger.",
+      "stat": "minecraft:play_time",
+      "target": 28,
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:beacon"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:nether/enter_nether"
+          ]
+        },
+        "trail_2": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the fox",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:fox",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:stat",
+          "title": "Record walk one cm",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:walk_one_cm",
+          "target": 47
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:structure",
+              "title": "Find a landmark",
+              "description": "Locate the structure marker and confirm it on the route map.",
+              "structures": "#minecraft:village"
+            },
+            "trail_2": {
+              "type": "theseus:advancement",
+              "title": "Log a milestone",
+              "description": "Earn the named vanilla advancement to verify the expedition record.",
+              "advancements": [
+                "minecraft:adventure/kill_a_mob"
+              ],
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:compass"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:entity_interaction",
+              "title": "Speak with the horse",
+              "description": "Interact with the listed character or creature and record the meeting.",
+              "entity": "minecraft:horse",
+              "components": {}
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: torch",
+      "item": {
+        "id": "minecraft:torch",
+        "count": 7
+      }
+    },
+    "command_2": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_07_00_00"
+    }
+  },
+  "dependencies": [
+    "qg_06_09_06"
+  ]
+}

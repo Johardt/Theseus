@@ -1,0 +1,121 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:shield"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/hearts.png",
+    "icon_size": 16,
+    "title": {
+      "text": "Post Night Watch",
+      "color": "yellow"
+    },
+    "subtitle": "05 · The Night Watch · field report 01.1",
+    "description": "An outpost lantern went dark; the night watch team needs this entry before it can move on.",
+    "groups": {
+      "05 · The Night Watch": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:advancement",
+      "title": "Log a milestone",
+      "description": "Earn the named vanilla advancement to verify the expedition record.",
+      "advancements": [
+        "minecraft:adventure/ol_betsy"
+      ]
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:stat",
+          "title": "Record walk one cm",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:walk_one_cm",
+          "target": 78,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the zombie trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:zombie",
+          "amount": 2
+        },
+        "trail_3": {
+          "type": "theseus:check",
+          "title": "Submit the field report",
+          "description": "Use the manual check action to sign off this expedition note.",
+          "components": {}
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:entity_interaction",
+              "title": "Speak with the fox",
+              "description": "Interact with the listed character or creature and record the meeting.",
+              "entity": "minecraft:fox",
+              "components": {},
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:book"
+              }
+            },
+            "trail_2": {
+              "type": "theseus:stat",
+              "title": "Record jump",
+              "description": "Reach the target statistic and add the result to the trip ledger.",
+              "stat": "minecraft:jump",
+              "target": 49
+            },
+            "trail_3": {
+              "type": "theseus:kill_entity",
+              "title": "Clear the sheep trail",
+              "description": "Defeat the listed creature to make the route safe for the next crew.",
+              "entity": "minecraft:sheep",
+              "amount": 5
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:elytra"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_05_00_00"
+    }
+  },
+  "dependencies": [
+    "qg_04_09_06"
+  ]
+}

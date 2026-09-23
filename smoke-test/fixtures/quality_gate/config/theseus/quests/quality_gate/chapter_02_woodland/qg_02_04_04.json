@@ -1,0 +1,106 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:wheat"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 48,
+    "title": "Mill Hedge Paths",
+    "subtitle": "02 · Woodland Provisions · field report 05.5",
+    "description": [
+      "A bee route now crosses the footpath; the hedge paths team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          720,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in taiga",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:taiga",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bread"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:story/obtain_armor"
+          ]
+        },
+        "trail_2": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the cat",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:cat",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:stat",
+          "title": "Record walk one cm",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:walk_one_cm",
+          "target": 57,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:compass"
+          }
+        },
+        "trail_4": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the enderman trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:enderman",
+          "amount": 2
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "level",
+      "amount": 32
+    },
+    "loot_2": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:chests/simple_dungeon",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    }
+  },
+  "dependencies": [
+    "qg_02_04_03",
+    "qg_02_03_04"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "display": {
+    "icon": "minecraft:redstone",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 48,
+    "title": "Calibrate Redstone Circuit",
+    "subtitle": "07 · Machines and Materials · field report 02.2",
+    "description": [
+      "The station is ready for its first cart; the redstone circuit team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "07 · Machines and Materials": {
+        "position": [
+          180,
+          100
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": true,
+    "showDependencyArrow": true,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the sea lantern station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:sea_lantern"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item_use",
+          "title": "Use the golden apple provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:golden_apple",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:book"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:dummy",
+          "title": "Record the field marker",
+          "description": "Run the matching Theseus dummy trigger to close this report.",
+          "value": "quality_gate_07_09_2"
+        },
+        "trail_3": {
+          "type": "theseus:biome",
+          "title": "Read the signs in plains",
+          "description": "Travel through the selected biome and update the field map.",
+          "biomes": "minecraft:plains"
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bow"
+      }
+    }
+  },
+  "rewards": {
+    "loot_1": {
+      "type": "theseus:loottable",
+      "title": "Field cache",
+      "loot_table": "minecraft:entities/zombie",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:chest"
+      }
+    },
+    "item_2": {
+      "type": "theseus:item",
+      "title": "Supply crate: echo shard",
+      "item": {
+        "id": "minecraft:echo_shard",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_07_01_00",
+    "qg_07_00_01"
+  ]
+}

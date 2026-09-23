@@ -1,0 +1,126 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:apple"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/pentagons.png",
+    "icon_size": 32,
+    "title": "Collect Milling Shed",
+    "subtitle": "02 · Woodland Provisions · field report 04.4",
+    "description": "The harvest table has room for one more dish; the milling shed team needs this entry before it can move on.",
+    "groups": {
+      "02 · Woodland Provisions": {
+        "position": [
+          540,
+          300
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:recipe",
+      "title": "Learn the shield pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:shield"
+      ]
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:recipe",
+          "title": "Learn the furnace pattern",
+          "description": "Unlock the listed recipe before the workshop closes for the night.",
+          "recipes": [
+            "minecraft:furnace"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:piston"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 3,
+          "xpType": "points",
+          "collectionType": "consume"
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:item",
+              "title": "Secure oak planks",
+              "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+              "item": "minecraft:oak_planks",
+              "amount": 2,
+              "collection": "consume"
+            },
+            "trail_2": {
+              "type": "theseus:block_interaction",
+              "title": "Inspect the lever station",
+              "description": "Interact with the marked block to verify this part of the route.",
+              "block": "minecraft:lever",
+              "state": {
+                "powered": "false"
+              },
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:shield"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:item_use",
+              "title": "Use the mushroom stew provision",
+              "description": "Consume the selected provision and report the result.",
+              "item": "minecraft:mushroom_stew",
+              "components": {}
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:nether_star"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:iron_ingot"
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: shield",
+      "item": {
+        "id": "minecraft:shield",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_02_03_01",
+    "qg_02_03_02",
+    "qg_02_02_03"
+  ]
+}

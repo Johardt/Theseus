@@ -80,14 +80,25 @@ public final class QuestRuntime {
     }
 
     public static QuestRuntime create(MinecraftServer server) {
+        long initializationStarted = System.nanoTime();
+        Theseus.LOGGER.info("Initializing Theseus quest runtime");
         taskHandlersLocked = true;
         RewardEngine rewards = lockRewardHandlers();
         ServerQuestWorld world = new ServerQuestWorld(
             server,
             FMLPaths.CONFIGDIR.get()
         );
+        long catalogStarted = System.nanoTime();
+        QuestCatalog catalog = world.loadCatalog();
+        long catalogMillis = elapsedMillis(catalogStarted);
+        Theseus.LOGGER.info(
+            "Quest catalog phase completed in {} ms ({} quests, {} validation issues)",
+            catalogMillis,
+            catalog.quests().size(),
+            catalog.issues().size()
+        );
         QuestRuntime runtime = new QuestRuntime(
-            world.loadCatalog(),
+            catalog,
             TASKS.build(),
             rewards,
             new FileProgressStore(
@@ -98,7 +109,14 @@ public final class QuestRuntime {
             world,
             new PacketQuestSync()
         );
+        long progressStarted = System.nanoTime();
         runtime.loadProgress();
+        Theseus.LOGGER.info(
+            "Theseus quest runtime ready in {} ms (catalog={} ms, progress={} ms)",
+            elapsedMillis(initializationStarted),
+            catalogMillis,
+            elapsedMillis(progressStarted)
+        );
         return runtime;
     }
 
@@ -745,8 +763,17 @@ public final class QuestRuntime {
     }
 
     void loadProgress() {
+        long loadStarted = System.nanoTime();
+        Theseus.LOGGER.info("Loading Theseus player progress from {}", progressStore);
         try {
-            progressStore.load().entrySet().forEach(player -> {
+            JsonObject storedProgress = progressStore.load();
+            long fileReadMillis = elapsedMillis(loadStarted);
+            Theseus.LOGGER.info(
+                "Read progress data for {} player records in {} ms",
+                storedProgress.size(),
+                fileReadMillis
+            );
+            storedProgress.entrySet().forEach(player -> {
                 try {
                     if (!player.getValue().isJsonObject()) throw new IllegalArgumentException("Player progress must be an object");
                     UUID playerId = UUID.fromString(player.getKey());
@@ -760,10 +787,18 @@ public final class QuestRuntime {
             // Re-emit legacy entries in the current explicit shape, while
             // retaining valid progress from other players.
             saveProgress();
+            Theseus.LOGGER.info(
+                "Loaded Theseus progress in {} ms ({} players, {} quest states, {} deferred quest states)",
+                elapsedMillis(loadStarted),
+                progress.size(),
+                progress.values().stream().mapToInt(Map::size).sum(),
+                deferredProgress.values().stream().mapToInt(Map::size).sum()
+            );
         } catch (Exception exception) {
             Theseus.LOGGER.error(
-                "Failed to load quest progress from {}",
+                "Failed to load quest progress from {} after {} ms",
                 progressStore,
+                elapsedMillis(loadStarted),
                 exception
             );
         }
@@ -840,6 +875,10 @@ public final class QuestRuntime {
                 exception
             );
         }
+    }
+
+    private static long elapsedMillis(long startedAt) {
+        return java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
     }
 
 }

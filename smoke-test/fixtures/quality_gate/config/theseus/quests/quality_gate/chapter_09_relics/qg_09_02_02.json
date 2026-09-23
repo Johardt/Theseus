@@ -1,0 +1,92 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:dragon_breath"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/gears.png",
+    "icon_size": 24,
+    "title": "Unseal Ancient City",
+    "subtitle": "09 · Relics Below the Surface · field report 03.3",
+    "description": [
+      "The portal room needs a verified route; the ancient city team needs this entry before it can move on.",
+      "Complete the check objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          360,
+          200
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:check",
+      "title": "Submit the field report",
+      "description": "Use the manual check action to sign off this expedition note.",
+      "components": {},
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the horse",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:horse",
+          "components": {}
+        },
+        "trail_2": {
+          "type": "theseus:stat",
+          "title": "Record mob kills",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:mob_kills",
+          "target": 75
+        },
+        "trail_3": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the enderman trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:enderman",
+          "amount": 3,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:piston"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:diamond"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_02_02"
+    }
+  },
+  "dependencies": [
+    "qg_09_02_00",
+    "qg_09_01_02"
+  ]
+}

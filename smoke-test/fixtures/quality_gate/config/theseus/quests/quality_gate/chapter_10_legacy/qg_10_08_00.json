@@ -1,0 +1,98 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:emerald"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/rounded_squares.png",
+    "icon_size": 24,
+    "title": "Dedicate Wayfinder's Oath",
+    "subtitle": "10 · Wayfinder's Legacy · field report 09.1",
+    "description": [
+      "The banner is ready for its final pattern; the wayfinder's oath team needs this entry before it can move on.",
+      "Complete the biome objective and follow the connected route markers."
+    ],
+    "groups": {
+      "10 · Wayfinder's Legacy": {
+        "position": [
+          0,
+          800
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": false,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "showDependencyArrow": false,
+    "repeatable": false,
+    "autoClaimRewards": false
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:biome",
+      "title": "Read the signs in nether wastes",
+      "description": "Travel through the selected biome and update the field map.",
+      "biomes": "minecraft:nether_wastes"
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:advancement",
+          "title": "Log a milestone",
+          "description": "Earn the named vanilla advancement to verify the expedition record.",
+          "advancements": [
+            "minecraft:husbandry/plant_seed"
+          ],
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:trident"
+          }
+        },
+        "trail_2": {
+          "type": "theseus:entity_interaction",
+          "title": "Speak with the mooshroom",
+          "description": "Interact with the listed character or creature and record the meeting.",
+          "entity": "minecraft:mooshroom",
+          "components": {}
+        },
+        "trail_3": {
+          "type": "theseus:stat",
+          "title": "Record mob kills",
+          "description": "Reach the target statistic and add the result to the trip ledger.",
+          "stat": "minecraft:mob_kills",
+          "target": 12
+        },
+        "trail_4": {
+          "type": "theseus:kill_entity",
+          "title": "Clear the spider trail",
+          "description": "Defeat the listed creature to make the route safe for the next crew.",
+          "entity": "minecraft:spider",
+          "amount": 3,
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:piston"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "item_1": {
+      "type": "theseus:item",
+      "title": "Supply crate: arrow",
+      "item": {
+        "id": "minecraft:arrow",
+        "count": 2
+      }
+    }
+  },
+  "dependencies": [
+    "qg_10_07_06"
+  ]
+}

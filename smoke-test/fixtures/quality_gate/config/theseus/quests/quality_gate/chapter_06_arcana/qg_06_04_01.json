@@ -1,0 +1,60 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:knowledge_book"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/circles.png",
+    "icon_size": 24,
+    "title": "Compare Enchantment Shelf",
+    "subtitle": "06 · The Arcane Workshop · field report 05.2",
+    "description": [
+      "The archive lock responds to a new key; the enchantment shelf team needs this entry before it can move on.",
+      "Complete the block interaction objective and follow the connected route markers."
+    ],
+    "groups": {
+      "06 · The Arcane Workshop": {
+        "position": [
+          180,
+          400
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "unlock_notification": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:block_interaction",
+      "title": "Inspect the oak door station",
+      "description": "Interact with the marked block to verify this part of the route.",
+      "block": "minecraft:oak_door"
+    },
+    "supporting_note": {
+      "type": "theseus:recipe",
+      "title": "Learn the bow pattern",
+      "description": "Unlock the listed recipe before the workshop closes for the night.",
+      "recipes": [
+        "minecraft:bow"
+      ]
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 9
+    }
+  },
+  "dependencies": [
+    "qg_06_04_00",
+    "qg_06_03_01"
+  ]
+}

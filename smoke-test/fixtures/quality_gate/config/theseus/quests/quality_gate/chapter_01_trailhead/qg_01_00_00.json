@@ -1,0 +1,154 @@
+{
+  "display": {
+    "icon": "minecraft:map",
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 12,
+    "title": {
+      "text": "Mark Tent Lines",
+      "color": "white"
+    },
+    "subtitle": "01 · Trailhead and Shelter · field report 01.1",
+    "description": "The weather is turning; the tent lines team needs this entry before it can move on.",
+    "groups": {
+      "01 · Trailhead and Shelter": {
+        "position": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "repeatable": true,
+    "unlock_notification": true,
+    "show_dependency_arrow": false,
+    "auto_claim_rewards": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_01_01_0",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:trident"
+      },
+      "fixture_extension": {
+        "retained": true,
+        "slot": 0
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 2,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:xp",
+          "title": "Bank expedition experience",
+          "description": "Build the requested experience reserve before the next leg.",
+          "amount": 5,
+          "xpType": "points",
+          "collectionType": "manual"
+        },
+        "trail_2": {
+          "type": "theseus:changed_dimension",
+          "title": "Cross a dimensional boundary",
+          "description": "Travel from overworld to the nether.",
+          "from": "minecraft:overworld",
+          "to": "minecraft:the_nether",
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:piston"
+          }
+        },
+        "trail_3": {
+          "type": "theseus:location",
+          "title": "Reach the mapped coordinates",
+          "description": "Visit the saved dimension, biome, and coordinate range on the expedition map.",
+          "predicate": {
+            "dimension": "minecraft:overworld",
+            "biomes": "minecraft:meadow",
+            "position": {
+              "x": {
+                "min": -204,
+                "max": 276
+              },
+              "y": {
+                "min": 48,
+                "max": 192
+              },
+              "z": {
+                "min": -256,
+                "max": 256
+              }
+            }
+          }
+        },
+        "branch_bundle": {
+          "type": "theseus:composite",
+          "title": "Complete the linked field bundle",
+          "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+          "amount": 3,
+          "tasks": {
+            "trail_1": {
+              "type": "theseus:recipe",
+              "title": "Learn the bread pattern",
+              "description": "Unlock the listed recipe before the workshop closes for the night.",
+              "recipes": [
+                "minecraft:bread"
+              ]
+            },
+            "trail_2": {
+              "type": "theseus:xp",
+              "title": "Bank expedition experience",
+              "description": "Build the requested experience reserve before the next leg.",
+              "amount": 1,
+              "xpType": "points",
+              "collectionType": "automatic",
+              "icon": {
+                "type": "theseus:item",
+                "item": "minecraft:beacon"
+              }
+            },
+            "trail_3": {
+              "type": "theseus:changed_dimension",
+              "title": "Cross a dimensional boundary",
+              "description": "Travel from the end to overworld.",
+              "from": "minecraft:the_end",
+              "to": "minecraft:overworld"
+            }
+          },
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:amethyst_shard"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "xp_1": {
+      "type": "theseus:xp",
+      "title": "Expedition experience",
+      "xptype": "points",
+      "amount": 3
+    }
+  },
+  "fixture_extension": {
+    "source": "theseus-quality-gate",
+    "ordinal": 0,
+    "preserve": {
+      "enabled": true,
+      "labels": [
+        "fixture",
+        "compatibility",
+        "performance"
+      ]
+    }
+  }
+}

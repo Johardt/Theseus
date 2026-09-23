@@ -1,0 +1,92 @@
+{
+  "display": {
+    "icon": {
+      "type": "theseus:item",
+      "item": "minecraft:ender_pearl"
+    },
+    "icon_background": "theseus:textures/gui/quest_backgrounds/default.png",
+    "icon_size": 12,
+    "title": "Listen Dragon Echo",
+    "subtitle": "09 · Relics Below the Surface · field report 06.6",
+    "description": [
+      "An archive shelf survived the bastion fire; the dragon echo team needs this entry before it can move on.",
+      "Complete the dummy objective and follow the connected route markers."
+    ],
+    "groups": {
+      "09 · Relics Below the Surface": {
+        "position": [
+          900,
+          500
+        ]
+      }
+    }
+  },
+  "settings": {
+    "individual_progress": true,
+    "hidden": "locked",
+    "unlockNotification": false,
+    "repeatable": false,
+    "autoClaimRewards": false,
+    "show_dependency_arrow": true
+  },
+  "tasks": {
+    "lead": {
+      "type": "theseus:dummy",
+      "title": "Record the field marker",
+      "description": "Run the matching Theseus dummy trigger to close this report.",
+      "value": "quality_gate_09_41_0",
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:shield"
+      }
+    },
+    "field_bundle": {
+      "type": "theseus:composite",
+      "title": "Complete the linked field bundle",
+      "description": "Any mix of route, supply, and discovery notes can close this bundled task.",
+      "amount": 3,
+      "tasks": {
+        "trail_1": {
+          "type": "theseus:item",
+          "title": "Secure iron ingot",
+          "description": "Bring the requested supply to camp; collection mode varies across the ledger.",
+          "item": "minecraft:iron_ingot",
+          "amount": 6,
+          "collection": "consume"
+        },
+        "trail_2": {
+          "type": "theseus:block_interaction",
+          "title": "Inspect the chest station",
+          "description": "Interact with the marked block to verify this part of the route.",
+          "block": "minecraft:chest"
+        },
+        "trail_3": {
+          "type": "theseus:item_use",
+          "title": "Use the chorus fruit provision",
+          "description": "Consume the selected provision and report the result.",
+          "item": "minecraft:chorus_fruit",
+          "components": {},
+          "icon": {
+            "type": "theseus:item",
+            "item": "minecraft:bread"
+          }
+        }
+      },
+      "icon": {
+        "type": "theseus:item",
+        "item": "minecraft:bow"
+      }
+    }
+  },
+  "rewards": {
+    "command_1": {
+      "type": "theseus:command",
+      "title": "Personal expedition notice",
+      "command": "tell @s Quality gate reward qg_09_05_05"
+    }
+  },
+  "dependencies": [
+    "qg_09_05_03",
+    "qg_09_04_05"
+  ]
+}
