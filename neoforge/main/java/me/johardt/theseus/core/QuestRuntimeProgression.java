@@ -286,7 +286,9 @@ final class QuestRuntimeProgression {
     }
 
     void reset(ServerPlayer player) {
-        runtime.progress.remove(runtime.world.playerId(player));
+        var playerId = runtime.world.playerId(player);
+        runtime.progress.remove(playerId);
+        runtime.deferredProgress.remove(playerId);
         runtime.changed(player);
     }
 

@@ -1,6 +1,7 @@
 package me.johardt.theseus.core;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.List;
 import java.util.Map;
@@ -715,12 +716,20 @@ final class QuestRuntimeMutations {
             quests.remove(oldId);
             if (newId != null) quests.remove(newId);
         });
+        runtime.deferredProgress.values().forEach(quests -> {
+            quests.remove(oldId);
+            if (newId != null) quests.remove(newId);
+        });
         runtime.saveProgress();
     }
 
     void migrateQuestProgress(String oldId, String newId) {
         runtime.progress.values().forEach(quests -> {
             QuestProgressState state = quests.remove(oldId);
+            if (state != null) quests.put(newId, state);
+        });
+        runtime.deferredProgress.values().forEach(quests -> {
+            JsonElement state = quests.remove(oldId);
             if (state != null) quests.put(newId, state);
         });
         runtime.saveProgress();

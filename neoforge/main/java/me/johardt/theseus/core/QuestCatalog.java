@@ -20,6 +20,7 @@ public final class QuestCatalog {
     private final Map<String, ChapterSettings> chapterSettings;
     private final List<QuestDefinition.ValidationIssue> issues;
     private final Map<String, List<Path>> conflictingPaths;
+    private final Set<String> failedQuestIds;
     private final QuestDocumentStore documents;
     /** Lossless documents retained from the catalog load for network snapshots. */
     private final Map<String, QuestDocumentStore.Document> rawDocuments;
@@ -28,6 +29,7 @@ public final class QuestCatalog {
         QuestDocumentStore documents,
         Map<String, QuestDefinition> quests,
         Map<String, QuestDocumentStore.Document> rawDocuments,
+        Set<String> failedQuestIds,
         List<String> configuredOrder,
         Map<String, ChapterSettings> chapterSettings,
         Map<String, List<Path>> conflictingPaths,
@@ -36,6 +38,7 @@ public final class QuestCatalog {
         this.documents = documents;
         this.quests = Map.copyOf(quests);
         this.rawDocuments = Map.copyOf(rawDocuments);
+        this.failedQuestIds = Set.copyOf(failedQuestIds);
         this.dependents = buildDependents(quests);
         this.groups = quests.values().stream()
             .flatMap(quest -> quest.display().groups().keySet().stream())
@@ -59,10 +62,16 @@ public final class QuestCatalog {
         try {
             Map<String, QuestDefinition> quests = new LinkedHashMap<>();
             QuestDocumentStore.Snapshot snapshot = documents.load();
+            Set<String> failedQuestIds = new HashSet<>();
+            snapshot.failures().stream()
+                .map(QuestDocumentStore.LoadFailure::id)
+                .filter(id -> !id.isBlank())
+                .forEach(failedQuestIds::add);
             snapshot.documents().forEach((id, document) -> {
                 try {
                     quests.put(id, QuestDefinition.parse(id, document.root()));
                 } catch (RuntimeException exception) {
+                    failedQuestIds.add(id);
                     Theseus.LOGGER.error("Quest validation: {}: {}", document.path(), exception.getMessage());
                 }
             });
@@ -77,6 +86,7 @@ public final class QuestCatalog {
                 documents,
                 quests,
                 snapshot.documents(),
+                failedQuestIds,
                 snapshot.groupOrder(),
                 snapshot.chapterSettings(),
                 snapshot.conflictingPaths(),
@@ -98,6 +108,11 @@ public final class QuestCatalog {
 
     public Map<String, QuestDefinition> quests() {
         return quests;
+    }
+
+    /** Quest IDs whose files were found but could not be loaded into definitions. */
+    public Set<String> failedQuestIds() {
+        return failedQuestIds;
     }
 
     public QuestDocumentStore documents() {

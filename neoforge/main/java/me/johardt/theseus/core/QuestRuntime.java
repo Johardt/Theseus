@@ -3,6 +3,7 @@ package me.johardt.theseus.core;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import java.util.HashMap;
@@ -38,6 +39,8 @@ public final class QuestRuntime {
     QuestCatalog catalog;
     final Map<UUID, Map<String, QuestProgressState>> progress =
         new HashMap<>();
+    /** Raw progress held until a quest that failed catalog loading is available again. */
+    final Map<UUID, Map<String, JsonElement>> deferredProgress = new HashMap<>();
     final Set<UUID> suppressNotifications = new java.util.HashSet<>();
 
     /** Builds a runtime from handlers registered with QuestRuntime before server startup. */
@@ -132,6 +135,7 @@ public final class QuestRuntime {
 
     public int reload() {
         catalog = world.loadCatalog();
+        restoreDeferredProgress();
         world.onlinePlayers().forEach(player -> sync(player, false));
         return catalog.quests().size();
     }
@@ -745,10 +749,10 @@ public final class QuestRuntime {
             progressStore.load().entrySet().forEach(player -> {
                 try {
                     if (!player.getValue().isJsonObject()) throw new IllegalArgumentException("Player progress must be an object");
-                    progress.put(
-                        UUID.fromString(player.getKey()),
-                        parsePlayerProgress(player.getValue().getAsJsonObject())
-                    );
+                    UUID playerId = UUID.fromString(player.getKey());
+                    Map<String, JsonElement> deferred = new HashMap<>();
+                    progress.put(playerId, parsePlayerProgress(player.getValue().getAsJsonObject(), deferred));
+                    if (!deferred.isEmpty()) deferredProgress.put(playerId, deferred);
                 } catch (RuntimeException exception) {
                     Theseus.LOGGER.warn("Ignoring malformed progress for player '{}': {}", player.getKey(), exception.getMessage());
                 }
@@ -765,12 +769,17 @@ public final class QuestRuntime {
         }
     }
 
-    private Map<String, QuestProgressState> parsePlayerProgress(JsonObject root) {
+    private Map<String, QuestProgressState> parsePlayerProgress(JsonObject root, Map<String, JsonElement> deferred) {
         Map<String, QuestProgressState> result = new HashMap<>();
         root.entrySet().forEach(entry -> {
             QuestDefinition quest = catalog.quests().get(entry.getKey());
             if (quest == null) {
-                Theseus.LOGGER.warn("Ignoring progress for unknown quest '{}'", entry.getKey());
+                if (catalog.failedQuestIds().contains(entry.getKey())) {
+                    deferred.put(entry.getKey(), entry.getValue().deepCopy());
+                    Theseus.LOGGER.warn("Deferring progress for quest '{}' because its quest file failed to load", entry.getKey());
+                } else {
+                    Theseus.LOGGER.warn("Ignoring progress for unknown quest '{}'", entry.getKey());
+                }
                 return;
             }
             try {
@@ -783,12 +792,44 @@ public final class QuestRuntime {
         return result;
     }
 
+    private void restoreDeferredProgress() {
+        deferredProgress.forEach((playerId, quests) -> {
+            var iterator = quests.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, JsonElement> entry = iterator.next();
+                QuestDefinition quest = catalog.quests().get(entry.getKey());
+                if (quest == null) {
+                    if (!catalog.failedQuestIds().contains(entry.getKey())) iterator.remove();
+                    continue;
+                }
+                try {
+                    if (!entry.getValue().isJsonObject()) throw new IllegalArgumentException("Progress entry must be an object");
+                    QuestProgressState state = QuestProgressState.fromJson(quest, entry.getValue().getAsJsonObject());
+                    progress.computeIfAbsent(playerId, ignored -> new HashMap<>()).putIfAbsent(entry.getKey(), state);
+                    iterator.remove();
+                } catch (RuntimeException exception) {
+                    Theseus.LOGGER.warn("Keeping deferred progress for quest '{}': {}", entry.getKey(), exception.getMessage());
+                }
+            }
+        });
+        deferredProgress.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+    }
+
     void saveProgress() {
         try {
             JsonObject root = new JsonObject();
-            progress.forEach((playerId, quests) -> {
+            Set<UUID> playerIds = new java.util.HashSet<>(progress.keySet());
+            playerIds.addAll(deferredProgress.keySet());
+            playerIds.forEach(playerId -> {
                 JsonObject player = new JsonObject();
-                quests.forEach((questId, state) -> player.add(questId, state.toJson()));
+                Map<String, JsonElement> deferred = deferredProgress.get(playerId);
+                if (deferred != null) {
+                    deferred.forEach((questId, state) -> player.add(questId, state.deepCopy()));
+                }
+                Map<String, QuestProgressState> quests = progress.get(playerId);
+                if (quests != null) {
+                    quests.forEach((questId, state) -> player.add(questId, state.toJson()));
+                }
                 root.add(playerId.toString(), player);
             });
             progressStore.save(root);
