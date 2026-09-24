@@ -2,9 +2,12 @@ package me.johardt.theseus.client;
 
 import com.google.gson.JsonObject;
 import earth.terrarium.olympus.client.components.Widgets;
+import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import me.johardt.theseus.Theseus;
 import me.johardt.theseus.core.QuestDiagnostics;
 import me.johardt.theseus.core.QuestMutation;
@@ -19,6 +22,8 @@ import static me.johardt.theseus.client.QuestScreen.*;
 /** Handles quest file import state and diagnostics UI. */
 final class QuestScreenImports {
     private final QuestScreen screen;
+    private final Map<String, Button> diagnosticButtons = new LinkedHashMap<>();
+    private Button importButton;
 
     QuestScreenImports(QuestScreen screen) {
         this.screen = screen;
@@ -64,7 +69,85 @@ final class QuestScreenImports {
     }
 
     int importVisibleRows() {
-        return screen.importController.batchDiagnostics().isEmpty() ? 8 : 7;
+        return importModalLayout().visibleRows();
+    }
+
+    private ImportModalLayout importModalLayout() {
+        int width = Math.max(1, Math.min(500, screen.guiWidth() - 16));
+        int height = Math.max(1, Math.min(340, screen.guiHeight() - 16));
+        int left = (screen.guiWidth() - width) / 2;
+        int top = (screen.guiHeight() - height) / 2;
+        boolean hasBatchDiagnostics = !screen.importController.batchDiagnostics().isEmpty();
+        boolean compactRows = width < 384;
+        int rowHeight = compactRows ? 48 : 32;
+        boolean compactHeader = height - 44 - (hasBatchDiagnostics ? 64 : 52) < rowHeight;
+        int listTop = top + (compactHeader ? 26 : hasBatchDiagnostics ? 64 : 52);
+        int footerY = top + height - 36;
+        int listBottom = Math.max(listTop, footerY - (compactHeader ? 4 : 8));
+        int visibleRows = Math.max(0, (listBottom - listTop) / rowHeight);
+
+        int idX;
+        int idWidth;
+        int detailsX;
+        int detailsWidth;
+        int removeX;
+        int removeWidth;
+        int labelWidth;
+        if (compactRows) {
+            int insideWidth = Math.max(0, width - 24);
+            int buttonWidth = Math.max(
+                1,
+                Math.min(62, (insideWidth - 8 - Math.min(52, insideWidth / 3)) / 2)
+            );
+            idWidth = Math.max(1, insideWidth - 2 * buttonWidth - 8);
+            idX = left + 12;
+            detailsX = idX + idWidth + 4;
+            detailsWidth = buttonWidth;
+            removeX = detailsX + detailsWidth + 4;
+            removeWidth = buttonWidth;
+            labelWidth = Math.max(1, width - 24);
+        } else {
+            int rowRight = left + width - 18;
+            int controlsX = Math.max(left + 90, rowRight - 232);
+            int controlsWidth = Math.max(1, rowRight - controlsX - 8);
+            idWidth = Math.min(100, Math.max(1, controlsWidth - 124));
+            int actionWidth = Math.max(1, Math.min(62, (controlsWidth - idWidth) / 2));
+            idX = controlsX;
+            detailsX = idX + idWidth + 4;
+            detailsWidth = actionWidth;
+            removeX = detailsX + detailsWidth + 4;
+            removeWidth = Math.max(1, Math.min(62, rowRight - removeX));
+            labelWidth = Math.max(1, controlsX - (left + 20));
+        }
+
+        int buttonCount = hasBatchDiagnostics ? 3 : 2;
+        int buttonGap = 8;
+        int targetButtonWidth = hasBatchDiagnostics ? 320 : 200;
+        int availableButtonWidth = Math.max(buttonCount, width - 24 - buttonGap * (buttonCount - 1));
+        double buttonScale = Math.min(1.0, availableButtonWidth / (double) targetButtonWidth);
+        int cancelWidth = Math.max(1, (int) (100 * buttonScale));
+        int batchDetailsWidth = hasBatchDiagnostics ? Math.max(1, (int) (120 * buttonScale)) : 0;
+        int importWidth = Math.max(1, (int) (100 * buttonScale));
+        int cancelX = left + 12;
+        int batchDetailsX = cancelX + cancelWidth + buttonGap;
+        int importX = left + width - 12 - importWidth;
+
+        return new ImportModalLayout(
+            left, top, width, height, listTop, listBottom, footerY,
+            rowHeight, visibleRows, compactHeader, compactRows,
+            idX, idWidth, detailsX, detailsWidth, removeX, removeWidth, labelWidth,
+            cancelX, cancelWidth, batchDetailsX, batchDetailsWidth, importX, importWidth
+        );
+    }
+
+    private String fitText(String value, int maxWidth) {
+        if (maxWidth <= 0) return "";
+        if (screen.guiFont().width(value) <= maxWidth) return value;
+        String suffix = "…";
+        int suffixWidth = screen.guiFont().width(suffix);
+        if (suffixWidth > maxWidth) return screen.guiFont().plainSubstrByWidth(value, maxWidth);
+        int textWidth = maxWidth - suffixWidth;
+        return screen.guiFont().plainSubstrByWidth(value, textWidth) + suffix;
     }
 
     void addWrappedDiagnosticLine(List<String> lines, String value, int maxWidth) {
@@ -107,85 +190,107 @@ final class QuestScreenImports {
     }
 
     void addImportModalWidgets() {
-        int left = (screen.guiWidth() - 500) / 2;
-        int top = (screen.guiHeight() - 340) / 2;
+        ImportModalLayout layout = importModalLayout();
         screen.importIdFields.clear();
+        diagnosticButtons.clear();
+        importButton = null;
         List<QuestImportController.Entry> entries = screen.importController.entries();
-        int visibleRows = importVisibleRows();
+        int visibleRows = layout.visibleRows();
         int first = Math.max(0, Math.min(screen.importScroll, Math.max(0, entries.size() - visibleRows)));
-        int listTop = top + (screen.importController.batchDiagnostics().isEmpty() ? 52 : 64);
         for (int index = first; index < entries.size() && index < first + visibleRows; index++) {
             QuestImportController.Entry entry = entries.get(index);
-            int y = listTop + (index - first) * 32;
-            EditBox id = new EditBox(screen.guiFont(), left + 250, y, 100, 18, Component.translatable("gui.theseus.editor.quest_id"));
+            int rowY = layout.listTop() + (index - first) * layout.rowHeight();
+            int controlsY = rowY + (layout.compactRows() ? 26 : 0);
+            EditBox id = new EditBox(
+                screen.guiFont(), layout.idX(), controlsY, layout.idWidth(), 18,
+                Component.translatable("gui.theseus.editor.quest_id")
+            );
             id.setValue(entry.id() == null ? "" : entry.id());
-            id.setResponder(value -> {
-                screen.importController.changeId(entry.key(), value);
-                updateImportMessage();
-            });
+            id.setResponder(value -> changeImportId(entry.key(), value));
             screen.importIdFields.put(entry.key(), id);
             screen.addScreenWidget(id);
-            screen.addScreenWidget(Widgets.button(widget -> {
-                widget.withPosition(left + 354, y).withSize(62, 20);
+            Button details = Widgets.button(widget -> {
+                widget.withPosition(layout.detailsX(), controlsY).withSize(layout.detailsWidth(), 20);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.details")));
-                widget.active = !entry.diagnostics().isEmpty();
                 widget.withCallback(() -> openImportDiagnostics(entry.key()));
                 widget.withTooltip(Component.translatable("gui.theseus.editor.view_every_diagnostic_for_this_file"));
-            }));
+            });
+            diagnosticButtons.put(entry.key(), details);
+            screen.addScreenWidget(details);
             screen.addScreenWidget(Widgets.button(widget -> {
-                widget.withPosition(left + 420, y).withSize(62, 20);
+                widget.withPosition(layout.removeX(), controlsY).withSize(layout.removeWidth(), 20);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.remove")));
                 widget.withCallback(() -> removeImportFile(entry.key()));
             }));
         }
         screen.addScreenWidget(Widgets.button(widget -> {
-            widget.withPosition(left + 12, top + 304).withSize(100, 22);
+            widget.withPosition(layout.cancelX(), layout.footerY()).withSize(layout.cancelWidth(), 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(this::cancelImport);
         }));
         if (!screen.importController.batchDiagnostics().isEmpty()) screen.addScreenWidget(Widgets.button(widget -> {
-            widget.withPosition(left + 120, top + 304).withSize(120, 22);
+            widget.withPosition(layout.batchDetailsX(), layout.footerY()).withSize(layout.batchDetailsWidth(), 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.batch_details")));
             widget.withCallback(this::openBatchDiagnostics);
             widget.withTooltip(Component.translatable("gui.theseus.editor.view_batch_level_server_diagnostics"));
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
-            widget.withPosition(left + 388, top + 304).withSize(100, 22);
+        importButton = Widgets.button(widget -> {
+            widget.withPosition(layout.importX(), layout.footerY()).withSize(layout.importWidth(), 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.import")));
-            widget.active = screen.importController.canSubmit() && !screen.mutations.isPending();
             widget.withCallback(this::sendImport);
-        }));
+        });
+        screen.addScreenWidget(importButton);
+        refreshImportControls();
     }
 
     void drawImportModal(GuiGraphicsExtractor graphics) {
-        int left = (screen.guiWidth() - 500) / 2;
-        int top = (screen.guiHeight() - 340) / 2;
+        ImportModalLayout layout = importModalLayout();
+        int left = layout.left();
+        int top = layout.top();
+        int right = left + layout.width();
+        int bottom = top + layout.height();
         graphics.fill(0, 0, screen.guiWidth(), screen.guiHeight(), 0x99000000);
-        graphics.fill(left, top, left + 500, top + 340, 0xFF20242B);
-        graphics.fill(left + 1, top + 1, left + 499, top + 28, 0xFF303640);
-        graphics.text(screen.guiFont(), Component.translatable("gui.theseus.editor.import_quests"), left + 12, top + 9, 0xFFFFFFFF, true);
-        graphics.text(screen.guiFont(), Component.translatable("gui.theseus.editor.each_file_is_checked_independently_import_is_all_or_nothing"), left + 12, top + 30, 0xFFB8C0CC, false);
-        if (!screen.importController.batchDiagnostics().isEmpty()) {
+        graphics.fill(left, top, right, bottom, 0xFF20242B);
+        graphics.fill(left + 1, top + 1, right - 1, Math.min(bottom - 1, top + 28), 0xFF303640);
+        graphics.text(
+            screen.guiFont(),
+            Component.literal(fitText(Component.translatable("gui.theseus.editor.import_quests").getString(), layout.width() - 24)),
+            left + 12, top + 9, 0xFFFFFFFF, true
+        );
+        if (!layout.compactHeader()) graphics.text(
+            screen.guiFont(),
+            Component.literal(fitText(
+                Component.translatable("gui.theseus.editor.each_file_is_checked_independently_import_is_all_or_nothing").getString(),
+                layout.width() - 24
+            )),
+            left + 12, top + 30, 0xFFB8C0CC, false
+        );
+        if (!layout.compactHeader() && !screen.importController.batchDiagnostics().isEmpty()) {
             long errors = screen.importController.batchDiagnostics().stream().filter(QuestDiagnostics.Diagnostic::blocksSave).count();
-            graphics.text(screen.guiFont(), Component.translatable("gui.theseus.editor.batch_rejected", errors), left + 12, top + 42, 0xFFFF9999, false);
+            graphics.text(
+                screen.guiFont(),
+                Component.literal(fitText(Component.translatable("gui.theseus.editor.batch_rejected", errors).getString(), layout.width() - 24)),
+                left + 12, top + 42, 0xFFFF9999, false
+            );
         }
         List<QuestImportController.Entry> entries = screen.importController.entries();
-        int listTop = top + (screen.importController.batchDiagnostics().isEmpty() ? 52 : 64);
-        int visibleRows = importVisibleRows();
+        int visibleRows = layout.visibleRows();
         int first = Math.max(0, Math.min(screen.importScroll, Math.max(0, entries.size() - visibleRows)));
-        graphics.enableScissor(left + 8, listTop - 4, left + 492, top + 292);
+        int scissorInset = Math.min(8, layout.width() / 2);
+        graphics.enableScissor(left + scissorInset, layout.listTop() - 4, right - scissorInset, layout.listBottom());
         for (int index = first; index < entries.size() && index < first + visibleRows; index++) {
             QuestImportController.Entry entry = entries.get(index);
-            int y = listTop + 4 + (index - first) * 32;
+            int rowY = layout.listTop() + (index - first) * layout.rowHeight();
+            int textY = rowY + (layout.compactRows() ? 0 : 4);
             int color = entry.valid() ? 0xFF77DD99 : 0xFFFF9999;
             String label = entry.key() + " (" + entry.source().getBytes(java.nio.charset.StandardCharsets.UTF_8).length + " bytes)";
-            if (label.length() > 42) label = label.substring(0, 41) + "…";
-            graphics.text(screen.guiFont(), Component.literal(label), left + 12, y, 0xFFFFFFFF, false);
+            label = fitText(label, layout.labelWidth());
+            graphics.text(screen.guiFont(), Component.literal(label), left + 12, textY, 0xFFFFFFFF, false);
             long errors = entry.diagnostics().stream().filter(QuestDiagnostics.Diagnostic::blocksSave).count();
             long warnings = entry.diagnostics().stream().filter(diagnostic -> diagnostic.severity() == QuestDiagnostics.Severity.WARNING).count();
             String detail = entry.diagnostics().isEmpty() ? "ready" : errors + " error(s), " + warnings + " warning(s) — Details";
-            if (detail.length() > 42) detail = detail.substring(0, 41) + "…";
-            graphics.text(screen.guiFont(), Component.literal(detail), left + 12, y + 14, color, false);
+            detail = fitText(detail, layout.labelWidth());
+            graphics.text(screen.guiFont(), Component.literal(detail), left + 12, textY + 14, color, false);
         }
         graphics.disableScissor();
     }
@@ -263,16 +368,87 @@ final class QuestScreenImports {
         boolean changed = screen.importController.changeId(key, id);
         if (changed) {
             updateImportMessage();
-            screen.rebuildWidgets();
+            refreshImportControls();
         }
         return changed;
     }
 
     void sendImport() {
+        JsonObject request = buildImportRequest(
+            screen.importController,
+            screen.mutations.isPending()
+        );
+        if (request == null) {
+            refreshImportControls();
+            return;
+        }
         screen.editorMessage = "Importing…";
         screen.editorMessageSuccess = false;
-        JsonObject request = screen.importController.request();
         request.addProperty("chapter", screen.group);
         screen.editor.sendEditorMutation(new QuestMutation.ImportQuests(request));
+        refreshImportControls();
     }
+
+    void refreshImportControls() {
+        if (importButton == null && diagnosticButtons.isEmpty()) return;
+        ImportControlState state = importControlState(
+            screen.importController,
+            screen.mutations.isPending()
+        );
+        diagnosticButtons.forEach((key, button) ->
+            button.active = state.diagnosticsEnabled().getOrDefault(key, false)
+        );
+        if (importButton != null) importButton.active = state.importEnabled();
+    }
+
+    static ImportControlState importControlState(
+        QuestImportController controller,
+        boolean pending
+    ) {
+        Map<String, Boolean> diagnosticsEnabled = new LinkedHashMap<>();
+        controller.entries().forEach(entry ->
+            diagnosticsEnabled.put(entry.key(), !entry.diagnostics().isEmpty())
+        );
+        return new ImportControlState(
+            Map.copyOf(diagnosticsEnabled),
+            controller.canSubmit() && !pending
+        );
+    }
+
+    static JsonObject buildImportRequest(
+        QuestImportController controller,
+        boolean pending
+    ) {
+        if (!controller.canSubmit() || pending) return null;
+        return controller.request();
+    }
+
+    private record ImportModalLayout(
+        int left,
+        int top,
+        int width,
+        int height,
+        int listTop,
+        int listBottom,
+        int footerY,
+        int rowHeight,
+        int visibleRows,
+        boolean compactHeader,
+        boolean compactRows,
+        int idX,
+        int idWidth,
+        int detailsX,
+        int detailsWidth,
+        int removeX,
+        int removeWidth,
+        int labelWidth,
+        int cancelX,
+        int cancelWidth,
+        int batchDetailsX,
+        int batchDetailsWidth,
+        int importX,
+        int importWidth
+    ) {}
+
+    record ImportControlState(Map<String, Boolean> diagnosticsEnabled, boolean importEnabled) {}
 }
