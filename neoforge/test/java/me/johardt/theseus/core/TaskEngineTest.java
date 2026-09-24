@@ -241,6 +241,27 @@ class TaskEngineTest {
     }
 
     @Test
+    void manualXpTaskRequiresExplicitSubmissionAndEnoughExperience() {
+        QuestDefinition.Task task = task("""
+            {"type":"theseus:xp","amount":4,"xpType":"points","collectionType":"manual"}
+            """);
+        TaskEngine engine = TaskEngine.defaults();
+
+        assertEquals(
+            new TaskEngine.Result(1, 0),
+            engine.apply(task, 1, new TaskEngine.Signal.Experience(0, 8, false))
+        );
+        assertEquals(
+            new TaskEngine.Result(1, 0),
+            engine.apply(task, 1, new TaskEngine.Signal.Experience(0, 2, true))
+        );
+        assertEquals(
+            new TaskEngine.Result(4, 3),
+            engine.apply(task, 1, new TaskEngine.Signal.Experience(0, 3, true))
+        );
+    }
+
+    @Test
     void blockInteractionCompletesOnlyForConfiguredBlock() {
         QuestDefinition.Task task = task("""
             {"type":"theseus:block_interaction","block":"minecraft:crafting_table"}

@@ -2,9 +2,11 @@ package me.johardt.theseus.core;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -21,6 +23,20 @@ import static me.johardt.theseus.core.QuestRuntime.*;
 
 /** Tracks player task progress and reward claims. */
 final class QuestRuntimeProgression {
+    interface ItemInventory {
+        List<ItemSlot> slots();
+    }
+
+    interface ExperienceAccount {
+        int levels();
+
+        int points();
+
+        int consume(boolean points, int amount);
+    }
+
+    record ItemSlot(TaskEngine.Signal.RegistryEntry entry, IntConsumer shrink) {}
+
     private final QuestRuntime runtime;
 
     QuestRuntimeProgression(QuestRuntime runtime) {
@@ -111,17 +127,89 @@ final class QuestRuntimeProgression {
         TaskEngine.Signal.Inventory inventory = inventory(player, false);
         signal(player, inventory);
         signal(player, playerState(player));
+        updateExperienceTasks(player);
         updatePassiveTasks(player);
     }
 
+    boolean updateExperienceTasks(ServerPlayer player) {
+        return updateExperienceTasks(player, experienceAccount(player));
+    }
+
+    boolean updateExperienceTasks(
+        ServerPlayer player,
+        ExperienceAccount account
+    ) {
+        if (account == null) return false;
+        Map<String, Boolean> wasUnlocked = runtime.questStates(player, false);
+        Map<String, Boolean> wasComplete = runtime.questStates(player, true);
+        TaskEngine.Signal.Experience automaticSignal = experienceSignal(
+            account,
+            false
+        );
+        boolean changed = false;
+
+        for (QuestDefinition quest : runtime.catalog.quests().values()) {
+            if (!isUnlocked(player, quest)) continue;
+            for (QuestDefinition.Task task : quest.tasks().values()) {
+                changed |= applyExperienceTasks(
+                    player,
+                    quest,
+                    task,
+                    task.id(),
+                    account,
+                    automaticSignal,
+                    true
+                );
+            }
+            changed |= refreshCompositeProgressChanged(player, quest);
+        }
+
+        for (QuestDefinition quest : runtime.catalog.quests().values()) {
+            if (!isUnlocked(player, quest)) continue;
+            for (QuestDefinition.Task task : quest.tasks().values()) {
+                changed |= applyExperienceTasks(
+                    player,
+                    quest,
+                    task,
+                    task.id(),
+                    account,
+                    null,
+                    false
+                );
+            }
+            changed |= refreshCompositeProgressChanged(player, quest);
+        }
+
+        if (changed) runtime.changed(player, wasUnlocked, wasComplete);
+        return changed;
+    }
+
     boolean signal(ServerPlayer player, TaskEngine.Signal signal) {
+        ItemInventory itemInventory = signal instanceof TaskEngine.Signal.Inventory
+            ? itemInventory(player)
+            : null;
+        return signal(player, signal, itemInventory);
+    }
+
+    boolean signal(
+        ServerPlayer player,
+        TaskEngine.Signal signal,
+        ItemInventory itemInventory
+    ) {
         Map<String, Boolean> wasUnlocked = runtime.questStates(player, false);
         Map<String, Boolean> wasComplete = runtime.questStates(player, true);
         boolean changed = false;
         for (QuestDefinition quest : runtime.catalog.quests().values()) {
             if (!isUnlocked(player, quest)) continue;
             for (QuestDefinition.Task task : quest.tasks().values()) {
-                changed |= applyTask(player, quest, task, signal);
+                changed |= applyTask(
+                    player,
+                    quest,
+                    task,
+                    task.id(),
+                    signal,
+                    itemInventory
+                );
             }
         }
         if (changed) runtime.changed(player, wasUnlocked, wasComplete);
@@ -129,6 +217,32 @@ final class QuestRuntimeProgression {
     }
 
     boolean submit(ServerPlayer player, String questId, String taskId) {
+        ItemInventory itemInventory = itemInventory(player);
+        return submit(player, questId, taskId, itemInventory);
+    }
+
+    boolean submit(
+        ServerPlayer player,
+        String questId,
+        String taskId,
+        ItemInventory itemInventory
+    ) {
+        return submit(
+            player,
+            questId,
+            taskId,
+            itemInventory,
+            player == null ? null : experienceAccount(player)
+        );
+    }
+
+    boolean submit(
+        ServerPlayer player,
+        String questId,
+        String taskId,
+        ItemInventory itemInventory,
+        ExperienceAccount experienceAccount
+    ) {
         Map<String, Boolean> wasUnlocked = runtime.questStates(player, false);
         Map<String, Boolean> wasComplete = runtime.questStates(player, true);
         QuestDefinition quest = runtime.catalog.quests().get(questId);
@@ -137,19 +251,24 @@ final class QuestRuntimeProgression {
         if (task == null) return false;
         TaskEngine.Signal signal;
         if (task.kind() == QuestDefinition.TaskKind.ITEM) {
-            signal = inventory(player, true);
+            signal = new TaskEngine.Signal.Inventory(List.of(), true);
         } else if (task.kind() == QuestDefinition.TaskKind.XP) {
-            signal = new TaskEngine.Signal.Experience(
-                player.experienceLevel,
-                player.totalExperience,
-                true
-            );
+            if (experienceAccount == null) return false;
+            signal = experienceSignal(experienceAccount, true);
         } else if (task.kind() == QuestDefinition.TaskKind.CHECK) {
             signal = new TaskEngine.Signal.Check(playerData(player), true);
         } else {
             return false;
         }
-        boolean changed = applyTask(player, quest, task, taskId, signal);
+        boolean changed = applyTask(
+            player,
+            quest,
+            task,
+            taskId,
+            signal,
+            itemInventory,
+            experienceAccount
+        );
         if (changed) refreshCompositeProgress(player, quest);
         if (changed) runtime.changed(player, wasUnlocked, wasComplete);
         return changed;
@@ -176,11 +295,20 @@ final class QuestRuntimeProgression {
         ServerPlayer player,
         QuestDefinition quest
     ) {
+        refreshCompositeProgressChanged(player, quest);
+    }
+
+    private boolean refreshCompositeProgressChanged(
+        ServerPlayer player,
+        QuestDefinition quest
+    ) {
+        boolean changed = false;
         for (QuestDefinition.Task task : quest.tasks().values()) {
             if (
                 task.kind() == QuestDefinition.TaskKind.COMPOSITE
-            ) updateCompositeSummary(player, quest, task, task.id());
+            ) changed |= updateCompositeSummary(player, quest, task, task.id());
         }
+        return changed;
     }
 
     boolean updateCompositeSummary(
@@ -334,7 +462,10 @@ final class QuestRuntimeProgression {
         QuestDefinition.Task task,
         TaskEngine.Signal signal
     ) {
-        return applyTask(player, quest, task, task.id(), signal);
+        ItemInventory itemInventory = signal instanceof TaskEngine.Signal.Inventory
+            ? itemInventory(player)
+            : null;
+        return applyTask(player, quest, task, task.id(), signal, itemInventory);
     }
 
     boolean applyTask(
@@ -344,6 +475,47 @@ final class QuestRuntimeProgression {
         String progressKey,
         TaskEngine.Signal signal
     ) {
+        ItemInventory itemInventory = signal instanceof TaskEngine.Signal.Inventory
+            ? itemInventory(player)
+            : null;
+        return applyTask(
+            player,
+            quest,
+            task,
+            progressKey,
+            signal,
+            itemInventory
+        );
+    }
+
+    boolean applyTask(
+        ServerPlayer player,
+        QuestDefinition quest,
+        QuestDefinition.Task task,
+        String progressKey,
+        TaskEngine.Signal signal,
+        ItemInventory itemInventory
+    ) {
+        return applyTask(
+            player,
+            quest,
+            task,
+            progressKey,
+            signal,
+            itemInventory,
+            null
+        );
+    }
+
+    private boolean applyTask(
+        ServerPlayer player,
+        QuestDefinition quest,
+        QuestDefinition.Task task,
+        String progressKey,
+        TaskEngine.Signal signal,
+        ItemInventory itemInventory,
+        ExperienceAccount experienceAccount
+    ) {
         if (task.kind() == QuestDefinition.TaskKind.COMPOSITE) {
             boolean changed = false;
             for (QuestDefinition.Task child : task.tasks().values()) {
@@ -352,7 +524,9 @@ final class QuestRuntimeProgression {
                     quest,
                     child,
                     progressKey + "/" + child.id(),
-                    signal
+                    signal,
+                    itemInventory,
+                    experienceAccount
                 );
             }
             double total = task
@@ -382,19 +556,184 @@ final class QuestRuntimeProgression {
             return changed;
         }
         int current = runtime.progress(player, quest.id()).getTaskProgress(progressKey);
-        TaskEngine.Result result = runtime.taskEngine.apply(task, current, signal);
-        if (result.consumeAmount() > 0) consume(
-            player,
-            task,
-            result.consumeAmount()
-        );
+        TaskEngine.Signal taskSignal = signal;
+        if (
+            task.kind() == QuestDefinition.TaskKind.ITEM &&
+            itemInventory != null &&
+            signal instanceof TaskEngine.Signal.Inventory inventorySignal
+        ) {
+            taskSignal = inventory(itemInventory, inventorySignal.submit());
+        }
+        TaskEngine.Result result = runtime.taskEngine.apply(task, current, taskSignal);
+        int consumed = result.consumeAmount() > 0
+            ? task.kind() == QuestDefinition.TaskKind.XP && experienceAccount != null
+                ? consumeExperience(
+                    experienceAccount,
+                    task,
+                    result.consumeAmount()
+                )
+                : consume(player, task, result.consumeAmount(), itemInventory)
+            : 0;
+        int progress = result.progress();
+        if (
+            (task.kind() == QuestDefinition.TaskKind.ITEM || task.kind() == QuestDefinition.TaskKind.XP) &&
+            result.consumeAmount() > 0
+        ) progress = Math.min(progress, current + consumed);
         return setTaskProgress(
             player,
             quest,
             task,
             progressKey,
-            result.progress()
+            progress
         );
+    }
+
+    private boolean applyExperienceTasks(
+        ServerPlayer player,
+        QuestDefinition quest,
+        QuestDefinition.Task task,
+        String progressKey,
+        ExperienceAccount account,
+        TaskEngine.Signal.Experience automaticSignal,
+        boolean automatic
+    ) {
+        if (task.kind() == QuestDefinition.TaskKind.COMPOSITE) {
+            boolean changed = false;
+            for (QuestDefinition.Task child : task.tasks().values()) {
+                changed |= applyExperienceTasks(
+                    player,
+                    quest,
+                    child,
+                    progressKey + "/" + child.id(),
+                    account,
+                    automaticSignal,
+                    automatic
+                );
+            }
+            return changed;
+        }
+        if (task.kind() != QuestDefinition.TaskKind.XP) return false;
+
+        String collection = task.source().has("collectionType")
+            ? task.source().get("collectionType").getAsString()
+            : task.source().has("collection")
+                ? task.source().get("collection").getAsString()
+                : "consume";
+        String mode = suffix(collection);
+        if (
+            automatic
+                ? !mode.equals("automatic")
+                : mode.equals("automatic") || mode.equals("manual")
+        ) {
+            return false;
+        }
+
+        int current = runtime.progress(player, quest.id()).getTaskProgress(progressKey);
+        TaskEngine.Signal.Experience signal = automatic
+            ? automaticSignal
+            : experienceSignal(account, false);
+        TaskEngine.Result result = runtime.taskEngine.apply(task, current, signal);
+        int consumed = result.consumeAmount() > 0
+            ? consumeExperience(account, task, result.consumeAmount())
+            : 0;
+        int progress = result.consumeAmount() > 0
+            ? Math.min(result.progress(), current + consumed)
+            : result.progress();
+        return setTaskProgress(player, quest, task, progressKey, progress);
+    }
+
+    static TaskEngine.Signal.Experience experienceSignal(
+        ExperienceAccount account,
+        boolean submit
+    ) {
+        return new TaskEngine.Signal.Experience(
+            Math.max(0, account.levels()),
+            Math.max(0, account.points()),
+            submit
+        );
+    }
+
+    static int spendableExperiencePoints(
+        int level,
+        float progress,
+        int xpNeededForNextLevel
+    ) {
+        long pointsAtLevel = experiencePointsAtLevel(level);
+        float boundedProgress = Float.isFinite(progress)
+            ? Math.max(0, Math.min(1, progress))
+            : 0;
+        long pointsInBar = Math.round(
+            (double) boundedProgress * Math.max(0, xpNeededForNextLevel)
+        );
+        return (int) Math.min(
+            Integer.MAX_VALUE,
+            pointsAtLevel + pointsInBar
+        );
+    }
+
+    private static long experiencePointsAtLevel(int level) {
+        long boundedLevel = Math.max(0, level);
+        double total;
+        if (boundedLevel <= 16) {
+            total = boundedLevel * boundedLevel + 6 * boundedLevel;
+        } else if (boundedLevel <= 31) {
+            total = (5 * (double) boundedLevel * boundedLevel - 81 * boundedLevel + 720) / 2;
+        } else {
+            total = (9 * (double) boundedLevel * boundedLevel - 325 * boundedLevel + 4440) / 2;
+        }
+        return total >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (long) total;
+    }
+
+    private static ExperienceAccount experienceAccount(ServerPlayer player) {
+        if (player == null) return null;
+        return new ExperienceAccount() {
+            @Override
+            public int levels() {
+                return player.experienceLevel;
+            }
+
+            @Override
+            public int points() {
+                return spendableExperiencePoints(
+                    player.experienceLevel,
+                    player.experienceProgress,
+                    player.getXpNeededForNextLevel()
+                );
+            }
+
+            @Override
+            public int consume(boolean points, int amount) {
+                if (amount <= 0) return 0;
+                int before = points ? points() : levels();
+                if (points) player.giveExperiencePoints(-amount);
+                else player.giveExperienceLevels(-amount);
+                int after = points ? points() : levels();
+                return Math.min(amount, Math.max(0, before - after));
+            }
+        };
+    }
+
+    private static boolean usesExperiencePoints(QuestDefinition.Task task) {
+        String unit = task.source().has("xpType")
+            ? task.source().get("xpType").getAsString()
+            : "level";
+        return suffix(unit).equals("points");
+    }
+
+    private static int consumeExperience(
+        ExperienceAccount account,
+        QuestDefinition.Task task,
+        int amount
+    ) {
+        return Math.min(
+            amount,
+            Math.max(0, account.consume(usesExperiencePoints(task), amount))
+        );
+    }
+
+    private static String suffix(String value) {
+        int separator = Math.max(value.lastIndexOf('.'), value.lastIndexOf(':'));
+        return value.substring(separator + 1).toLowerCase(java.util.Locale.ROOT);
     }
 
     double taskFraction(
@@ -469,55 +808,68 @@ final class QuestRuntimeProgression {
         );
     }
 
-    static void consume(
+    static int consume(
         ServerPlayer player,
         QuestDefinition.Task task,
         int amount
     ) {
+        return consume(player, task, amount, itemInventory(player));
+    }
+
+    private static int consume(
+        ServerPlayer player,
+        QuestDefinition.Task task,
+        int amount,
+        ItemInventory itemInventory
+    ) {
         if (task.kind() == QuestDefinition.TaskKind.XP) {
-            String unit = task.source().has("xpType")
-                ? task
-                      .source()
-                      .get("xpType")
-                      .getAsString()
-                      .toLowerCase(java.util.Locale.ROOT)
-                : "level";
-            if (unit.endsWith("points")) player.giveExperiencePoints(-amount);
-            else player.giveExperienceLevels(-amount);
-            return;
+            ExperienceAccount account = experienceAccount(player);
+            return account == null
+                ? 0
+                : account.consume(usesExperiencePoints(task), amount);
         }
-        if (task.kind() != QuestDefinition.TaskKind.ITEM) return;
+        if (task.kind() == QuestDefinition.TaskKind.ITEM) {
+            return consumeItems(itemInventory, task, amount);
+        }
+        return 0;
+    }
+
+    private static int consumeItems(
+        ItemInventory itemInventory,
+        QuestDefinition.Task task,
+        int amount
+    ) {
+        if (itemInventory == null) {
+            throw new IllegalStateException("Item inventory is required to consume item tasks");
+        }
         int remaining = amount;
-        for (
-            int slot = 0;
-            slot < player.getInventory().getContainerSize() && remaining > 0;
-            slot++
-        ) {
-            ItemStack stack = player.getInventory().getItem(slot);
-            TaskEngine.Signal.RegistryEntry entry = QuestRuntime.itemEntry(player, stack);
-            if (
-                !RegistryPredicate.matches(
-                    task.source().get("item"),
-                    task.value(),
-                    entry
-                )
-            ) continue;
-            if (
-                !RegistryPredicate.contains(
-                    task.source().get("components"),
-                    entry.data()
-                )
-            ) continue;
-            if (
-                !RegistryPredicate.contains(
-                    task.source().get("nbt"),
-                    entry.data()
-                )
-            ) continue;
-            int removed = Math.min(stack.getCount(), remaining);
-            stack.shrink(removed);
+        for (ItemSlot slot : itemInventory.slots()) {
+            if (remaining == 0) break;
+            TaskEngine.Signal.RegistryEntry entry = slot.entry();
+            if (!matchesItem(task, entry)) continue;
+            int removed = Math.min(entry.count(), remaining);
+            if (removed <= 0) continue;
+            slot.shrink().accept(removed);
             remaining -= removed;
         }
+        return amount - remaining;
+    }
+
+    private static boolean matchesItem(
+        QuestDefinition.Task task,
+        TaskEngine.Signal.RegistryEntry entry
+    ) {
+        return RegistryPredicate.matches(
+                task.source().get("item"),
+                task.value(),
+                entry
+            ) && RegistryPredicate.contains(
+                task.source().get("components"),
+                entry.data()
+            ) && RegistryPredicate.contains(
+                task.source().get("nbt"),
+                entry.data()
+            );
     }
 
     boolean canClaimReward(
@@ -635,17 +987,41 @@ final class QuestRuntimeProgression {
         ServerPlayer player,
         boolean submit
     ) {
-        java.util.List<TaskEngine.Signal.RegistryEntry> entries =
-            new java.util.ArrayList<>();
-        for (
-            int slot = 0;
-            slot < player.getInventory().getContainerSize();
-            slot++
-        ) {
-            ItemStack stack = player.getInventory().getItem(slot);
-            if (!stack.isEmpty()) entries.add(QuestRuntime.itemEntry(player, stack));
+        return inventory(itemInventory(player), submit);
+    }
+
+    static TaskEngine.Signal.Inventory inventory(
+        ItemInventory itemInventory,
+        boolean submit
+    ) {
+        if (itemInventory == null) {
+            return new TaskEngine.Signal.Inventory(List.of(), submit);
+        }
+        List<TaskEngine.Signal.RegistryEntry> entries = new ArrayList<>();
+        for (ItemSlot slot : itemInventory.slots()) {
+            if (slot.entry().count() > 0) entries.add(slot.entry());
         }
         return new TaskEngine.Signal.Inventory(entries, submit);
+    }
+
+    private static ItemInventory itemInventory(ServerPlayer player) {
+        return () -> {
+            List<ItemSlot> slots = new ArrayList<>();
+            for (
+                int slot = 0;
+                slot < player.getInventory().getContainerSize();
+                slot++
+            ) {
+                ItemStack stack = player.getInventory().getItem(slot);
+                if (!stack.isEmpty()) {
+                    slots.add(new ItemSlot(
+                        QuestRuntime.itemEntry(player, stack),
+                        stack::shrink
+                    ));
+                }
+            }
+            return slots;
+        };
     }
 
     Set<TaskEngine.Signal.RegistryEntry> structuresAt(

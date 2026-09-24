@@ -157,6 +157,341 @@ class QuestRuntimeSeamTest {
         assertTrue(runtime.isComplete(null, catalog.quests().get("composite_contract")));
     }
 
+    @Test
+    void ordinaryExperienceRefreshProgressesAutomaticPointAndLevelTasks() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("automatic_points", itemQuest(itemTasks(
+            "xp", xpTask(10, "points", "automatic")
+        )));
+        documents.createQuest("automatic_levels", itemQuest(itemTasks(
+            "xp", xpTask(5, "levels", "automatic")
+        )));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = runtime(catalog);
+        MutableExperienceAccount account = new MutableExperienceAccount(3, 7);
+
+        assertTrue(new QuestRuntimeProgression(runtime).updateExperienceTasks(null, account));
+
+        assertEquals(7, taskProgress(runtime, "automatic_points", "xp"));
+        assertEquals(3, taskProgress(runtime, "automatic_levels", "xp"));
+        assertEquals(3, account.levels);
+        assertEquals(7, account.points);
+    }
+
+    @Test
+    void consumingExperienceTasksDoNotReusePointsAcrossQuests() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("first_xp_consumer", itemQuest(itemTasks(
+            "xp", xpTask(2, "points", "consume")
+        )));
+        documents.createQuest("second_xp_consumer", itemQuest(itemTasks(
+            "xp", xpTask(2, "points", "consume")
+        )));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = runtime(catalog);
+        MutableExperienceAccount account = new MutableExperienceAccount(0, 3);
+
+        new QuestRuntimeProgression(runtime).updateExperienceTasks(null, account);
+
+        int awardedProgress = catalog.quests().keySet().stream()
+            .mapToInt(questId -> taskProgress(runtime, questId, "xp"))
+            .sum();
+        assertEquals(2, awardedProgress);
+        assertEquals(1, account.points);
+    }
+
+    @Test
+    void nestedExperienceConsumersUseRemainingLevelsAndCapInsufficientProgress() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        JsonObject children = itemTasks(
+            "first", xpTask(1, "levels", "consume"),
+            "second", xpTask(1, "levels", "consume")
+        );
+        JsonObject inner = new JsonObject();
+        inner.addProperty("type", "theseus:composite");
+        inner.addProperty("amount", 2);
+        inner.add("tasks", children);
+        JsonObject outer = new JsonObject();
+        outer.addProperty("type", "theseus:composite");
+        outer.addProperty("amount", 1);
+        outer.add("tasks", itemTasks("inner", inner));
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("nested_xp_consumers", itemQuest(itemTasks("outer", outer)));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = runtime(catalog);
+        MutableExperienceAccount account = new MutableExperienceAccount(1, 0);
+
+        new QuestRuntimeProgression(runtime).updateExperienceTasks(null, account);
+
+        assertEquals(1, taskProgress(runtime, "nested_xp_consumers", "outer/inner/first"));
+        assertEquals(0, taskProgress(runtime, "nested_xp_consumers", "outer/inner/second"));
+        assertEquals(1, taskProgress(runtime, "nested_xp_consumers", "outer/inner"));
+        assertEquals(0, account.levels);
+    }
+
+    @Test
+    void manualExperienceTaskWaitsForExplicitSubmission() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("manual_xp", itemQuest(itemTasks(
+            "xp", xpTask(2, "points", "manual")
+        )));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = runtime(catalog);
+        QuestRuntimeProgression progression = new QuestRuntimeProgression(runtime);
+        MutableExperienceAccount account = new MutableExperienceAccount(0, 3);
+
+        assertFalse(progression.updateExperienceTasks(null, account));
+        assertEquals(0, taskProgress(runtime, "manual_xp", "xp"));
+        assertEquals(3, account.points);
+
+        assertTrue(progression.submit(
+            null,
+            "manual_xp",
+            "xp",
+            new MutableItemInventory(),
+            account
+        ));
+
+        assertEquals(2, taskProgress(runtime, "manual_xp", "xp"));
+        assertEquals(1, account.points);
+    }
+
+    @Test
+    void spendableExperiencePointConversionUsesVanillaLevelThresholds() {
+        assertEquals(0, QuestRuntimeProgression.spendableExperiencePoints(0, 0, 7));
+        assertEquals(352, QuestRuntimeProgression.spendableExperiencePoints(16, 0, 37));
+        assertEquals(394, QuestRuntimeProgression.spendableExperiencePoints(17, 0, 42));
+        assertEquals(1_395, QuestRuntimeProgression.spendableExperiencePoints(30, 0, 112));
+        assertEquals(1_507, QuestRuntimeProgression.spendableExperiencePoints(31, 0, 121));
+        assertEquals(1_568, QuestRuntimeProgression.spendableExperiencePoints(31, 0.5f, 121));
+        assertEquals(Integer.MAX_VALUE, QuestRuntimeProgression.spendableExperiencePoints(
+            Integer.MAX_VALUE,
+            1,
+            Integer.MAX_VALUE
+        ));
+    }
+
+    @Test
+    void competingConsumingTasksAcrossQuestsUseOnlyRemovedItems() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("first_item_quest", itemQuest(itemTasks(
+            "items", itemTask("\"minecraft:oak_log\"", 2, "consume")
+        )));
+        documents.createQuest("second_item_quest", itemQuest(itemTasks(
+            "items", itemTask("\"minecraft:oak_log\"", 2, "consume")
+        )));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        MutableItemInventory inventory = new MutableItemInventory();
+        inventory.add("minecraft:oak_log", Set.of("minecraft:logs"), 3);
+
+        new QuestRuntimeProgression(runtime).signal(
+            null,
+            new TaskEngine.Signal.Inventory(List.of(), false),
+            inventory
+        );
+
+        int awardedProgress = catalog.quests().keySet().stream()
+            .mapToInt(questId -> taskProgress(runtime, questId, "items"))
+            .sum();
+        int removedItems = 3 - inventory.count("minecraft:oak_log");
+        assertEquals(2, awardedProgress);
+        assertEquals(removedItems, awardedProgress);
+        assertEquals(1, inventory.count("minecraft:oak_log"));
+    }
+
+    @Test
+    void customTaskHandlerReceivesTheOriginalInventorySignal() throws Exception {
+        JsonObject task = new JsonObject();
+        task.addProperty("type", "example:inventory_observer");
+        JsonObject document = questDocument("Custom inventory", false);
+        document.getAsJsonObject("tasks").add("observer", task);
+        new QuestDocumentStore(directory).createQuest("custom_inventory_quest", document);
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        TaskEngine.Signal[] observedSignal = { null };
+        TaskEngine engine = TaskEngine.defaultBuilder()
+            .register("example:inventory_observer", (definition, progress, signal) -> {
+                observedSignal[0] = signal;
+                return new TaskEngine.Result(progress, 0);
+            })
+            .build();
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            engine,
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        TaskEngine.Signal.Inventory suppliedSignal = new TaskEngine.Signal.Inventory(
+            List.of(new TaskEngine.Signal.RegistryEntry(
+                "minecraft:diamond",
+                Set.of(),
+                new JsonObject(),
+                7
+            )),
+            false
+        );
+
+        new QuestRuntimeProgression(runtime).signal(
+            null,
+            suppliedSignal,
+            new MutableItemInventory()
+        );
+
+        assertEquals(suppliedSignal, observedSignal[0]);
+    }
+
+    @Test
+    void nestedCompositeChildrenSeeTheRemainingInventory() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        JsonObject children = itemTasks(
+            "first", itemTask("\"minecraft:oak_log\"", 1, "consume"),
+            "second", itemTask("\"minecraft:oak_log\"", 1, "consume")
+        );
+        JsonObject inner = new JsonObject();
+        inner.addProperty("type", "theseus:composite");
+        inner.addProperty("amount", 2);
+        inner.add("tasks", children);
+        JsonObject outerTasks = itemTasks("inner", inner);
+        JsonObject outer = new JsonObject();
+        outer.addProperty("type", "theseus:composite");
+        outer.addProperty("amount", 1);
+        outer.add("tasks", outerTasks);
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("nested_item_quest", itemQuest(itemTasks("outer", outer)));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        MutableItemInventory inventory = new MutableItemInventory();
+        inventory.add("minecraft:oak_log", Set.of("minecraft:logs"), 1);
+
+        new QuestRuntimeProgression(runtime).signal(
+            null,
+            new TaskEngine.Signal.Inventory(List.of(), false),
+            inventory
+        );
+
+        assertEquals(1, taskProgress(runtime, "nested_item_quest", "outer/inner/first"));
+        assertEquals(0, taskProgress(runtime, "nested_item_quest", "outer/inner/second"));
+        assertEquals(1, taskProgress(runtime, "nested_item_quest", "outer/inner"));
+        assertEquals(0, inventory.count("minecraft:oak_log"));
+    }
+
+    @Test
+    void enoughItemsCompleteEveryConsumingTaskAndAreRemovedExactly() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("first_item_quest", itemQuest(itemTasks(
+            "items", itemTask("\"minecraft:oak_log\"", 2, "consume")
+        )));
+        documents.createQuest("second_item_quest", itemQuest(itemTasks(
+            "items", itemTask("\"minecraft:oak_log\"", 2, "consume")
+        )));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        MutableItemInventory inventory = new MutableItemInventory();
+        inventory.add("minecraft:oak_log", Set.of("minecraft:logs"), 4);
+
+        new QuestRuntimeProgression(runtime).signal(
+            null,
+            new TaskEngine.Signal.Inventory(List.of(), false),
+            inventory
+        );
+
+        assertEquals(4, catalog.quests().keySet().stream()
+            .mapToInt(questId -> taskProgress(runtime, questId, "items"))
+            .sum());
+        assertEquals(0, inventory.count("minecraft:oak_log"));
+    }
+
+    @Test
+    void overlappingItemPredicatesAllocateInExistingQuestTraversalOrder() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        JsonObject taggedItem = new JsonObject();
+        taggedItem.addProperty("tag", "minecraft:logs");
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("tagged_item_quest", itemQuest(itemTasks(
+            "items", itemTask(taggedItem.toString(), 1, "consume")
+        )));
+        documents.createQuest("exact_item_quest", itemQuest(itemTasks(
+            "items", itemTask("\"minecraft:oak_log\"", 1, "consume")
+        )));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        List<String> traversalOrder = List.copyOf(catalog.quests().keySet());
+        MutableItemInventory inventory = new MutableItemInventory();
+        inventory.add("minecraft:oak_log", Set.of("minecraft:logs"), 1);
+
+        new QuestRuntimeProgression(runtime).signal(
+            null,
+            new TaskEngine.Signal.Inventory(List.of(), false),
+            inventory
+        );
+
+        assertEquals(1, taskProgress(runtime, traversalOrder.getFirst(), "items"));
+        assertEquals(0, taskProgress(runtime, traversalOrder.get(1), "items"));
+        assertEquals(0, inventory.count("minecraft:oak_log"));
+    }
+
+    @Test
+    void automaticObservationLeavesManualTasksAndExplicitSubmissionConsumesAvailableItems() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("manual_item_quest", itemQuest(itemTasks(
+            "manual_items", itemTask("\"minecraft:oak_log\"", 3, "manual")
+        )));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        QuestRuntimeProgression progression = new QuestRuntimeProgression(runtime);
+        MutableItemInventory inventory = new MutableItemInventory();
+        inventory.add("minecraft:oak_log", Set.of("minecraft:logs"), 2);
+
+        progression.signal(
+            null,
+            new TaskEngine.Signal.Inventory(List.of(), false),
+            inventory
+        );
+
+        assertEquals(0, taskProgress(runtime, "manual_item_quest", "manual_items"));
+        assertEquals(2, inventory.count("minecraft:oak_log"));
+        assertTrue(progression.submit(null, "manual_item_quest", "manual_items", inventory));
+        assertEquals(2, taskProgress(runtime, "manual_item_quest", "manual_items"));
+        assertEquals(0, inventory.count("minecraft:oak_log"));
+    }
+
     @ParameterizedTest(name = "{0} requires dedicated-server editor permission")
     @EnumSource(QuestMutation.Kind.class)
     void unauthorizedDedicatedServerMutationLeavesQuestFilesUnchanged(QuestMutation.Kind kind) throws Exception {
@@ -263,6 +598,54 @@ class QuestRuntimeSeamTest {
         return document;
     }
 
+    private JsonObject itemQuest(JsonObject tasks) {
+        JsonObject document = questDocument("Items", false);
+        document.add("tasks", tasks);
+        return document;
+    }
+
+    private QuestRuntime runtime(QuestCatalog catalog) {
+        return new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+    }
+
+    private static JsonObject itemTasks(Object... namesAndTasks) {
+        JsonObject tasks = new JsonObject();
+        for (int index = 0; index < namesAndTasks.length; index += 2) {
+            tasks.add((String) namesAndTasks[index], (JsonObject) namesAndTasks[index + 1]);
+        }
+        return tasks;
+    }
+
+    private static JsonObject itemTask(String itemJson, int amount, String collection) {
+        JsonObject task = new JsonObject();
+        task.addProperty("type", "theseus:item");
+        task.add("item", JsonParser.parseString(itemJson));
+        task.addProperty("amount", amount);
+        task.addProperty("collection", collection);
+        return task;
+    }
+
+    private static JsonObject xpTask(int amount, String unit, String collection) {
+        JsonObject task = new JsonObject();
+        task.addProperty("type", "theseus:xp");
+        task.addProperty("amount", amount);
+        task.addProperty("xpType", unit);
+        task.addProperty("collectionType", collection);
+        return task;
+    }
+
+    private static int taskProgress(QuestRuntime runtime, String questId, String taskPath) {
+        return runtime.progress.get(new UUID(0, 1))
+            .get(questId)
+            .getTaskProgress(taskPath);
+    }
+
     private static Map<String, String> fileContents(Path root) throws IOException {
         Map<String, String> contents = new LinkedHashMap<>();
         try (var paths = Files.walk(root)) {
@@ -303,6 +686,80 @@ class QuestRuntimeSeamTest {
         @Override
         public void save(JsonObject progress) throws IOException {
             throw new IOException("constructor performed I/O");
+        }
+    }
+
+    private static final class MutableItemInventory implements QuestRuntimeProgression.ItemInventory {
+        private final List<MutableItem> items = new java.util.ArrayList<>();
+
+        private void add(String id, Set<String> tags, int count) {
+            items.add(new MutableItem(id, tags, count));
+        }
+
+        private int count(String id) {
+            return items.stream()
+                .filter(item -> item.id.equals(id))
+                .mapToInt(item -> item.count)
+                .sum();
+        }
+
+        @Override
+        public List<QuestRuntimeProgression.ItemSlot> slots() {
+            List<QuestRuntimeProgression.ItemSlot> slots = new java.util.ArrayList<>();
+            for (MutableItem item : items) {
+                if (item.count == 0) continue;
+                TaskEngine.Signal.RegistryEntry entry = new TaskEngine.Signal.RegistryEntry(
+                    item.id,
+                    item.tags,
+                    new JsonObject(),
+                    item.count
+                );
+                slots.add(new QuestRuntimeProgression.ItemSlot(entry, amount -> {
+                    item.count -= amount;
+                }));
+            }
+            return slots;
+        }
+    }
+
+    private static final class MutableItem {
+        private final String id;
+        private final Set<String> tags;
+        private int count;
+
+        private MutableItem(String id, Set<String> tags, int count) {
+            this.id = id;
+            this.tags = Set.copyOf(tags);
+            this.count = count;
+        }
+    }
+
+    private static final class MutableExperienceAccount implements QuestRuntimeProgression.ExperienceAccount {
+        private int levels;
+        private int points;
+
+        private MutableExperienceAccount(int levels, int points) {
+            this.levels = levels;
+            this.points = points;
+        }
+
+        @Override
+        public int levels() {
+            return levels;
+        }
+
+        @Override
+        public int points() {
+            return points;
+        }
+
+        @Override
+        public int consume(boolean consumePoints, int amount) {
+            int available = consumePoints ? points : levels;
+            int consumed = Math.min(available, amount);
+            if (consumePoints) points -= consumed;
+            else levels -= consumed;
+            return consumed;
         }
     }
 

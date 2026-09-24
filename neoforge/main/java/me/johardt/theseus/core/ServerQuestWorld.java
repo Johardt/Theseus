@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -134,12 +135,23 @@ public final class ServerQuestWorld implements QuestWorld {
 
     @Override
     public void giveItem(ServerPlayer player, ItemStack stack) {
-        if (!player.addItem(stack.copy())) {
-            var dropped = player.drop(stack.copy(), false);
+        deliverItem(stack, player::addItem, remainder -> {
+            var dropped = player.drop(remainder, false);
             if (dropped != null) {
                 dropped.setNoPickUpDelay();
                 dropped.setTarget(player.getUUID());
             }
+        });
+    }
+
+    static void deliverItem(
+        ItemStack reward,
+        Predicate<ItemStack> addToInventory,
+        Consumer<ItemStack> dropRemainder
+    ) {
+        ItemStack remainder = reward.copy();
+        if (!addToInventory.test(remainder) && !remainder.isEmpty()) {
+            dropRemainder.accept(remainder);
         }
     }
 
