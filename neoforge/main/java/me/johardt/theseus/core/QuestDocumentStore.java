@@ -374,9 +374,9 @@ public final class QuestDocumentStore {
 
     private Document readDocument(Path path, String id) throws IOException {
         String source = Files.readString(path, StandardCharsets.UTF_8);
-        List<String> duplicateKeys = JsonDuplicateKeyDetector.findDuplicates(source);
-        if (!duplicateKeys.isEmpty()) throw new IOException("Duplicate JSON key(s): " + String.join(", ", duplicateKeys));
         try {
+            List<String> duplicateKeys = JsonDuplicateKeyDetector.findDuplicates(source);
+            if (!duplicateKeys.isEmpty()) throw new IOException("Duplicate JSON key(s): " + String.join(", ", duplicateKeys));
             JsonElement parsed = JsonParser.parseString(source);
             if (!parsed.isJsonObject()) throw new IOException("Quest document must be a JSON object");
             return new Document(id, path, source, parsed.getAsJsonObject());

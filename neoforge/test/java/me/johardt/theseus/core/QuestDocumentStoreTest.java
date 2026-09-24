@@ -37,6 +37,21 @@ class QuestDocumentStoreTest {
     }
 
     @Test
+    void rejectsExcessiveRawNestingThroughTheCheckedReadErrorPath() throws Exception {
+        Path quest = configDirectory.resolve("theseus/quests/too_deep.json");
+        Files.createDirectories(quest.getParent());
+        int depth = JsonDuplicateKeyDetector.MAX_RAW_NESTING_DEPTH + 1;
+        Files.writeString(quest, "[".repeat(depth) + "0" + "]".repeat(depth));
+
+        java.io.IOException exception = assertThrows(
+            java.io.IOException.class,
+            () -> new QuestDocumentStore(configDirectory).readQuest("too_deep")
+        );
+
+        assertTrue(exception.getMessage().contains("maximum raw depth"));
+    }
+
+    @Test
     void renamePropagatesDependenciesAndKeepsUnknownFields() throws Exception {
         Path source = configDirectory.resolve("theseus/quests/chapters/source.json");
         Path dependent = configDirectory.resolve("theseus/quests/chapters/dependent.json");

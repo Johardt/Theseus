@@ -11,6 +11,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestImportBatchTest {
@@ -49,6 +50,24 @@ class QuestImportBatchTest {
         assertTrue(results.get(0).diagnostics().stream().anyMatch(d -> d.code().equals("invalid_quest_document")));
         assertEquals(oversized.getBytes(java.nio.charset.StandardCharsets.UTF_8).length, results.get(1).size());
         assertTrue(results.get(1).diagnostics().stream().anyMatch(d -> d.code().equals("file_too_large")));
+    }
+
+    @Test
+    void preflightReportsExcessiveJsonDepthAsBlockingDiagnostic() {
+        int depth = JsonDuplicateKeyDetector.MAX_RAW_NESTING_DEPTH + 1;
+        String nestedArrays = "[".repeat(depth) + "0" + "]".repeat(depth);
+
+        var result = QuestImportBatch.preflight(Map.of("too_deep.json", nestedArrays)).getFirst();
+
+        assertFalse(result.valid());
+        assertNull(result.root());
+        var diagnostic = result.diagnostics().stream()
+            .filter(value -> value.code().equals("malformed_json"))
+            .findFirst()
+            .orElseThrow();
+        assertTrue(diagnostic.blocksSave());
+        assertEquals("$", diagnostic.path());
+        assertTrue(diagnostic.message().contains("maximum raw depth"));
     }
 
     @Test
