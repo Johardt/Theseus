@@ -644,6 +644,54 @@ final class QuestScreenActions {
         sendClipboardPaste(chapterOnly, requestedId, null, null);
     }
 
+    static JsonObject buildClipboardPasteRequest(
+        String sourceId,
+        String chapter,
+        boolean chapterOnly,
+        boolean move,
+        String requestedId,
+        Set<String> existingQuestIds,
+        boolean sourceAvailable,
+        JsonObject quest,
+        int sourceX,
+        int sourceY,
+        Double worldX,
+        Double worldY
+    ) {
+        if (!chapterOnly && !sourceAvailable) return null;
+
+        String id = move ? sourceId : requestedId;
+        if (!chapterOnly) {
+            boolean sameSourceMove = move && sourceId != null && sourceId.equals(id);
+            if (
+                id == null ||
+                !id.matches("[a-z0-9_.-]+") ||
+                (existingQuestIds.contains(id) && !sameSourceMove)
+            ) return null;
+        }
+
+        JsonObject request = new JsonObject();
+        request.addProperty("source_id", sourceId);
+        request.addProperty("chapter", chapter);
+        request.addProperty("chapter_only", chapterOnly);
+        if (!chapterOnly) {
+            request.addProperty("id", id);
+            request.add("quest", quest);
+            request.addProperty("move", move);
+        }
+        if (!chapterOnly || sourceAvailable) {
+            long x = sourceX;
+            long y = sourceY;
+            if (worldX != null && worldY != null) {
+                x = Math.round(worldX);
+                y = Math.round(worldY);
+            }
+            request.addProperty("x", x);
+            request.addProperty("y", y);
+        }
+        return request;
+    }
+
     void sendClipboardPaste(
         boolean chapterOnly,
         String requestedId,
@@ -651,43 +699,32 @@ final class QuestScreenActions {
         Double worldY
     ) {
         String sourceId = clipboardSourceId;
-        JsonObject request = new JsonObject();
-        request.addProperty("source_id", sourceId);
-        request.addProperty("chapter", screen.group);
-        request.addProperty("chapter_only", chapterOnly);
         ClientQuest source = screen.quests.stream().filter(quest -> quest.definition().id().equals(sourceId)).findFirst().orElse(null);
-        if (source == null && !chapterOnly) {
-            screen.editorMessage = "The copied quest is no longer available.";
+        QuestDefinition.GroupDisplay position = source == null
+            ? new QuestDefinition.GroupDisplay(0, 0)
+            : source.definition().position(screen.group);
+        JsonObject request = buildClipboardPasteRequest(
+            sourceId,
+            screen.group,
+            chapterOnly,
+            clipboardMove,
+            requestedId,
+            screen.quests.stream()
+                .map(quest -> quest.definition().id())
+                .collect(java.util.stream.Collectors.toSet()),
+            source != null,
+            !chapterOnly && source != null ? clipboardTransferSnapshot() : null,
+            position.x(),
+            position.y(),
+            worldX,
+            worldY
+        );
+        if (request == null) {
+            screen.editorMessage = source == null && !chapterOnly
+                ? "The copied quest is no longer available."
+                : "Choose a new, unused lowercase quest ID.";
             screen.editorMessageSuccess = false;
             return;
-        }
-        if (!chapterOnly) {
-            String id = clipboardMove ? sourceId : requestedId;
-            if (id == null || !id.matches("[a-z0-9_.-]+") || questById(id) != null) {
-                screen.editorMessage = "Choose a new, unused lowercase quest ID.";
-                screen.editorMessageSuccess = false;
-                return;
-            }
-            request.addProperty("id", id);
-            JsonObject quest = clipboardTransferSnapshot();
-            request.add("quest", quest);
-            request.addProperty("move", clipboardMove);
-            QuestDefinition.GroupDisplay position = source == null
-                ? new QuestDefinition.GroupDisplay(0, 0)
-                : source.definition().position(screen.group);
-            request.addProperty("x", position.x());
-            request.addProperty("y", position.y());
-            if (worldX != null && worldY != null) {
-                request.addProperty("x", Math.round(worldX));
-                request.addProperty("y", Math.round(worldY));
-            }
-        } else if (source != null) {
-            request.addProperty("x", source.definition().position(screen.group).x());
-            request.addProperty("y", source.definition().position(screen.group).y());
-            if (worldX != null && worldY != null) {
-                request.addProperty("x", Math.round(worldX));
-                request.addProperty("y", Math.round(worldY));
-            }
         }
         screen.clipboardMutationPending = true;
         screen.editor.sendEditorMutation(new QuestMutation.PasteQuest(request));

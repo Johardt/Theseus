@@ -492,6 +492,60 @@ class QuestRuntimeSeamTest {
         assertEquals(0, inventory.count("minecraft:oak_log"));
     }
 
+    @Test
+    void serverSameIdMoveRetainsSourceAndAppliesRequestedChapterPlacement() throws Exception {
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("server_move", questDocument("Server move", true));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+
+        for (String chapter : List.of("Main", "Other")) {
+            JsonObject request = new JsonObject();
+            request.addProperty("source_id", "server_move");
+            request.addProperty("id", "server_move");
+            request.addProperty("chapter", chapter);
+            request.addProperty("chapter_only", false);
+            request.addProperty("move", true);
+            request.addProperty("x", chapter.equals("Main") ? 3 : 9);
+            request.addProperty("y", chapter.equals("Main") ? 4 : 10);
+            request.add("quest", documents.readQuest("server_move"));
+
+            assertTrue(runtime.pasteQuest(null, request).success());
+            assertTrue(runtime.catalog.quests().containsKey("server_move"));
+            var placement = documents.readQuest("server_move")
+                .getAsJsonObject("display")
+                .getAsJsonObject("groups")
+                .getAsJsonObject(chapter)
+                .getAsJsonArray("position");
+            assertEquals(chapter.equals("Main") ? 3 : 9, placement.get(0).getAsInt());
+            assertEquals(chapter.equals("Main") ? 4 : 10, placement.get(1).getAsInt());
+        }
+
+        String beforeCopyCollision = documents.readQuest("server_move").toString();
+        JsonObject copyCollision = new JsonObject();
+        copyCollision.addProperty("source_id", "server_move");
+        copyCollision.addProperty("id", "server_move");
+        copyCollision.addProperty("chapter", "Main");
+        copyCollision.addProperty("move", false);
+        copyCollision.add("quest", documents.readQuest("server_move"));
+        assertFalse(runtime.pasteQuest(null, copyCollision).success());
+        assertEquals(beforeCopyCollision, documents.readQuest("server_move").toString());
+
+        JsonObject missingSource = new JsonObject();
+        missingSource.addProperty("source_id", "missing_source");
+        missingSource.addProperty("id", "missing_source");
+        missingSource.addProperty("chapter", "Main");
+        missingSource.addProperty("move", true);
+        missingSource.add("quest", documents.readQuest("server_move"));
+        assertFalse(runtime.pasteQuest(null, missingSource).success());
+    }
+
     @ParameterizedTest(name = "{0} requires dedicated-server editor permission")
     @EnumSource(QuestMutation.Kind.class)
     void unauthorizedDedicatedServerMutationLeavesQuestFilesUnchanged(QuestMutation.Kind kind) throws Exception {
