@@ -57,18 +57,22 @@ class QuestAuthoringSession {
     final List<TaskDraft> tasks = new ArrayList<>();
     int editingTaskIndex = -1;
     TaskDraft editingTask;
+    TaskDraft editingTaskBaseline;
     private final List<TaskDraft> taskEditorParents = new ArrayList<>();
     private final List<Integer> taskEditorParentIndexes = new ArrayList<>();
+    private final List<TaskDraft> taskEditorParentBaselines = new ArrayList<>();
     int nestedTaskScroll;
     String taskEditorError = "";
     int taskDeleteConfirmation = -1;
     final List<RewardDraft> rewards = new ArrayList<>();
     int editingRewardIndex = -1;
     RewardDraft editingReward;
+    RewardDraft editingRewardBaseline;
     String rewardEditorError = "";
     int nestedRewardScroll;
     int editingNestedRewardIndex = -1;
     RewardDraft editingNestedReward;
+    RewardDraft editingNestedRewardBaseline;
 
     QuestAuthoringSession(int defaultIconSize) {
         iconSize = defaultIconSize;
@@ -109,18 +113,24 @@ class QuestAuthoringSession {
         source.tasks.forEach(task -> this.tasks.add(task.copy()));
         this.editingTaskIndex = source.editingTaskIndex;
         this.editingTask = source.editingTask == null ? null : source.editingTask.copy();
+        this.editingTaskBaseline = source.editingTaskBaseline == null ? null : source.editingTaskBaseline.copy();
         source.taskEditorParents.forEach(parent -> this.taskEditorParents.add(parent.copy()));
         this.taskEditorParentIndexes.addAll(source.taskEditorParentIndexes);
+        source.taskEditorParentBaselines.forEach(parent -> this.taskEditorParentBaselines.add(parent.copy()));
         this.nestedTaskScroll = source.nestedTaskScroll;
         this.taskEditorError = source.taskEditorError;
         this.taskDeleteConfirmation = source.taskDeleteConfirmation;
         source.rewards.forEach(reward -> this.rewards.add(reward.copy()));
         this.editingRewardIndex = source.editingRewardIndex;
         this.editingReward = source.editingReward == null ? null : source.editingReward.copy();
+        this.editingRewardBaseline = source.editingRewardBaseline == null ? null : source.editingRewardBaseline.copy();
         this.rewardEditorError = source.rewardEditorError;
         this.nestedRewardScroll = source.nestedRewardScroll;
         this.editingNestedRewardIndex = source.editingNestedRewardIndex;
         this.editingNestedReward = source.editingNestedReward == null ? null : source.editingNestedReward.copy();
+        this.editingNestedRewardBaseline = source.editingNestedRewardBaseline == null
+            ? null
+            : source.editingNestedRewardBaseline.copy();
     }
 
     QuestAuthoringSession copy() {
@@ -222,13 +232,17 @@ class QuestAuthoringSession {
 
     private void resetEditors() {
         editingTask = null;
+        editingTaskBaseline = null;
         editingTaskIndex = -1;
         taskEditorParents.clear();
         taskEditorParentIndexes.clear();
+        taskEditorParentBaselines.clear();
         taskEditorError = "";
         editingReward = null;
+        editingRewardBaseline = null;
         editingRewardIndex = -1;
         editingNestedReward = null;
+        editingNestedRewardBaseline = null;
         editingNestedRewardIndex = -1;
         rewardEditorError = "";
     }
@@ -259,16 +273,20 @@ class QuestAuthoringSession {
     void editTask(int index) {
         editingTaskIndex = index;
         editingTask = tasks.get(index).copy();
+        editingTaskBaseline = editingTask.copy();
         taskEditorParents.clear();
         taskEditorParentIndexes.clear();
+        taskEditorParentBaselines.clear();
         taskEditorError = "";
     }
 
     void createTask(TaskDraft task) {
         editingTaskIndex = -1;
         editingTask = task;
+        editingTaskBaseline = task.copy();
         taskEditorParents.clear();
         taskEditorParentIndexes.clear();
+        taskEditorParentBaselines.clear();
         taskEditorError = "";
     }
 
@@ -276,7 +294,9 @@ class QuestAuthoringSession {
         List<TaskDraft> children = nestedTasks(editingTask);
         taskEditorParents.add(editingTask);
         taskEditorParentIndexes.add(editingTaskIndex);
+        taskEditorParentBaselines.add(editingTaskBaseline);
         editingTask = children.get(index).copy();
+        editingTaskBaseline = editingTask.copy();
         editingTaskIndex = index;
         taskEditorError = "";
     }
@@ -284,7 +304,9 @@ class QuestAuthoringSession {
     void createChildTask(TaskDraft task) {
         taskEditorParents.add(editingTask);
         taskEditorParentIndexes.add(editingTaskIndex);
+        taskEditorParentBaselines.add(editingTaskBaseline);
         editingTask = task;
+        editingTaskBaseline = task.copy();
         editingTaskIndex = -1;
         taskEditorError = "";
     }
@@ -328,6 +350,7 @@ class QuestAuthoringSession {
             else children.set(editingTaskIndex, editingTask.copy());
             setNestedTasks(parent, children);
         }
+        editingTaskBaseline = editingTask.copy();
         return true;
     }
 
@@ -341,8 +364,10 @@ class QuestAuthoringSession {
         if (hasParent) {
             editingTask = taskEditorParents.removeLast();
             editingTaskIndex = taskEditorParentIndexes.removeLast();
+            editingTaskBaseline = taskEditorParentBaselines.removeLast();
         } else {
             editingTask = null;
+            editingTaskBaseline = null;
             editingTaskIndex = -1;
         }
         taskEditorError = "";
@@ -352,24 +377,28 @@ class QuestAuthoringSession {
     void editReward(int index) {
         editingRewardIndex = index;
         editingReward = rewards.get(index).copy();
+        editingRewardBaseline = editingReward.copy();
         rewardEditorError = "";
     }
 
     void createReward(RewardDraft reward) {
         editingRewardIndex = -1;
         editingReward = reward;
+        editingRewardBaseline = reward.copy();
         rewardEditorError = "";
     }
 
     void editNestedReward(int index) {
         editingNestedRewardIndex = index;
         editingNestedReward = nestedRewards(editingReward).get(index).copy();
+        editingNestedRewardBaseline = editingNestedReward.copy();
         rewardEditorError = "";
     }
 
     void createNestedReward(RewardDraft reward) {
         editingNestedRewardIndex = -1;
         editingNestedReward = reward;
+        editingNestedRewardBaseline = reward.copy();
         rewardEditorError = "";
     }
 
@@ -404,6 +433,8 @@ class QuestAuthoringSession {
             setNestedRewards(editingReward, peers);
         } else if (index < 0) rewards.add(reward.copy());
         else rewards.set(index, reward.copy());
+        if (nested) editingNestedRewardBaseline = reward.copy();
+        else editingRewardBaseline = reward.copy();
         return true;
     }
 
@@ -411,22 +442,25 @@ class QuestAuthoringSession {
         rewardEditorError = "";
         if (nested) {
             editingNestedReward = null;
+            editingNestedRewardBaseline = null;
             editingNestedRewardIndex = -1;
         } else {
             editingReward = null;
+            editingRewardBaseline = null;
             editingRewardIndex = -1;
         }
     }
 
     boolean hasUnsavedEditorChanges() {
-        if (editingTask != null && editingTaskIndex >= 0 && editingTaskIndex < tasks.size()
-            && !editingTask.sameAs(tasks.get(editingTaskIndex))) return true;
-        if (editingReward != null && editingRewardIndex >= 0 && editingRewardIndex < rewards.size()
-            && !editingReward.sameAs(rewards.get(editingRewardIndex))) return true;
+        if (editingTask != null) {
+            return editingTaskBaseline == null || !editingTask.sameAs(editingTaskBaseline);
+        }
         if (editingNestedReward != null) {
-            List<RewardDraft> nested = nestedRewards(editingReward);
-            if (editingNestedRewardIndex >= 0 && editingNestedRewardIndex < nested.size()
-                && !editingNestedReward.sameAs(nested.get(editingNestedRewardIndex))) return true;
+            return editingNestedRewardBaseline == null
+                || !editingNestedReward.sameAs(editingNestedRewardBaseline);
+        }
+        if (editingReward != null) {
+            return editingRewardBaseline == null || !editingReward.sameAs(editingRewardBaseline);
         }
         return false;
     }

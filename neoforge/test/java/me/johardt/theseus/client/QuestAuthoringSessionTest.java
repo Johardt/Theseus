@@ -74,6 +74,102 @@ class QuestAuthoringSessionTest {
     }
 
     @Test
+    void newTaskAndRewardEditorsCompareAgainstTheirCreationBaseline() {
+        QuestAuthoringSession session = new QuestAuthoringSession(16);
+        session.beginNew("Main", 0, 0);
+        JsonObject taskSource = new JsonObject();
+        taskSource.addProperty("type", "theseus:dummy");
+        taskSource.addProperty("value", "trigger");
+        session.createTask(new QuestAuthoringSession.TaskDraft("task", "theseus:dummy", taskSource));
+
+        assertFalse(session.hasUnsavedEditorChanges());
+        session.editingTask.source.addProperty("title", "Edited task");
+        assertTrue(session.hasUnsavedEditorChanges());
+        session.editingTask.source.remove("title");
+        assertFalse(session.hasUnsavedEditorChanges());
+        session.closeTaskEditor();
+
+        JsonObject rewardSource = new JsonObject();
+        rewardSource.addProperty("type", "theseus:xp");
+        rewardSource.addProperty("amount", 1);
+        session.createReward(new QuestAuthoringSession.RewardDraft("reward", "theseus:xp", rewardSource));
+
+        assertFalse(session.hasUnsavedEditorChanges());
+        session.editingReward.source.addProperty("amount", 2);
+        assertTrue(session.hasUnsavedEditorChanges());
+        session.editingReward.source.addProperty("amount", 1);
+        assertFalse(session.hasUnsavedEditorChanges());
+    }
+
+    @Test
+    void nestedTaskDirtyStateUsesTheChildBaselineAndReturnsToItsParent() {
+        QuestAuthoringSession session = new QuestAuthoringSession(16);
+        session.beginNew("Main", 0, 0);
+        JsonObject rootTaskSource = new JsonObject();
+        rootTaskSource.addProperty("type", "theseus:dummy");
+        rootTaskSource.addProperty("value", "changed");
+        session.tasks.add(new QuestAuthoringSession.TaskDraft("check", "theseus:dummy", rootTaskSource));
+
+        JsonObject composite = JsonParser.parseString("""
+            {"type":"theseus:composite","amount":1,"tasks":{
+              "check":{"type":"theseus:dummy","value":"before"}
+            }}
+            """).getAsJsonObject();
+        session.tasks.add(new QuestAuthoringSession.TaskDraft("composite", "theseus:composite", composite));
+        session.editTask(1);
+        session.editChildTask(0);
+
+        assertFalse(session.hasUnsavedEditorChanges());
+        session.editingTask.source.addProperty("value", "changed");
+        assertTrue(session.hasUnsavedEditorChanges());
+        assertTrue(session.closeTaskEditor());
+        assertFalse(session.hasUnsavedEditorChanges());
+        assertFalse(session.closeTaskEditor());
+
+        JsonObject nestedChildren = JsonParser.parseString("""
+            {
+              "type":"theseus:composite","amount":1,"tasks":{
+                "first":{"type":"theseus:dummy","value":"one"},
+                "second":{"type":"theseus:dummy","value":"two"}
+              }
+            }
+            """).getAsJsonObject();
+        session.tasks.clear();
+        session.tasks.add(new QuestAuthoringSession.TaskDraft("composite", "theseus:composite", nestedChildren));
+        session.editTask(0);
+        session.editChildTask(1);
+        assertFalse(session.hasUnsavedEditorChanges());
+        session.editingTask.source.addProperty("value", "edited");
+        assertTrue(session.hasUnsavedEditorChanges());
+    }
+
+    @Test
+    void nestedRewardDirtyStateTracksNewChildAndSavedParent() {
+        QuestAuthoringSession session = new QuestAuthoringSession(16);
+        session.beginNew("Main", 0, 0);
+        JsonObject selectable = JsonParser.parseString("""
+            {"type":"theseus:selectable","amount":1,"rewards":{}}
+            """).getAsJsonObject();
+        session.createReward(new QuestAuthoringSession.RewardDraft("choice", "theseus:selectable", selectable));
+        assertFalse(session.hasUnsavedEditorChanges());
+
+        JsonObject itemReward = JsonParser.parseString("""
+            {"type":"theseus:item","item":{"id":"minecraft:stone","count":1}}
+            """).getAsJsonObject();
+        session.createNestedReward(new QuestAuthoringSession.RewardDraft("stone", "theseus:item", itemReward));
+        assertFalse(session.hasUnsavedEditorChanges());
+        session.editingNestedReward.source.getAsJsonObject("item").addProperty("count", 2);
+        assertTrue(session.hasUnsavedEditorChanges());
+
+        assertTrue(session.saveReward(true, registries()));
+        assertFalse(session.hasUnsavedEditorChanges());
+        session.closeRewardEditor(true);
+        assertTrue(session.hasUnsavedEditorChanges());
+        assertTrue(session.saveReward(false, registries()));
+        assertFalse(session.hasUnsavedEditorChanges());
+    }
+
+    @Test
     void nestedTaskSaveAndCancelStayWithinTheSession() {
         QuestAuthoringSession session = new QuestAuthoringSession(16);
         session.beginNew("Main", 4, 8);
