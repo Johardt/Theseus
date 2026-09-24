@@ -546,6 +546,96 @@ class QuestRuntimeSeamTest {
         assertFalse(runtime.pasteQuest(null, missingSource).success());
     }
 
+    @Test
+    void chapterMutationResultsRejectInvalidRequestsAndAcknowledgeSuccessfulWrites() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("chapter_results", questDocument("Chapter results", false));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+
+        Map<String, String> beforeInvalidRequests = fileContents(directory);
+        JsonObject invalidName = new JsonObject();
+        invalidName.addProperty("operation", "create");
+        invalidName.addProperty("name", "x".repeat(65));
+        assertFalse(runtime.applyEditorMutation(
+            null,
+            QuestMutation.of(QuestMutation.Kind.CHAPTER_ACTION, invalidName)
+        ).success());
+
+        JsonObject invalidOrder = new JsonObject();
+        invalidOrder.addProperty("operation", "reorder");
+        com.google.gson.JsonArray missingChapter = new com.google.gson.JsonArray();
+        missingChapter.add("Missing");
+        invalidOrder.add("order", missingChapter);
+        QuestRuntime.MutationResult reorderResult = runtime.applyEditorMutation(
+            null,
+            QuestMutation.of(QuestMutation.Kind.CHAPTER_ACTION, invalidOrder)
+        );
+        assertFalse(reorderResult.success());
+        assertEquals(beforeInvalidRequests, fileContents(directory));
+
+        JsonObject createChapter = new JsonObject();
+        createChapter.addProperty("operation", "create");
+        createChapter.addProperty("name", "Side");
+        QuestRuntime.MutationResult success = runtime.applyEditorMutation(
+            null,
+            QuestMutation.of(QuestMutation.Kind.CHAPTER_ACTION, createChapter)
+        );
+        assertTrue(success.success());
+        assertTrue(QuestDocumentStore.readGroupOrder(directory.resolve("theseus/groups.txt")).contains("Side"));
+    }
+
+    @Test
+    void chapterMutationReturnsFailureWhenStorageCannotWrite() throws Exception {
+        MinecraftTestBootstrap.ensureBootstrapped();
+        QuestDocumentStore documents = new QuestDocumentStore(directory);
+        documents.createQuest("chapter_write_failure", questDocument("Chapter write failure", false));
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        Path configDirectory = directory.resolve("theseus");
+        java.nio.file.FileStore fileStore = Files.getFileStore(configDirectory);
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+            fileStore.supportsFileAttributeView("posix"),
+            "This regression requires POSIX directory permissions"
+        );
+        var originalPermissions = Files.getPosixFilePermissions(configDirectory);
+        var readOnlyPermissions = new java.util.HashSet<>(originalPermissions);
+        readOnlyPermissions.remove(java.nio.file.attribute.PosixFilePermission.OWNER_WRITE);
+        readOnlyPermissions.remove(java.nio.file.attribute.PosixFilePermission.GROUP_WRITE);
+        readOnlyPermissions.remove(java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE);
+        Map<String, String> before = fileContents(directory);
+
+        JsonObject request = new JsonObject();
+        request.addProperty("operation", "create");
+        request.addProperty("name", "Blocked");
+        QuestRuntime.MutationResult result;
+        try {
+            Files.setPosixFilePermissions(configDirectory, readOnlyPermissions);
+            result = runtime.applyEditorMutation(
+                null,
+                QuestMutation.of(QuestMutation.Kind.CHAPTER_ACTION, request)
+            );
+        } finally {
+            Files.setPosixFilePermissions(configDirectory, originalPermissions);
+        }
+
+        assertFalse(result.success());
+        assertEquals(before, fileContents(directory));
+    }
+
     @ParameterizedTest(name = "{0} requires dedicated-server editor permission")
     @EnumSource(QuestMutation.Kind.class)
     void unauthorizedDedicatedServerMutationLeavesQuestFilesUnchanged(QuestMutation.Kind kind) throws Exception {

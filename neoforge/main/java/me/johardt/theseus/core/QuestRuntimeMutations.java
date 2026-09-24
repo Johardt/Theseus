@@ -528,8 +528,7 @@ final class QuestRuntimeMutations {
         if (operation.equals("create") && runtime.catalog.groupOrder().contains(name)) return MutationResult.failure("That chapter already exists");
         if (operation.equals("update") && (!runtime.catalog.groupOrder().contains(action.has("old_name") ? action.get("old_name").getAsString() : "") || runtime.catalog.groupOrder().contains(name) && !name.equals(action.get("old_name").getAsString()))) return MutationResult.failure("Invalid chapter rename");
         if (operation.equals("delete") && !runtime.catalog.groupOrder().contains(name)) return MutationResult.failure("That chapter does not exist");
-        try { chapterActionAuthorized(action); return MutationResult.success("Chapter change applied"); }
-        catch (RuntimeException exception) { return MutationResult.failure(exception.getMessage() == null ? "Invalid chapter change" : exception.getMessage()); }
+        return chapterActionAuthorizedResult(action);
     }
 
     MutationResult removeQuestGroupResult(ServerPlayer player, JsonObject action) {
@@ -543,8 +542,7 @@ final class QuestRuntimeMutations {
         QuestDefinition quest = runtime.catalog.quests().get(id);
         if (quest == null || !quest.display().groups().containsKey(group)) return MutationResult.failure("Quest is not in that chapter");
         if (quest.display().groups().size() <= 1) return MutationResult.failure("A quest must remain in at least one chapter");
-        try { removeQuestFromGroupAuthorized(id, group); return MutationResult.success("Quest removed from chapter"); }
-        catch (RuntimeException exception) { return MutationResult.failure(exception.getMessage() == null ? "Chapter removal failed" : exception.getMessage()); }
+        return removeQuestFromGroupAuthorizedResult(id, group);
     }
 
     MutationResult dependencyMutationResult(ServerPlayer player, JsonObject action) {
@@ -626,15 +624,22 @@ final class QuestRuntimeMutations {
     }
 
     void removeQuestFromGroupAuthorized(String id, String group) {
+        removeQuestFromGroupAuthorizedResult(id, group);
+    }
+
+    private MutationResult removeQuestFromGroupAuthorizedResult(String id, String group) {
         try {
             JsonObject root = runtime.catalog.documents().readQuest(id);
             JsonObject groups = root.getAsJsonObject("display").getAsJsonObject("groups");
-            if (groups.size() <= 1 || !groups.has(group)) return;
+            if (!groups.has(group)) return MutationResult.failure("Quest is not in that chapter");
+            if (groups.size() <= 1) return MutationResult.failure("A quest must remain in at least one chapter");
             groups.remove(group);
             runtime.catalog.documents().writeQuest(id, root);
             runtime.reload();
+            return MutationResult.success("Quest removed from chapter");
         } catch (Exception exception) {
             Theseus.LOGGER.error("Failed to remove quest {} from chapter {}", id, group, exception);
+            return MutationResult.failure(exception.getMessage() == null ? "Chapter removal failed" : exception.getMessage());
         }
     }
 
@@ -644,6 +649,10 @@ final class QuestRuntimeMutations {
     }
 
     void chapterActionAuthorized(JsonObject action) {
+        chapterActionAuthorizedResult(action);
+    }
+
+    private MutationResult chapterActionAuthorizedResult(JsonObject action) {
         String operation = action.has("operation") ? action.get("operation").getAsString() : "";
         List<String> order = new java.util.ArrayList<>(runtime.catalog.groupOrder());
         Map<String, QuestCatalog.ChapterSettings> settings = new java.util.LinkedHashMap<>(runtime.catalog.chapterSettings());
@@ -652,14 +661,16 @@ final class QuestRuntimeMutations {
             switch (operation) {
                 case "create" -> {
                     String name = validChapterName(action.get("name").getAsString());
-                    if (order.contains(name)) return;
+                    if (order.contains(name)) return MutationResult.failure("That chapter already exists");
                     order.add(name);
                     settings.put(name, chapterSettings(action));
                 }
                 case "update" -> {
                     String oldName = action.get("old_name").getAsString();
                     String newName = validChapterName(action.get("name").getAsString());
-                    if (!order.contains(oldName) || (!oldName.equals(newName) && order.contains(newName))) return;
+                    if (!order.contains(oldName) || (!oldName.equals(newName) && order.contains(newName))) {
+                        return MutationResult.failure("Invalid chapter rename");
+                    }
                     order.set(order.indexOf(oldName), newName);
                     settings.remove(oldName);
                     settings.put(newName, chapterSettings(action));
@@ -667,7 +678,7 @@ final class QuestRuntimeMutations {
                 }
                 case "delete" -> {
                     String name = action.get("name").getAsString();
-                    if (!order.remove(name)) return;
+                    if (!order.remove(name)) return MutationResult.failure("That chapter does not exist");
                     settings.remove(name);
                     change = new QuestDocumentStore.ChapterChange(name, null);
                     if (order.isEmpty()) {
@@ -678,15 +689,19 @@ final class QuestRuntimeMutations {
                 case "reorder" -> {
                     List<String> requested = new java.util.ArrayList<>();
                     action.getAsJsonArray("order").forEach(value -> requested.add(value.getAsString()));
-                    if (requested.size() != order.size() || !new java.util.HashSet<>(requested).equals(new java.util.HashSet<>(order))) return;
+                    if (requested.size() != order.size() || !new java.util.HashSet<>(requested).equals(new java.util.HashSet<>(order))) {
+                        return MutationResult.failure("Invalid chapter order");
+                    }
                     order = requested;
                 }
-                default -> { return; }
+                default -> { return MutationResult.failure("Unknown chapter operation"); }
             }
             runtime.catalog.documents().updateChapters(order, settings, change);
             runtime.reload();
+            return MutationResult.success("Chapter change applied");
         } catch (Exception exception) {
             Theseus.LOGGER.error("Failed chapter operation {}", operation, exception);
+            return MutationResult.failure(exception.getMessage() == null ? "Invalid chapter change" : exception.getMessage());
         }
     }
 
