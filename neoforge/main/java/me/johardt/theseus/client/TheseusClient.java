@@ -92,7 +92,7 @@ public final class TheseusClient {
             QuestClientSnapshot.Kind kind = QuestClientSnapshot.kindOf(incoming);
             if (kind == QuestClientSnapshot.Kind.CHAPTER) {
                 snapshots.accept(incoming);
-                if (Minecraft.getInstance().gui.screen() instanceof QuestScreen screen
+                if (Minecraft.getInstance().screen instanceof QuestScreen screen
                     && screen.snapshots == snapshots) {
                     screen.snapshotChanged();
                 }
@@ -101,13 +101,13 @@ public final class TheseusClient {
             snapshots = new QuestClientSnapshot(incoming);
             if (
                 payload.open() ||
-                Minecraft.getInstance().gui.screen() instanceof QuestScreen
+                Minecraft.getInstance().screen instanceof QuestScreen
             ) {
-                QuestScreen previous = Minecraft.getInstance().gui.screen() instanceof QuestScreen screen
+                QuestScreen previous = Minecraft.getInstance().screen instanceof QuestScreen screen
                     ? screen
                     : payload.open() ? takeDisconnectedEditor() : null;
                 QuestScreen screen = new QuestScreen(snapshots, previous);
-                Minecraft.getInstance().gui.setScreen(screen);
+                Minecraft.getInstance().setScreen(screen);
                 if (kind == QuestClientSnapshot.Kind.INDEX) screen.requestActiveChapter();
             }
         });
@@ -125,7 +125,7 @@ public final class TheseusClient {
                     default -> QuestHud.REWARD_TOAST;
                 };
                 net.minecraft.client.gui.components.toasts.SystemToast.add(
-                    Minecraft.getInstance().gui.toastManager(),
+                    Minecraft.getInstance().getToastManager(),
                     id,
                     Component.literal(payload.title()),
                     Component.literal(payload.detail())
@@ -133,12 +133,12 @@ public final class TheseusClient {
             }
         );
         event.register(QuestNetwork.EditorResultPayload.TYPE, (payload, context) -> {
-            if (Minecraft.getInstance().gui.screen() instanceof QuestScreen screen) {
+            if (Minecraft.getInstance().screen instanceof QuestScreen screen) {
                 screen.handleEditorResult(payload);
             }
         });
         event.register(QuestNetwork.OpenQuestFileResultPayload.TYPE, (payload, context) -> {
-            if (Minecraft.getInstance().gui.screen() instanceof QuestScreen screen) {
+            if (Minecraft.getInstance().screen instanceof QuestScreen screen) {
                 screen.handleOpenQuestFileResult(payload);
             }
         });
@@ -173,7 +173,7 @@ public final class TheseusClient {
 
     private void clientLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
         snapshots = new QuestClientSnapshot();
-        if (!(Minecraft.getInstance().gui.screen() instanceof QuestScreen screen)) {
+        if (!(Minecraft.getInstance().screen instanceof QuestScreen screen)) {
             clearDisconnectedEditor();
             return;
         }

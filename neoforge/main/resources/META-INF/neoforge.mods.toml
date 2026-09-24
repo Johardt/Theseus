@@ -12,7 +12,7 @@ iconFile="assets/theseus/theseus.png"
 logoBlur=false
 authors="Jobert; original Heracles by ThatGravyBoat and contributors"
 description='''
-Theseus is a NeoForge-only fork of Heracles for Minecraft 26.2.
+Theseus is a NeoForge-only fork of Heracles for Minecraft 26.1.2.
 
 It lets pack makers create tree-style quests distributed through the config
 folder and is not affiliated with or supported by the original Heracles
@@ -36,34 +36,34 @@ side="BOTH"
 [[dependencies.theseus]]
 modId="resourcefullib"
 type="required"
-versionRange="[5.0.0,)"
+versionRange="[4.0.1,)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.theseus]]
 modId="olympus"
 type="required"
-versionRange="[1.9.1,)"
+versionRange="[1.8.4,)"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies.theseus]]
 modId="resourcefulconfig"
 type="optional"
-versionRange="[5.0.0,)"
+versionRange="[4.0.1,)"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies.theseus]]
 modId="roughlyenoughitems"
 type="optional"
-versionRange="[26.2,)"
+versionRange="[26.1,)"
 ordering="AFTER"
 side="CLIENT"
 
 [[dependencies.theseus]]
 modId="jei"
 type="optional"
-versionRange="[30.0,)"
+versionRange="[29.0,)"
 ordering="AFTER"
 side="CLIENT"

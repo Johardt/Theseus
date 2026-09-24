@@ -169,6 +169,6 @@ public final class QuestTutorialScreen extends Screen {
     }
 
     private void closeToParent() {
-        Minecraft.getInstance().gui.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 }

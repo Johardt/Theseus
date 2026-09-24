@@ -24,7 +24,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.slf4j.Logger;
 
 /**
- * NeoForge 26.2 bootstrap entrypoint.
+ * NeoForge 26.1.2 bootstrap entrypoint.
  *
  * <p>The quest implementation is intentionally reintroduced incrementally from the retained
  * 1.21 sources as its Minecraft and library APIs are ported.</p>

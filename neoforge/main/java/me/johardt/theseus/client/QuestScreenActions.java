@@ -555,7 +555,7 @@ final class QuestScreenActions {
             "",
             true,
             false,
-            () -> Minecraft.getInstance().gui.setScreen(new TrackerPlacementScreen(screen))
+            () -> Minecraft.getInstance().setScreen(new TrackerPlacementScreen(screen))
         ));
         if (canEdit()) entries.add(QuestContextMenu.Entry.item(
             Component.translatable("screen.theseus.display_menu.tutorial").getString(),
@@ -611,7 +611,7 @@ final class QuestScreenActions {
     void openTutorial() {
         if (!canEdit()) return;
         TheseusClientOptions.setTutorialSeen(true);
-        Minecraft.getInstance().gui.setScreen(new QuestTutorialScreen(screen));
+        Minecraft.getInstance().setScreen(new QuestTutorialScreen(screen));
     }
 
     void setEditorTool(EditorTool tool) {

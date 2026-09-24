@@ -1,6 +1,6 @@
 # Theseus
 
-Theseus is a tree-style quest mod for Minecraft 26.2 on NeoForge. It is an
+Theseus is a tree-style quest mod for Minecraft 26.1.2 on NeoForge. It is an
 independent fork of Heracles. It is not affiliated with or supported by the
 original Heracles maintainers.
 
@@ -16,7 +16,7 @@ java -version
 ./gradlew clean build
 ```
 
-The release jar is `build/libs/theseus-neoforge-26.2-1.0.0.jar`. The separate
+The release jar is `build/libs/theseus-neoforge-26.1.2-1.0.0.jar`. The separate
 `-sources.jar` is not a game mod. To start a development client, run:
 
 ```sh

@@ -36,25 +36,22 @@ repositories {
 }
 
 dependencies {
-    implementation("com.teamresourceful.resourcefullib:resourcefullib-neoforge-26.2:${property("resourcefulLibVersion")}")
-    compileOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.2:${property("resourcefulConfigVersion")}")
-    runtimeOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.2:${property("resourcefulConfigVersion")}")
-    implementation("earth.terrarium.olympus:olympus-neoforge-26.2:${property("olympusVersion")}")
-    jarJar("earth.terrarium.olympus:olympus-neoforge-26.2:${property("olympusVersion")}")
-    compileOnly("mezz.jei:jei-26.2-common-api:30.32.0.221")
-    compileOnly("mezz.jei:jei-26.2-neoforge-api:30.32.0.221")
-    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.2.821")
-    // REI 26.2.821 declares Architectury 21.0.2, which references a NeoForge event
-    // removed before the project's 26.2.0.86 target.  21.0.7 is the compatible
-    // 26.2 NeoForge build and wins Gradle's same-module version selection.
-    compileOnly("dev.architectury:architectury-neoforge:21.0.7")
+    implementation("com.teamresourceful.resourcefullib:resourcefullib-neoforge-26.1:${property("resourcefulLibVersion")}")
+    compileOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.1:${property("resourcefulConfigVersion")}")
+    runtimeOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.1:${property("resourcefulConfigVersion")}")
+    implementation("earth.terrarium.olympus:olympus-neoforge-26.1:${property("olympusVersion")}")
+    jarJar("earth.terrarium.olympus:olympus-neoforge-26.1:${property("olympusVersion")}")
+    compileOnly("mezz.jei:jei-26.1.2-common-api:29.43.0.104")
+    compileOnly("mezz.jei:jei-26.1.2-neoforge-api:29.43.0.104")
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.1.819")
+    compileOnly("dev.architectury:architectury-neoforge:20.0.6")
 
     when (providers.gradleProperty("recipeViewer").orNull?.lowercase()) {
         "rei" -> {
-            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.2.821")
-            runtimeOnly("dev.architectury:architectury-neoforge:21.0.7")
+            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.1.819")
+            runtimeOnly("dev.architectury:architectury-neoforge:20.0.6")
         }
-        "jei" -> runtimeOnly("mezz.jei:jei-26.2-neoforge:30.32.0.221")
+        "jei" -> runtimeOnly("mezz.jei:jei-26.1.2-neoforge:29.43.0.104")
     }
 
     testImplementation(platform("org.junit:junit-bom:6.0.1"))

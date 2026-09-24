@@ -43,7 +43,7 @@ final class QuestHud {
         Minecraft minecraft = Minecraft.getInstance();
         if (
             minecraft.player == null ||
-            minecraft.gui.hud.isHidden() ||
+            minecraft.options.hideGui ||
             snapshot == null
         ) return;
         var pinned = snapshot

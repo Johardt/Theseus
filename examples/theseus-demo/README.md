@@ -1,7 +1,7 @@
 # Theseus demo quests
 
 These files use the original Heracles 1.21 quest format and are migration
-fixtures for the Theseus 26.2 port. Copy the contents of `config/` into the development run's
+fixtures for the Theseus 26.1.2 port. Copy the contents of `config/` into the development run's
 `run/config/` directory once the quest loader has been re-enabled.
 
 The demo also includes a two-quest notification showcase:
