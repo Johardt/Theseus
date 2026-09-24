@@ -1,6 +1,7 @@
 package me.johardt.theseus.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -683,6 +684,108 @@ class QuestRuntimeSeamTest {
         assertEquals(1, parseCalls[0]);
     }
 
+    @Test
+    void failedProgressLoadBlocksMutationAndCloseSaves() throws Exception {
+        QuestCatalog catalog = catalogWithDummyTask("persist_after_failed_load");
+        CountingProgressStore progressStore = new CountingProgressStore(true);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            progressStore,
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+
+        runtime.loadProgress();
+        assertTrue(runtime.triggerDummy(null, "persist_after_failed_load"));
+        runtime.close();
+
+        assertEquals(1, progressStore.loadCalls);
+        assertEquals(0, progressStore.saveCalls);
+    }
+
+    @Test
+    void malformedProgressFileRemainsByteForByteAfterMutationAndClose() throws Exception {
+        QuestCatalog catalog = catalogWithDummyTask("persist_after_malformed_load");
+        Path progressFile = directory.resolve("world/data/theseus_progress.json");
+        Files.createDirectories(progressFile.getParent());
+        byte[] originalBytes = "{\"sentinel\": [broken]\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Files.write(progressFile, originalBytes);
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new FileProgressStore(progressFile),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+
+        runtime.loadProgress();
+        assertTrue(runtime.triggerDummy(null, "persist_after_malformed_load"));
+        runtime.close();
+
+        assertArrayEquals(originalBytes, Files.readAllBytes(progressFile));
+    }
+
+    @Test
+    void missingProgressFileLoadsAsEmptyAndSuccessfulLoadCanPersistChanges() throws Exception {
+        QuestCatalog catalog = catalogWithDummyTask("persist_after_empty_load");
+        Path progressFile = directory.resolve("world/data/theseus_progress.json");
+        QuestRuntime runtime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new FileProgressStore(progressFile),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+
+        runtime.loadProgress();
+        assertEquals(new JsonObject(), JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject());
+        assertTrue(runtime.triggerDummy(null, "persist_after_empty_load"));
+        runtime.close();
+
+        JsonObject savedProgress = JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject();
+        JsonObject savedQuest = savedProgress.getAsJsonObject(new UUID(0, 1).toString())
+            .getAsJsonObject("progress_contract");
+        assertEquals(1, savedQuest.getAsJsonObject("tasks").get("event").getAsInt());
+    }
+
+    @Test
+    void freshRuntimeCanLoadRepairedProgressFileAndResumeSaving() throws Exception {
+        QuestCatalog catalog = catalogWithDummyTask("persist_after_repair");
+        Path progressFile = directory.resolve("world/data/theseus_progress.json");
+        Files.createDirectories(progressFile.getParent());
+        Files.writeString(progressFile, "{malformed", java.nio.charset.StandardCharsets.UTF_8);
+        QuestRuntime failedRuntime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new FileProgressStore(progressFile),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        failedRuntime.loadProgress();
+        assertTrue(failedRuntime.triggerDummy(null, "persist_after_repair"));
+        failedRuntime.close();
+
+        Files.writeString(progressFile, "{}", java.nio.charset.StandardCharsets.UTF_8);
+        QuestRuntime recoveredRuntime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new FileProgressStore(progressFile),
+            new FakeWorld(catalog),
+            new RecordingSync()
+        );
+        recoveredRuntime.loadProgress();
+        assertTrue(recoveredRuntime.triggerDummy(null, "persist_after_repair"));
+        recoveredRuntime.close();
+
+        JsonObject savedProgress = JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject();
+        assertEquals(1, savedProgress.getAsJsonObject(new UUID(0, 1).toString())
+            .getAsJsonObject("progress_contract")
+            .getAsJsonObject("tasks")
+            .get("event")
+            .getAsInt());
+    }
+
     @ParameterizedTest(name = "{0} requires dedicated-server editor permission")
     @EnumSource(QuestMutation.Kind.class)
     void unauthorizedDedicatedServerMutationLeavesQuestFilesUnchanged(QuestMutation.Kind kind) throws Exception {
@@ -789,6 +892,16 @@ class QuestRuntimeSeamTest {
         return document;
     }
 
+    private QuestCatalog catalogWithDummyTask(String value) throws IOException {
+        JsonObject document = questDocument("Progress", false);
+        JsonObject task = new JsonObject();
+        task.addProperty("type", "theseus:dummy");
+        task.addProperty("value", value);
+        document.getAsJsonObject("tasks").add("event", task);
+        new QuestDocumentStore(directory).createQuest("progress_contract", document);
+        return QuestCatalog.load(directory);
+    }
+
     private JsonObject itemQuest(JsonObject tasks) {
         JsonObject document = questDocument("Items", false);
         document.add("tasks", tasks);
@@ -877,6 +990,30 @@ class QuestRuntimeSeamTest {
         @Override
         public void save(JsonObject progress) throws IOException {
             throw new IOException("constructor performed I/O");
+        }
+    }
+
+    private static final class CountingProgressStore implements ProgressStore {
+        private final boolean failLoad;
+        private JsonObject value = new JsonObject();
+        private int loadCalls;
+        private int saveCalls;
+
+        private CountingProgressStore(boolean failLoad) {
+            this.failLoad = failLoad;
+        }
+
+        @Override
+        public JsonObject load() throws IOException {
+            loadCalls++;
+            if (failLoad) throw new IOException("progress read failed");
+            return value.deepCopy();
+        }
+
+        @Override
+        public void save(JsonObject progress) {
+            saveCalls++;
+            value = progress.deepCopy();
         }
     }
 

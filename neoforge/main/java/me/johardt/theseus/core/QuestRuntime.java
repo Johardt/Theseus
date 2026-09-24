@@ -43,6 +43,7 @@ public final class QuestRuntime {
     /** Raw progress held until a quest that failed catalog loading is available again. */
     final Map<UUID, Map<String, JsonElement>> deferredProgress = new HashMap<>();
     final Set<UUID> suppressNotifications = new java.util.HashSet<>();
+    private boolean progressLoadFailed;
 
     /** Builds a runtime from handlers registered with QuestRuntime before server startup. */
     public QuestRuntime(
@@ -776,6 +777,7 @@ public final class QuestRuntime {
     void loadProgress() {
         long loadStarted = System.nanoTime();
         Theseus.LOGGER.info("Loading Theseus player progress from {}", progressStore);
+        progressLoadFailed = true;
         try {
             JsonObject storedProgress = progressStore.load();
             long fileReadMillis = elapsedMillis(loadStarted);
@@ -795,6 +797,7 @@ public final class QuestRuntime {
                     Theseus.LOGGER.warn("Ignoring malformed progress for player '{}': {}", player.getKey(), exception.getMessage());
                 }
             });
+            progressLoadFailed = false;
             // Re-emit legacy entries in the current explicit shape, while
             // retaining valid progress from other players.
             saveProgress();
@@ -862,6 +865,7 @@ public final class QuestRuntime {
     }
 
     void saveProgress() {
+        if (progressLoadFailed) return;
         try {
             JsonObject root = new JsonObject();
             Set<UUID> playerIds = new java.util.HashSet<>(progress.keySet());
