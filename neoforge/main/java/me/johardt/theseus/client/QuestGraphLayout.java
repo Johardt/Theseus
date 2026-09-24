@@ -66,6 +66,102 @@ public final class QuestGraphLayout {
         );
     }
 
+    /** Returns only the texture tiles for a segment that can reach the visible world. */
+    static PathTileRange visiblePathTiles(
+        Point start,
+        Point end,
+        WorldBounds visibleWorld,
+        double strokeMargin,
+        int tileSize
+    ) {
+        if (
+            start == null ||
+            end == null ||
+            visibleWorld == null ||
+            visibleWorld.isEmpty() ||
+            tileSize <= 0 ||
+            !Double.isFinite(start.x()) ||
+            !Double.isFinite(start.y()) ||
+            !Double.isFinite(end.x()) ||
+            !Double.isFinite(end.y())
+        ) return PathTileRange.EMPTY;
+
+        double dx = end.x() - start.x();
+        double dy = end.y() - start.y();
+        double length = Math.hypot(dx, dy);
+        if (!Double.isFinite(length) || length < 1) return PathTileRange.EMPTY;
+
+        double margin = Double.isFinite(strokeMargin) ? Math.max(0, strokeMargin) : 0;
+        double minX = visibleWorld.minX() - margin;
+        double minY = visibleWorld.minY() - margin;
+        double maxX = visibleWorld.maxX() + margin;
+        double maxY = visibleWorld.maxY() + margin;
+        if (
+            !Double.isFinite(minX) ||
+            !Double.isFinite(minY) ||
+            !Double.isFinite(maxX) ||
+            !Double.isFinite(maxY)
+        ) return PathTileRange.EMPTY;
+
+        double[] interval = { 0, 1 };
+        if (
+            !clipSegmentAxis(start.x(), dx, minX, maxX, interval) ||
+            !clipSegmentAxis(start.y(), dy, minY, maxY, interval) ||
+            interval[0] > interval[1]
+        ) return PathTileRange.EMPTY;
+
+        long pixelLength = safeCeiling(length);
+        if (pixelLength <= 0) return PathTileRange.EMPTY;
+        long tileCount = pixelLength / tileSize + (pixelLength % tileSize == 0 ? 0 : 1);
+        if (tileCount <= 0) return PathTileRange.EMPTY;
+
+        double firstVisibleDistance = interval[0] * length;
+        double lastVisibleDistance = interval[1] * length;
+        long firstTile = Math.min(
+            tileCount - 1,
+            safeFloor(firstVisibleDistance / tileSize)
+        );
+        long endTile = Math.min(
+            tileCount,
+            safeCeiling(lastVisibleDistance / tileSize)
+        );
+        if (endTile <= firstTile) endTile = firstTile + 1;
+        return new PathTileRange(firstTile, endTile, pixelLength);
+    }
+
+    private static boolean clipSegmentAxis(
+        double start,
+        double delta,
+        double minimum,
+        double maximum,
+        double[] interval
+    ) {
+        if (delta == 0) return start >= minimum && start <= maximum;
+        double first = (minimum - start) / delta;
+        double last = (maximum - start) / delta;
+        if (!Double.isFinite(first) || !Double.isFinite(last)) return false;
+        if (first > last) {
+            double swap = first;
+            first = last;
+            last = swap;
+        }
+        interval[0] = Math.max(interval[0], first);
+        interval[1] = Math.min(interval[1], last);
+        return interval[0] <= interval[1] && interval[1] >= 0 && interval[0] <= 1;
+    }
+
+    private static long safeFloor(double value) {
+        if (Double.isNaN(value) || value <= 0) return 0;
+        if (value >= Long.MAX_VALUE) return Long.MAX_VALUE;
+        return (long) Math.floor(value);
+    }
+
+    private static long safeCeiling(double value) {
+        if (Double.isNaN(value) || value <= 0) return 0;
+        if (value >= Long.MAX_VALUE) return Long.MAX_VALUE;
+        return (long) Math.ceil(value);
+    }
+
     /**
      * Snaps to the nearest graph grid line. Halfway values round toward the
      * positive grid line, matching {@link Math#round(double)} for negative
@@ -269,6 +365,18 @@ public final class QuestGraphLayout {
     }
 
     public record Point(double x, double y) {}
+
+    record PathTileRange(long firstTile, long endTileExclusive, long pixelLength) {
+        static final PathTileRange EMPTY = new PathTileRange(0, 0, 0);
+
+        boolean isEmpty() {
+            return firstTile >= endTileExclusive || pixelLength <= 0;
+        }
+
+        long tileCount() {
+            return isEmpty() ? 0 : endTileExclusive - firstTile;
+        }
+    }
 
     public record GridLineRange(int firstX, int lastX, int firstY, int lastY) {
         public static final GridLineRange EMPTY = new GridLineRange(0, -27, 0, -27);

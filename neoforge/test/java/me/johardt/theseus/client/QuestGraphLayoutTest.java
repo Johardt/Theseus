@@ -137,6 +137,87 @@ class QuestGraphLayoutTest {
     }
 
     @Test
+    void visiblePathTilesSkipOffscreenSegmentsAndBoundCrossingSegments() {
+        QuestGraphLayout.WorldBounds visible = new QuestGraphLayout.WorldBounds(
+            0,
+            0,
+            100,
+            100
+        );
+
+        QuestGraphLayout.PathTileRange offscreen = QuestGraphLayout.visiblePathTiles(
+            new QuestGraphLayout.Point(-1000, -100),
+            new QuestGraphLayout.Point(-100, -100),
+            visible,
+            3,
+            3
+        );
+        QuestGraphLayout.PathTileRange crossing = QuestGraphLayout.visiblePathTiles(
+            new QuestGraphLayout.Point(-10_000, 50),
+            new QuestGraphLayout.Point(10_000, 50),
+            visible,
+            3,
+            3
+        );
+
+        assertTrue(offscreen.isEmpty());
+        assertEquals(3_332, crossing.firstTile());
+        assertEquals(3_368, crossing.endTileExclusive());
+        assertEquals(36, crossing.tileCount());
+    }
+
+    @Test
+    void visiblePathTilesKeepTheOriginalTexturePhaseAndStrokeMargin() {
+        QuestGraphLayout.WorldBounds visible = new QuestGraphLayout.WorldBounds(
+            0,
+            0,
+            10,
+            10
+        );
+        QuestGraphLayout.PathTileRange clipped = QuestGraphLayout.visiblePathTiles(
+            new QuestGraphLayout.Point(-20, 5),
+            new QuestGraphLayout.Point(20, 5),
+            visible,
+            3,
+            3
+        );
+        QuestGraphLayout.PathTileRange tangent = QuestGraphLayout.visiblePathTiles(
+            new QuestGraphLayout.Point(-10, -3),
+            new QuestGraphLayout.Point(20, -3),
+            visible,
+            3,
+            3
+        );
+        QuestGraphLayout.PathTileRange outsideStroke = QuestGraphLayout.visiblePathTiles(
+            new QuestGraphLayout.Point(-10, -4),
+            new QuestGraphLayout.Point(20, -4),
+            visible,
+            3,
+            3
+        );
+
+        assertEquals(5, clipped.firstTile());
+        assertEquals(11, clipped.endTileExclusive());
+        assertFalse(tangent.isEmpty());
+        assertTrue(outsideStroke.isEmpty());
+    }
+
+    @Test
+    void extremeIntegerEndpointDistanceKeepsOnlyVisibleTilesWithoutOverflow() {
+        QuestGraphLayout.PathTileRange visibleTiles = QuestGraphLayout.visiblePathTiles(
+            new QuestGraphLayout.Point(Integer.MIN_VALUE, 0),
+            new QuestGraphLayout.Point(Integer.MAX_VALUE, 0),
+            new QuestGraphLayout.WorldBounds(0, -10, 100, 10),
+            3,
+            3
+        );
+
+        assertTrue(visibleTiles.pixelLength() > Integer.MAX_VALUE);
+        assertTrue(visibleTiles.firstTile() > 700_000_000);
+        assertEquals(36, visibleTiles.tileCount());
+    }
+
+    @Test
     void zoomAroundCursorKeepsTheWorldPointStableAndClamps() {
         QuestGraphLayout.Point before = QuestGraphLayout.screenToWorld(
             CANVAS,

@@ -51,14 +51,20 @@ final class QuestDetailsContent {
             int lineHeight = panel.font.wordWrapHeight(line, textWidth) + 3;
             boolean selectable = !explanation.blockers().isEmpty()
                 && explanation.blockers().get(index).selectable();
-            graphics.textWithWordWrap(
-                panel.font, line, x + 7, lineY, textWidth,
-                selectable ? 0xFF69A7FF : 0xFFB8C0CC
-            );
+            Bounds linkBounds = new Bounds(x + 7, lineY, textWidth, lineHeight);
+            boolean hovered = selectable && panel.isLockQuestHovered(linkBounds);
             if (selectable) panel.lockQuestTargets.add(new LockQuestTarget(
-                new Bounds(x + 7, lineY, textWidth, lineHeight),
+                linkBounds,
                 explanation.blockers().get(index).questId()
             ));
+            if (hovered) {
+                graphics.fill(x + 4, lineY - 1, x + width - 4, lineY + lineHeight - 1, 0x554C6E91);
+                line = line.copy().withStyle(style -> style.withUnderlined(true));
+            }
+            graphics.textWithWordWrap(
+                panel.font, line, x + 7, lineY, textWidth,
+                hovered ? 0xFF9ACBFF : selectable ? 0xFF69A7FF : 0xFFB8C0CC
+            );
             lineY += lineHeight;
         }
         return bannerHeight + 6;

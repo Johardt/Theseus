@@ -65,10 +65,6 @@ final class QuestScreenLayout {
         return headerLayout(canvasRight());
     }
 
-    HeaderLayout graphHeaderLayout() {
-        return headerLayout(graphCanvasRight());
-    }
-
     HeaderLayout headerLayout(int right) {
         int editX = right - 23;
         int helpX = editX - 27;
@@ -109,10 +105,25 @@ final class QuestScreenLayout {
         int rows = Math.max(1, Math.max(actionRow + 1, statusRow + 1));
         if (diagnosticsRow >= 0) rows = Math.max(rows, diagnosticsRow + 1);
         if (importRow >= 0) rows = Math.max(rows, importRow + 1);
-        int canvasTop = HEADER_ROW_Y
-            + rows * HEADER_ROW_HEIGHT
-            + (rows - 1) * HEADER_ROW_GAP
-            + HEADER_CANVAS_GAP;
+        int statusY = statusRow < 0
+            ? -1
+            : HEADER_ROW_Y + statusRow * (HEADER_ROW_HEIGHT + HEADER_ROW_GAP);
+        int statusLeft = sidebarWidth() + 8;
+        int statusRight = Math.max(statusLeft + 1, canvasRight() - 4);
+        List<String> statusLines = statusRow < 0
+            ? List.of()
+            : wrapHeaderMessage(screen.editorMessage, Math.max(1, statusRight - statusLeft - 4));
+        int statusBoxHeight = statusLines.isEmpty()
+            ? 0
+            : statusLines.size() * HEADER_STATUS_LINE_HEIGHT
+                + 2 * HEADER_STATUS_PADDING
+                - (HEADER_STATUS_LINE_HEIGHT - HEADER_STATUS_TEXT_HEIGHT);
+        int canvasTop = statusRow >= 0
+            ? statusY + Math.max(HEADER_ROW_HEIGHT, statusBoxHeight) + HEADER_CANVAS_GAP
+            : HEADER_ROW_Y
+                + rows * HEADER_ROW_HEIGHT
+                + (rows - 1) * HEADER_ROW_GAP
+                + HEADER_CANVAS_GAP;
         return new HeaderLayout(
             editX,
             helpX,
@@ -128,11 +139,43 @@ final class QuestScreenLayout {
             diagnosticsRow < 0
                 ? -1
                 : HEADER_ROW_Y + diagnosticsRow * (HEADER_ROW_HEIGHT + HEADER_ROW_GAP),
-            statusRow < 0
-                ? -1
-                : HEADER_ROW_Y + statusRow * (HEADER_ROW_HEIGHT + HEADER_ROW_GAP),
-            canvasTop
+            statusY,
+            canvasTop,
+            statusLines,
+            statusBoxHeight
         );
+    }
+
+    private List<String> wrapHeaderMessage(String value, int maxWidth) {
+        String remaining = value == null ? "" : value.replace('\n', ' ').replace('\r', ' ').strip();
+        if (remaining.isEmpty()) return List.of("");
+
+        List<String> lines = new ArrayList<>();
+        while (!remaining.isEmpty() && lines.size() < HEADER_STATUS_MAX_LINES) {
+            String fitted = screen.guiFont().plainSubstrByWidth(remaining, maxWidth);
+            if (fitted.isEmpty()) {
+                int firstCharacter = remaining.offsetByCodePoints(0, 1);
+                fitted = remaining.substring(0, firstCharacter);
+            }
+
+            int consumed = fitted.length();
+            if (consumed < remaining.length()) {
+                int wordBreak = fitted.lastIndexOf(' ');
+                if (wordBreak > 0) consumed = wordBreak;
+            }
+            lines.add(remaining.substring(0, consumed).stripTrailing());
+            remaining = remaining.substring(consumed).stripLeading();
+        }
+
+        if (!remaining.isEmpty() && !lines.isEmpty()) {
+            int lastLine = lines.size() - 1;
+            String overflow = lines.get(lastLine) + " " + remaining;
+            String ellipsis = "…";
+            int textWidth = Math.max(0, maxWidth - screen.guiFont().width(ellipsis));
+            String visible = screen.guiFont().plainSubstrByWidth(overflow, textWidth);
+            lines.set(lastLine, visible + ellipsis);
+        }
+        return List.copyOf(lines);
     }
 
     void addGraphNavigationWidgets(HeaderLayout header) {
@@ -383,6 +426,14 @@ final class QuestScreenLayout {
     }
 
     WidgetRenderer<Button> chapterButtonRenderer(String chapter, boolean selected) {
+        return chapterButtonRenderer(chapter, selected, false);
+    }
+
+    WidgetRenderer<Button> addChapterButtonRenderer() {
+        return chapterButtonRenderer("Add chapter", false, true);
+    }
+
+    private WidgetRenderer<Button> chapterButtonRenderer(String chapter, boolean selected, boolean addAction) {
         return (graphics, context, partialTick) -> {
             if (context.getWidget().isHoveredOrFocused()) {
                 graphics.fill(
@@ -403,8 +454,21 @@ final class QuestScreenLayout {
                 );
             }
             int contentX = context.getX() + 3;
-            ChapterDisplay display = screen.chapterDisplays.get(chapter);
-            int labelX = contentX + (chapterListHasIcons() ? CHAPTER_ICON_COLUMN_WIDTH : 0);
+            ChapterDisplay display = addAction ? null : screen.chapterDisplays.get(chapter);
+            boolean hasIcons = chapterListHasIcons();
+            int labelX = contentX + (hasIcons ? CHAPTER_ICON_COLUMN_WIDTH : 0);
+            if (addAction && hasIcons) {
+                String plus = "+";
+                int plusX = contentX + (CHAPTER_ICON_COLUMN_WIDTH - screen.guiFont().width(plus)) / 2;
+                graphics.text(
+                    screen.guiFont(),
+                    Component.literal(plus),
+                    plusX,
+                    context.getY() + 6,
+                    0xFFFFFFFF,
+                    false
+                );
+            }
             if (display != null && display.iconEnabled()) {
                 try {
                     Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(display.icon()));
@@ -415,7 +479,7 @@ final class QuestScreenLayout {
             }
             graphics.enableScissor(labelX, context.getY(), context.getX() + context.getWidth() - 3, context.getY() + context.getHeight());
             int available = Math.max(0, context.getX() + context.getWidth() - 3 - labelX);
-            String label = chapter;
+            String label = addAction && !hasIcons ? "+  " + chapter : chapter;
             if (screen.guiFont().width(label) > available) {
                 label = screen.guiFont().plainSubstrByWidth(label, Math.max(0, available - screen.guiFont().width("…"))) + "…";
             }
@@ -439,7 +503,7 @@ final class QuestScreenLayout {
     }
 
     int graphCanvasTop() {
-        return graphHeaderLayout().canvasTop();
+        return headerLayout().canvasTop();
     }
 
     QuestGraphLayout.CanvasBounds graphCanvasBounds() {
@@ -497,7 +561,7 @@ final class QuestScreenLayout {
 
     int sidebarWidth() {
         if (!screen.sidebarOpen) return COLLAPSED_SIDEBAR_WIDTH;
-        return Math.max(96, Math.min(110, Math.round(screen.guiWidth() * 0.17f)));
+        return Math.max(120, Math.min(140, Math.round(screen.guiWidth() * 0.20f)));
     }
 
     int detailsWidth() {

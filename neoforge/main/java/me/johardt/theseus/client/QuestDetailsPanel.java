@@ -1,5 +1,6 @@
 package me.johardt.theseus.client;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,8 @@ final class QuestDetailsPanel {
     private int width;
     private int height;
     private int panelWidth;
+    private int mouseX;
+    private int mouseY;
     Font font;
     Model model;
     private final QuestDetailsContent content = new QuestDetailsContent(this);
@@ -75,13 +78,25 @@ final class QuestDetailsPanel {
         this.width = screenWidth;
         this.height = screenHeight;
         this.panelWidth = panelWidth;
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
         this.model = model;
         renderDetails(graphics, mouseX, mouseY);
     }
 
     String lockQuestAt(double mouseX, double mouseY) {
+        if (!isInDetailViewport(mouseX, mouseY)) return null;
         return lockQuestTargets.stream().filter(target -> target.bounds().contains(mouseX, mouseY))
             .map(LockQuestTarget::questId).findFirst().orElse(null);
+    }
+
+    boolean isLockQuestHovered(Bounds bounds) {
+        return isInDetailViewport(mouseX, mouseY) && bounds.contains(mouseX, mouseY);
+    }
+
+    private boolean isInDetailViewport(double mouseX, double mouseY) {
+        return mouseX >= width - panelWidth + 1 && mouseX < width
+            && mouseY >= detailContentTop && mouseY < detailContentBottom;
     }
 
     QuestDescriptionRenderer.Interaction descriptionInteractionAt(double mouseX, double mouseY) {
@@ -205,6 +220,7 @@ final class QuestDetailsPanel {
             contentHeight - (contentBottom - contentTop)
         );
         scroll = Math.min(scroll, maxScroll);
+        if (lockQuestAt(mouseX, mouseY) != null) graphics.requestCursor(CursorTypes.POINTING_HAND);
         drawDetailTextTooltip(graphics, mouseX, mouseY);
         drawRecipeViewerTooltip(graphics, mouseX, mouseY);
         if (model.tab() == QuestScreen.DetailTab.OVERVIEW) {

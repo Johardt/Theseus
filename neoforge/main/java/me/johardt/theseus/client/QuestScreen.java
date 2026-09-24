@@ -45,6 +45,10 @@ public final class QuestScreen extends Screen {
     static final int HEADER_ROW_HEIGHT = 20;
     static final int HEADER_ROW_GAP = 3;
     static final int HEADER_CANVAS_GAP = 9;
+    static final int HEADER_STATUS_MAX_LINES = 3;
+    static final int HEADER_STATUS_LINE_HEIGHT = 10;
+    static final int HEADER_STATUS_TEXT_HEIGHT = 9;
+    static final int HEADER_STATUS_PADDING = 4;
     static final int HEADER_ACTION_WIDTH = 78;
     static final int HEADER_ACTION_GAP = 7;
     static final int EDITOR_LIST_ACTION_WIDTH = 19;
@@ -521,7 +525,9 @@ public final class QuestScreen extends Screen {
         int importY,
         int diagnosticsY,
         int statusY,
-        int canvasTop
+        int canvasTop,
+        List<String> statusLines,
+        int statusBoxHeight
     ) {}
 
 }

@@ -258,7 +258,7 @@ final class QuestScreenWidgets {
             if (screen.mode.isAuthoring()) screen.addScreenWidget(Widgets.button(widget -> {
                 widget.withPosition(4, addChapterY).withSize(sidebarWidth - 8, 20);
                 widget.withTexture(null);
-                widget.withRenderer(screen.layout.chapterButtonRenderer("+  Add chapter", false));
+                widget.withRenderer(screen.layout.addChapterButtonRenderer());
                 widget.withCallback(() -> openChapterEditor(null));
                 widget.withTooltip(Component.translatable("gui.theseus.editor.add_chapter"));
             }));
