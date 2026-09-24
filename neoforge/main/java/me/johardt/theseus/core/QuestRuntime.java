@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import me.johardt.theseus.Theseus;
 import net.minecraft.server.MinecraftServer;
@@ -165,6 +166,16 @@ public final class QuestRuntime {
     */
     public MutationResult applyEditorMutation(ServerPlayer player, QuestMutation mutation) {
         return mutations.applyEditorMutation(player, mutation);
+    }
+
+    MutationResult applyEditorMutationLazy(
+        ServerPlayer player,
+        Supplier<QuestMutation> mutationSupplier
+    ) {
+        if (!world.canEdit(player)) {
+            return MutationResult.failure("You do not have permission to edit quests");
+        }
+        return mutations.applyEditorMutation(player, mutationSupplier.get());
     }
 
     public MutationResult createQuest(ServerPlayer player, JsonObject draft) {

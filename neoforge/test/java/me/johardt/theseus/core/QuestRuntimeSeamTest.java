@@ -636,6 +636,53 @@ class QuestRuntimeSeamTest {
         assertEquals(before, fileContents(directory));
     }
 
+    @Test
+    void lazyEditorMutationChecksPermissionBeforeParsing() {
+        QuestCatalog catalog = QuestCatalog.load(directory);
+        FakeWorld deniedWorld = new FakeWorld(catalog, false, false);
+        QuestRuntime deniedRuntime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            deniedWorld,
+            new RecordingSync()
+        );
+        int[] parseCalls = { 0 };
+
+        QuestRuntime.MutationResult denied = deniedRuntime.applyEditorMutationLazy(
+            null,
+            () -> {
+                parseCalls[0]++;
+                return QuestMutation.of(QuestMutation.Kind.CREATE_QUEST, new JsonObject());
+            }
+        );
+
+        assertFalse(denied.success());
+        assertEquals("You do not have permission to edit quests", denied.message());
+        assertEquals(0, parseCalls[0]);
+        assertEquals(1, deniedWorld.canEditChecks);
+
+        FakeWorld allowedWorld = new FakeWorld(catalog, true, false);
+        QuestRuntime allowedRuntime = new QuestRuntime(
+            catalog,
+            TaskEngine.defaults(),
+            new InMemoryProgressStore(),
+            allowedWorld,
+            new RecordingSync()
+        );
+        QuestRuntime.MutationResult validation = allowedRuntime.applyEditorMutationLazy(
+            null,
+            () -> {
+                parseCalls[0]++;
+                return QuestMutation.of(QuestMutation.Kind.CREATE_QUEST, new JsonObject());
+            }
+        );
+
+        assertFalse(validation.success());
+        assertTrue(validation.message().startsWith("Quest ID must contain only lowercase"));
+        assertEquals(1, parseCalls[0]);
+    }
+
     @ParameterizedTest(name = "{0} requires dedicated-server editor permission")
     @EnumSource(QuestMutation.Kind.class)
     void unauthorizedDedicatedServerMutationLeavesQuestFilesUnchanged(QuestMutation.Kind kind) throws Exception {

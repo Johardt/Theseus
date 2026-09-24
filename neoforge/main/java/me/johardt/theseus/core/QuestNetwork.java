@@ -33,7 +33,7 @@ public final class QuestNetwork {
                 ServerPlayer player = (ServerPlayer) context.player();
                 QuestRuntime.MutationResult result;
                 try {
-                    result = runtime.get().applyEditorMutation(player, payload.mutation());
+                    result = runtime.get().applyEditorMutationLazy(player, payload::mutation);
                 } catch (RuntimeException exception) {
                     result = QuestRuntime.MutationResult.failure(exception.getMessage() == null ? "Invalid quest data" : exception.getMessage());
                 }
