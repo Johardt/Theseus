@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.InputConstants;
 import me.johardt.theseus.Theseus;
+import me.johardt.theseus.TheseusItems;
 import me.johardt.theseus.client.theme.ClientThemeLoader;
 import me.johardt.theseus.core.QuestNetwork;
 import net.minecraft.client.KeyMapping;
@@ -12,6 +13,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.InteractionResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -24,6 +26,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @Mod(value = Theseus.MOD_ID, dist = Dist.CLIENT)
 public final class TheseusClient {
@@ -70,6 +73,7 @@ public final class TheseusClient {
         modBus.addListener(ClientThemeLoader::register);
         modBus.addListener(QuestTutorialContentLoader::register);
         NeoForge.EVENT_BUS.addListener(this::clientTick);
+        NeoForge.EVENT_BUS.addListener(this::onQuestBookUse);
         NeoForge.EVENT_BUS.addListener(this::clientLoggedIn);
         NeoForge.EVENT_BUS.addListener(this::clientLoggedOut);
     }
@@ -156,6 +160,14 @@ public final class TheseusClient {
         while (TOGGLE_TRACKER.consumeClick()) {
             trackerCollapsed = !TheseusClientOptions.trackerCollapsed();
             TheseusClientOptions.setTrackerCollapsed(trackerCollapsed);
+        }
+    }
+
+    private void onQuestBookUse(PlayerInteractEvent.RightClickItem event) {
+        if (event.getLevel().isClientSide() && event.getItemStack().getItem() == TheseusItems.QUEST_BOOK.get()) {
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            openQuestScreen();
         }
     }
 

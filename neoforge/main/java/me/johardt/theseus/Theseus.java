@@ -36,6 +36,7 @@ public final class Theseus {
     private QuestRuntime runtime;
 
     public Theseus(IEventBus modBus) {
+        TheseusItems.register(modBus);
         modBus.addListener(this::onRegisterPayloadHandlers);
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener(this::onServerStarted);
