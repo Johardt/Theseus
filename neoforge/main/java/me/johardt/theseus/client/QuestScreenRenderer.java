@@ -33,12 +33,13 @@ final class QuestScreenRenderer {
     private static final double MIN_DEPENDENCY_TEXTURE_ZOOM = 0.75;
     private static final double DEPENDENCY_TEXTURE_MARKER_SPACING = 32.0;
     private static final int MAX_DEPENDENCY_TEXTURE_MARKERS_PER_PATH = 6;
+    private static final double DEPENDENCY_ARROW_PIXELS_PER_SECOND = 24.0;
     private static final double DEPENDENCY_STROKE_MARGIN = 3.0;
     private static final int CHAPTER_BACKGROUND_BOTTOM_TRIM = 18;
     private static final PathStyle GRAY_PATH = new PathStyle(0xB0111318, 0x80535A64, 0x776F7782);
-    private static final PathStyle UNLOCKED_PATH = new PathStyle(0xB0111318, 0x80636F66, 0x8876A77B);
-    private static final PathStyle SELECTED_INCOMPLETE_PATH = new PathStyle(0xFF8A6818, 0xDDFFD966, 0xFFFFD966);
-    private static final PathStyle COMPLETED_PATH = new PathStyle(0xFF1F702E, 0xDD55D86A, 0xFF55D86A);
+    private static final PathStyle UNLOCKED_PATH = new PathStyle(0xB0111318, 0x80636F66, 0xFFBAFFC4);
+    private static final PathStyle SELECTED_INCOMPLETE_PATH = new PathStyle(0xFF8A6818, 0xDDFFD966, 0xFFFFF4B0);
+    private static final PathStyle COMPLETED_PATH = new PathStyle(0xFF1F702E, 0xDD55D86A, 0xFFBAFFC4);
 
     private record PathStyle(int borderColor, int strokeColor, int arrowTint) {}
 
@@ -56,6 +57,8 @@ final class QuestScreenRenderer {
     ).stream().map(name -> sprite("textures/gui/quest_backgrounds/" + name + ".png")).toList();
 
     private final QuestScreen screen;
+    private final long arrowAnimationStarted = System.nanoTime();
+    private double arrowTravel;
 
     QuestScreenRenderer(QuestScreen screen) {
         this.screen = screen;
@@ -80,19 +83,32 @@ final class QuestScreenRenderer {
                     1,
                     fullBackgroundHeight - CHAPTER_BACKGROUND_BOTTOM_TRIM
                 );
-                graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    texture,
-                    backgroundX,
-                    backgroundY,
-                    0.0f,
-                    0.0f,
-                    backgroundWidth,
-                    backgroundHeight,
-                    backgroundWidth,
-                    fullBackgroundHeight,
-                    (chapterDisplay.backgroundOpacity() * 255 / 100 << 24) | 0x00FFFFFF
+                // Chapter backgrounds are square. Cover the viewport uniformly,
+                // then crop the centered overflow instead of stretching each axis.
+                int backgroundSize = Math.max(backgroundWidth, backgroundHeight);
+                int imageX = backgroundX + (backgroundWidth - backgroundSize) / 2;
+                int imageY = backgroundY + (backgroundHeight - backgroundSize) / 2;
+                graphics.enableScissor(
+                    backgroundX, backgroundY,
+                    backgroundX + backgroundWidth, backgroundY + backgroundHeight
                 );
+                try {
+                    graphics.blit(
+                        RenderPipelines.GUI_TEXTURED,
+                        texture,
+                        imageX,
+                        imageY,
+                        0.0f,
+                        0.0f,
+                        backgroundSize,
+                        backgroundSize,
+                        backgroundSize,
+                        backgroundSize,
+                        (chapterDisplay.backgroundOpacity() * 255 / 100 << 24) | 0x00FFFFFF
+                    );
+                } finally {
+                    graphics.disableScissor();
+                }
             } catch (RuntimeException ignored) { }
         }
         QuestGraphLayout.CanvasBounds canvas = screen.layout.graphCanvasBounds();
@@ -251,6 +267,7 @@ final class QuestScreenRenderer {
         PathPoint start,
         PathPoint end,
         PathStyle style,
+        boolean animated,
         QuestGraphLayout.WorldBounds visibleWorld
     ) {
         double dx = end.x - start.x;
@@ -293,19 +310,21 @@ final class QuestScreenRenderer {
                 MAX_DEPENDENCY_TEXTURE_MARKERS_PER_PATH,
                 Math.max(1, visibleTileCount / tilesPerMarker)
             );
-            long markerStride = Math.max(1, visibleTileCount / (markerCount + 1L));
             for (int marker = 1; marker <= markerCount; marker++) {
-                long tileOffset = Math.min(visibleTileCount - 1, markerStride * marker);
-                long pathPixel = safeTilePixel(tiles.firstTile() + tileOffset);
+                long markerPixel = animated
+                    ? DependencyArrowLayout.offset(visibleLength, markerCount, marker, arrowTravel)
+                    : safeTilePixel(Math.min(visibleTileCount - 1,
+                        Math.max(1, visibleTileCount / (markerCount + 1L)) * marker));
+                long pathPixel = firstPixel + markerPixel;
                 int tileWidth = (int) Math.min(
                     DEPENDENCY_TILE_SIZE,
-                    tiles.pixelLength() - pathPixel
+                    endPixel - pathPixel
                 );
                 if (tileWidth <= 0) continue;
                 graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
                     DEPENDENCY_ARROW,
-                    (int) safeTilePixel(tileOffset),
+                    (int) markerPixel,
                     -2,
                     0.0f,
                     0.0f,
@@ -786,6 +805,8 @@ final class QuestScreenRenderer {
         QuestSurfaceLayout.Layout surface,
         QuestGraphLayout.WorldBounds visibleWorld
     ) {
+        arrowTravel = (System.nanoTime() - arrowAnimationStarted) / 1_000_000_000.0
+            * DEPENDENCY_ARROW_PIXELS_PER_SECOND / screen.graphViewport.state().zoom();
         Map<String, ClientQuest> questsById = new HashMap<>();
         for (ClientQuest quest : screen.quests) {
             questsById.put(quest.definition().id(), quest);
@@ -815,7 +836,7 @@ final class QuestScreenRenderer {
                 double dy = tip.y() - start.y();
                 double length = Math.hypot(dx, dy);
                 if (length < 4.0) continue;
-                drawTexturedPath(graphics, start, tip, style, visibleWorld);
+                drawTexturedPath(graphics, start, tip, style, dependency.equals(screen.selectedQuestId), visibleWorld);
             }
         }
     }
@@ -855,6 +876,7 @@ final class QuestScreenRenderer {
             new PathPoint(sourceCenter.x(), sourceCenter.y()),
             new PathPoint(mouseX, mouseY),
             UNLOCKED_PATH,
+            false,
             visibleWorld
         );
     }
