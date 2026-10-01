@@ -366,6 +366,7 @@ final class QuestScreenInput {
             screen.contextMenu.mouseClicked(event.x(), event.y(), event.input());
             return true;
         }
+        if (!screen.modalHost.blocksInput() && screen.docks.closingContains(event.x(), event.y())) return true;
         if (!screen.modalHost.blocksInput() && screen.detailsOpen && recipeViewerClicked(event)) {
             return true;
         }
@@ -414,8 +415,8 @@ final class QuestScreenInput {
         }
         if (screen.modalHost.blocksInput()) return true;
         QuestSurfaceLayout.Layout surface = screen.layout.surfaceLayout();
-        if (event.input() == 0 && screen.detailsOpen) {
-            String questId = screen.detailsPanel.lockQuestAt(event.x(), event.y());
+        if (event.input() == 0 && screen.detailsOpen && screen.layout.detailsDockContains(event.x(), event.y())) {
+            String questId = screen.detailsPanel.lockQuestAt(screen.docks.contentX(event.x()), event.y());
             if (questId != null) {
                 screen.selectedQuestId = questId;
                 screen.detailsPanel.resetScroll();
@@ -423,9 +424,10 @@ final class QuestScreenInput {
                 return true;
             }
         }
-        if (event.input() == 0 && screen.detailsOpen && screen.detailTab == DetailTab.OVERVIEW) {
+        if (event.input() == 0 && screen.detailsOpen && screen.detailTab == DetailTab.OVERVIEW
+            && screen.layout.detailsDockContains(event.x(), event.y())) {
             QuestDescriptionRenderer.Interaction interaction =
-                screen.detailsPanel.descriptionInteractionAt(event.x(), event.y());
+                screen.detailsPanel.descriptionInteractionAt(screen.docks.contentX(event.x()), event.y());
             if (interaction != null) {
                 if (interaction.clickStyle() != null && interaction.clickStyle().getClickEvent() != null) {
                     screen.performDefaultClickEvent(interaction.clickStyle().getClickEvent(), screen.guiMinecraft(), screen);
@@ -434,8 +436,8 @@ final class QuestScreenInput {
             }
         }
         if (event.input() == 0 && screen.detailsOpen && screen.detailTab == DetailTab.REWARDS
-            && event.x() >= screen.guiWidth() - screen.layout.detailsWidth()) {
-            QuestDetailsPanel.RewardChoiceTarget choice = screen.detailsPanel.rewardChoiceAt(event.x(), event.y());
+            && screen.layout.detailsDockContains(event.x(), event.y())) {
+            QuestDetailsPanel.RewardChoiceTarget choice = screen.detailsPanel.rewardChoiceAt(screen.docks.contentX(event.x()), event.y());
             if (choice != null) {
                 Set<String> selectedChoices = screen.rewardSelections.computeIfAbsent(
                     choice.selectionKey(), ignored -> new LinkedHashSet<>()
@@ -532,8 +534,9 @@ final class QuestScreenInput {
     }
 
     boolean recipeViewerClicked(MouseButtonEvent event) {
+        if (!screen.layout.detailsDockContains(event.x(), event.y())) return false;
         if (event.input() != 0 && event.input() != 1) return false;
-        ItemStack stack = screen.detailsPanel.recipeViewerItemAt(event.x(), event.y()).orElse(null);
+        ItemStack stack = screen.detailsPanel.recipeViewerItemAt(screen.docks.contentX(event.x()), event.y()).orElse(null);
         if (stack == null) return false;
         return event.input() == 0
             ? RecipeViewer.showRecipes(stack)
@@ -818,6 +821,7 @@ final class QuestScreenInput {
             return true;
         }
         if (screen.modalHost.blocksInput()) return true;
+        if (screen.docks.closingContains(mouseX, mouseY)) return true;
         if (QuestMinimap.contains(
             screen.minimapPanel.bounds(screen.layout.graphCanvasBounds(), screen.layout.minimapSettings()),
             mouseX,
@@ -849,7 +853,7 @@ final class QuestScreenInput {
             }
             return true;
         }
-        if (screen.detailsOpen && mouseX >= screen.guiWidth() - screen.layout.detailsWidth()) {
+        if (screen.detailsOpen && screen.layout.detailsDockContains(mouseX, mouseY)) {
             screen.detailsPanel.scroll(scrollY);
             return true;
         }

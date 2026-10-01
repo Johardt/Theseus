@@ -147,6 +147,7 @@ final class QuestScreenRenderer {
             || (activeOverlay == QuestModalHost.Modal.DISCARD_CONFIRMATION && screen.modalHost.contains(QuestModalHost.Modal.REWARD_EDITOR));
         boolean modalVisible = screen.modalHost.rendersOverlay();
         if (modalVisible) {
+            screen.docks.render(graphics, mouseX, mouseY, partialTick);
             drawBaseForeground(graphics, mouseX, mouseY);
             if (diagnosticsModal) {
                 screen.imports.drawDiagnosticsModal(graphics);
@@ -187,7 +188,8 @@ final class QuestScreenRenderer {
             }
             return;
         }
-        screen.parentExtractRenderState(graphics, mouseX, mouseY, partialTick);
+        screen.extractNonDockWidgets(graphics, mouseX, mouseY, partialTick);
+        screen.docks.render(graphics, mouseX, mouseY, partialTick);
         drawBaseForeground(graphics, mouseX, mouseY);
     }
 
@@ -378,14 +380,6 @@ final class QuestScreenRenderer {
             }
             graphics.disableScissor();
         }
-        if (screen.sidebarOpen) graphics.text(
-            screen.guiFont(),
-            Component.literal("Theseus"),
-            8,
-            4,
-            0xFFFFFFFF,
-            true
-        );
         if (screen.mode.isAuthoring() && screen.mode.editorTool() == EditorTool.LINK) {
             graphics.text(
                 screen.guiFont(),
@@ -398,14 +392,28 @@ final class QuestScreenRenderer {
                 false
             );
         }
+        drawContextMenu(graphics, mouseX, mouseY);
+    }
+
+    void drawSidebarForeground(GuiGraphicsExtractor graphics) {
+        if (screen.sidebarOpen) graphics.text(
+            screen.guiFont(),
+            Component.literal("Theseus"),
+            8,
+            4,
+            0xFFFFFFFF,
+            true
+        );
         drawChapterScrollbar(graphics);
+    }
+
+    void drawDockForeground(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (screen.authoring.open) screen.authoringPanel.dockUi.drawCreateQuestDock(
             graphics, mouseX, mouseY, screen.editorMessage, screen.editorMessageSuccess
         );
         else if (screen.detailsOpen) screen.detailsPanel.render(
             graphics, screen.guiFont(), screen.guiWidth(), screen.guiHeight(), screen.layout.detailsWidth(), screen.actions.detailPanelModel(), mouseX, mouseY
         );
-        drawContextMenu(graphics, mouseX, mouseY);
     }
 
     void drawChapterScrollbar(GuiGraphicsExtractor graphics) {
@@ -420,7 +428,7 @@ final class QuestScreenRenderer {
         int maxScroll = screen.chapterListState.maxFirstVisibleRow();
         int thumbY = top + (trackHeight - thumbHeight) * screen.chapterListState.firstVisibleRow()
             / Math.max(1, maxScroll);
-        int x = Math.max(0, screen.layout.sidebarWidth() - 5);
+        int x = Math.max(0, screen.layout.sidebarContentWidth() - 5);
         graphics.fill(x, top, x + 2, bottom, 0x6649515E);
         graphics.fill(x, thumbY, x + 2, thumbY + thumbHeight,
             ClientThemeLoader.active().genericControls().accent());
@@ -497,8 +505,8 @@ final class QuestScreenRenderer {
         int sidebarWidth = screen.layout.sidebarWidth();
         graphics.fill(0, 0, sidebarWidth, screen.guiHeight(), 0xF020242B);
         graphics.verticalLine(sidebarWidth, 0, screen.guiHeight(), 0xFF49515E);
-        if (screen.detailsOpen || screen.authoring.open) {
-            int detailsLeft = screen.guiWidth() - screen.layout.detailsWidth();
+        if (screen.docks.rightEdge() < screen.guiWidth()) {
+            int detailsLeft = screen.docks.rightEdge();
             graphics.fill(detailsLeft, 0, screen.guiWidth(), screen.guiHeight(), 0xD020242B);
             graphics.verticalLine(detailsLeft, 0, screen.guiHeight(), 0xAA49515E);
         }

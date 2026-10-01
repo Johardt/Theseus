@@ -125,6 +125,8 @@ final class QuestScreenWidgets {
             );
         });
         screen.addScreenWidget(sidebarToggle);
+        screen.docks.toggle(sidebarToggle);
+        screen.docks.layer = QuestDockPresentation.Layer.HEADER_RIGHT;
 
         if (!QuestScreenEditor.canEdit()) {
             screen.mode = new PlayMode();
@@ -182,6 +184,7 @@ final class QuestScreenWidgets {
             ));
         }
         screen.layout.addGraphNavigationWidgets(screen.layout.headerLayout());
+        screen.docks.layer = QuestDockPresentation.Layer.HEADER_LEFT;
         if (screen.mode.isAuthoring() && !screen.authoring.open) {
             int toolX = sidebarWidth + 24;
             for (EditorTool tool : EditorTool.values()) {
@@ -203,6 +206,7 @@ final class QuestScreenWidgets {
                 toolX += 22;
             }
         }
+        screen.docks.layer = QuestDockPresentation.Layer.LEFT;
         if (screen.sidebarOpen) {
             List<String> orderedGroups = new ArrayList<>(screen.actions.groups());
             screen.chapterListState.setViewport(CHAPTER_LIST_TOP, screen.layout.chapterListBottom(), CHAPTER_ROW_HEIGHT);
@@ -262,7 +266,9 @@ final class QuestScreenWidgets {
                 widget.withTooltip(Component.translatable("gui.theseus.editor.add_chapter"));
             }));
         }
+        screen.docks.layer = QuestDockPresentation.Layer.RIGHT;
         screen.layout.addDockWidgets();
+        screen.docks.layer = QuestDockPresentation.Layer.NONE;
     }
 
     /** Snaps the active authoring draft once, leaving the change for Save. */

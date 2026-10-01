@@ -427,9 +427,9 @@ final class QuestScreenActions {
     }
 
     boolean openProgressCardContextMenu(int mouseX, int mouseY) {
-        if (!canEdit() || !screen.detailsOpen) return false;
+        if (!canEdit() || !screen.detailsOpen || !screen.layout.detailsDockContains(mouseX, mouseY)) return false;
         ClientQuest quest = selected();
-        QuestDetailsPanel.ProgressCardTarget target = screen.detailsPanel.progressCardAt(mouseX, mouseY, screen.detailTab);
+        QuestDetailsPanel.ProgressCardTarget target = screen.detailsPanel.progressCardAt((int) Math.round(screen.docks.contentX(mouseX)), mouseY, screen.detailTab);
         if (quest == null || target == null) return false;
         boolean task = target.kind().equals("task");
         List<QuestContextMenu.Entry> entries = new ArrayList<>();

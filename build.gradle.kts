@@ -75,6 +75,9 @@ neoForge {
             providers.gradleProperty("quickPlayWorld").orNull?.let { world ->
                 programArguments.addAll("--quickPlaySingleplayer", world)
             }
+            providers.gradleProperty("dockAnimationMillis").orNull?.let { duration ->
+                systemProperty("theseus.dockAnimationMillis", duration)
+            }
             if (providers.gradleProperty("openQuestScreen").isPresent) {
                 systemProperty("theseus.openQuestScreen", "true")
             }

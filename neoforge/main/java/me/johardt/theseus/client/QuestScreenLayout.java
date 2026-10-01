@@ -186,7 +186,7 @@ final class QuestScreenLayout {
                 11,
                 WidgetRenderers.text(Component.literal("⋮"))
             ));
-            widget.withCallback(() -> screen.actions.openDisplayMenu(header.helpX(), header.actionY() + HEADER_ROW_HEIGHT));
+            widget.withCallback(() -> screen.actions.openDisplayMenu(headerLayout().helpX(), headerLayout().actionY() + HEADER_ROW_HEIGHT));
             widget.withTooltip(Component.translatable("screen.theseus.display_menu.tooltip"));
         }));
         if (!screen.authoring.open) screen.addScreenWidget(screen.buttons.button("graph-fit", widget -> {
@@ -489,9 +489,9 @@ final class QuestScreenLayout {
     }
 
     int canvasRight() {
-        return screen.detailsOpen || screen.authoring.open
-            ? screen.guiWidth() - detailsWidth()
-            : screen.guiWidth();
+        return screen.docks.building
+            ? (screen.detailsOpen || screen.authoring.open ? screen.guiWidth() - detailsWidth() : screen.guiWidth())
+            : screen.docks.rightEdge();
     }
 
     int graphCanvasRight() {
@@ -519,11 +519,7 @@ final class QuestScreenLayout {
     }
 
     boolean detailsDockContains(double mouseX, double mouseY) {
-        return (screen.detailsOpen || screen.authoring.open)
-            && mouseX >= screen.guiWidth() - detailsWidth()
-            && mouseX < screen.guiWidth()
-            && mouseY >= 0
-            && mouseY < screen.guiHeight();
+        return screen.docks.rightContains(mouseX, mouseY);
     }
 
     QuestGraphLayout.WorldBounds graphWorldBounds() {
@@ -560,7 +556,11 @@ final class QuestScreenLayout {
     }
 
     int sidebarWidth() {
-        if (!screen.sidebarOpen) return COLLAPSED_SIDEBAR_WIDTH;
+        if (!screen.docks.building) return screen.docks.leftEdge();
+        return screen.sidebarOpen ? sidebarContentWidth() : COLLAPSED_SIDEBAR_WIDTH;
+    }
+
+    int sidebarContentWidth() {
         return Math.max(120, Math.min(140, Math.round(screen.guiWidth() * 0.20f)));
     }
 
