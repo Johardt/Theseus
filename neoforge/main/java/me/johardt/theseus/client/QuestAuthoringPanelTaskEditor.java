@@ -2,7 +2,6 @@ package me.johardt.theseus.client;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.List;
@@ -56,14 +55,14 @@ final class QuestAuthoringPanelTaskEditor {
         title.setResponder(value -> QuestScreenEditor.setOptionalString(panel.authoring.editingTask.source, "title", value));
         panel.host.addWidget(title);
 
-        Button icon = Widgets.button(widget -> {
+        Button icon = panel.button("task-icon", widget -> {
             widget.withPosition(left + 14, top + 101).withSize(34, 24);
             widget.withRenderer(WidgetRenderers.text(Component.empty()));
             widget.withCallback(() -> panel.host.dispatch(new OpenPicker(Picker.ICON, PickerTarget.TASK_ICON)));
             widget.withTooltip(Component.translatable("gui.theseus.editor.choose_task_icon_override"));
         });
         panel.host.addWidget(icon);
-        Button clearIcon = Widgets.button(widget -> {
+        Button clearIcon = panel.button("task-icon-clear", widget -> {
             widget.withPosition(left + 52, top + 101).withSize(24, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("\u00d7")));
             widget.withCallback(() -> {
@@ -97,13 +96,13 @@ final class QuestAuthoringPanelTaskEditor {
             }
         }
 
-        Button cancel = Widgets.button(widget -> {
+        Button cancel = panel.button("task-cancel", widget -> {
             widget.withPosition(left + 14, top + 264).withSize(108, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> panel.host.dispatch(new RequestModalDiscard(this::closeTaskEditor)));
         });
         panel.host.addWidget(cancel);
-        Button save = Widgets.button(widget -> {
+        Button save = panel.button("task-save", widget -> {
             widget.withPosition(left + 138, top + 264).withSize(108, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.save_task")));
             widget.withCallback(this::saveTaskEditor);
@@ -127,7 +126,7 @@ final class QuestAuthoringPanelTaskEditor {
         item.setValue(registryValueString(panel.authoring.editingTask.source, "item", "minecraft:stone"));
         item.setResponder(text -> panel.authoring.editingTask.source.addProperty("item", text));
         panel.host.addWidget(item);
-        Button choose = Widgets.button(widget -> {
+        Button choose = panel.button("task-item", widget -> {
             widget.withPosition(left + 210, top + 139).withSize(36, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
             widget.withCallback(() -> panel.host.dispatch(new OpenPicker(Picker.ICON, PickerTarget.TASK_ITEM)));
@@ -153,7 +152,7 @@ final class QuestAuthoringPanelTaskEditor {
         entity.setValue(registryValueString(panel.authoring.editingTask.source, "entity", "minecraft:pig"));
         entity.setResponder(text -> panel.authoring.editingTask.source.addProperty("entity", text));
         panel.host.addWidget(entity);
-        Button choose = Widgets.button(widget -> {
+        Button choose = panel.button("task-entity", widget -> {
             widget.withPosition(left + 210, top + 139).withSize(36, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
             widget.withCallback(() -> panel.host.dispatch(new OpenPicker(Picker.ENTITY, PickerTarget.TASK_ENTITY)));
@@ -184,7 +183,7 @@ final class QuestAuthoringPanelTaskEditor {
         value.setValue(registryValueString(panel.authoring.editingTask.source, key, fallback));
         value.setResponder(text -> panel.authoring.editingTask.source.addProperty(key, text));
         panel.host.addWidget(value);
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button(List.of("task-target", key), widget -> {
             widget.withPosition(left + 210, top + 139).withSize(36, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
             widget.withCallback(() -> panel.host.dispatch(new OpenPicker(target == PickerTarget.TASK_ENTITY ? Picker.ENTITY : Picker.ICON, target)));
@@ -228,7 +227,7 @@ final class QuestAuthoringPanelTaskEditor {
 
     void addCompositeTaskFields(int left, int top, int width) {
         addAmountField(left, top + 142);
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("task-children", widget -> {
             widget.withPosition(left + 104, top + 139).withSize(142, 24);
             widget.withRenderer(WidgetRenderers.text(Component.translatable(
                 "gui.theseus.editor.manage_children",
@@ -253,7 +252,7 @@ final class QuestAuthoringPanelTaskEditor {
             int childIndex = index;
             int rowY = top + 42 + (index - panel.authoring.nestedTaskScroll) * 42;
             QuestAuthoringSession.TaskDraft child = children.get(index);
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-task-edit", child.id), widget -> {
                 widget.withPosition(left + 14, rowY).withSize(140, 34);
                 widget.withRenderer(WidgetRenderers.text(Component.literal(child.id + "  ·  " + taskDisplayLabel(child))));
                 widget.withCallback(() -> {
@@ -266,19 +265,19 @@ final class QuestAuthoringPanelTaskEditor {
                     ? QuestScreenEditor.editorText("gui.theseus.editor.edit_child_task")
                     : Component.literal(panel.unavailableReason(EditorTypeRegistry.Kind.TASK, child.type)));
             }));
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-task-up", child.id), widget -> {
                 widget.withPosition(left + 160, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("↑")));
                 widget.withCallback(() -> moveNestedTask(childIndex, -1));
                 widget.active = childIndex > 0;
             }));
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-task-down", child.id), widget -> {
                 widget.withPosition(left + 188, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("↓")));
                 widget.withCallback(() -> moveNestedTask(childIndex, 1));
                 widget.active = childIndex < children.size() - 1;
             }));
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-task-delete", child.id), widget -> {
                 widget.withPosition(left + 216, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("×")));
                 widget.withCallback(() -> {
@@ -288,7 +287,7 @@ final class QuestAuthoringPanelTaskEditor {
                 widget.withTooltip(Component.translatable("gui.theseus.editor.delete_child_task"));
             }));
         }
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("child-task-add", widget -> {
             widget.withPosition(left + 14, top + 218).withSize(113, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_task")));
             widget.withCallback(() -> {
@@ -300,7 +299,7 @@ final class QuestAuthoringPanelTaskEditor {
             });
             widget.withTooltip(Component.translatable("gui.theseus.editor.choose_a_task_type"));
         }));
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("child-task-done", widget -> {
             widget.withPosition(left + 133, top + 218).withSize(113, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.done")));
             widget.withCallback(() -> {
@@ -308,7 +307,7 @@ final class QuestAuthoringPanelTaskEditor {
                 panel.host.dispatch(new RebuildWidgets());
             });
         }));
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("child-task-heading", widget -> {
             widget.withPosition(left + 14, top + 14).withSize(232, 20);
             widget.withTexture(null);
             widget.withRenderer(WidgetRenderers.text(Component.literal(breadcrumbs)));
@@ -354,7 +353,7 @@ final class QuestAuthoringPanelTaskEditor {
         List<String> values
     ) {
         String current = jsonString(panel.authoring.editingTask.source, key, fallback).toLowerCase(java.util.Locale.ROOT);
-        Button cycle = Widgets.button(widget -> {
+        Button cycle = panel.button(List.of("task-cycle", key), widget -> {
             widget.withPosition(x, y).withSize(width, 24);
             widget.withRenderer(WidgetRenderers.text(QuestScreenEditor.cycleValueLabel(key, current)));
             widget.withCallback(() -> {

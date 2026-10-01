@@ -2,7 +2,6 @@ package me.johardt.theseus.client;
 
 import com.google.gson.JsonObject;
 import com.teamresourceful.resourcefullib.common.color.Color;
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.ArrayList;
@@ -106,7 +105,7 @@ final class QuestScreenWidgets {
             default -> { }
         }
         int sidebarWidth = screen.layout.sidebarWidth();
-        Button sidebarToggle = Widgets.button(widget -> {
+        Button sidebarToggle = screen.buttons.button("sidebar-toggle", widget -> {
             widget
                 .withPosition(screen.sidebarOpen ? sidebarWidth - 13 : 3, 2)
                 .withSize(11, 11);
@@ -134,7 +133,7 @@ final class QuestScreenWidgets {
         } else {
             HeaderLayout header = screen.layout.headerLayout();
             if (!screen.diagnostics.isEmpty()) {
-                screen.addScreenWidget(Widgets.button(widget -> {
+                screen.addScreenWidget(screen.buttons.button("diagnostics", widget -> {
                     widget.withPosition(header.diagnosticsX(), header.diagnosticsY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
                     widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.diagnostics")));
                     widget.withCallback(() -> {
@@ -145,7 +144,7 @@ final class QuestScreenWidgets {
                     widget.withTooltip(Component.translatable("gui.theseus.editor.view_validation_diagnostics"));
                 }));
             }
-            if (screen.mode.isAuthoring() && !screen.authoring.open) screen.addScreenWidget(Widgets.button(widget -> {
+            if (screen.mode.isAuthoring() && !screen.authoring.open) screen.addScreenWidget(screen.buttons.button("import-files", widget -> {
                     widget.withPosition(header.importX(), header.importY()).withSize(HEADER_ACTION_WIDTH, HEADER_ROW_HEIGHT);
                     widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.import")));
                     widget.withCallback(screen.imports::openNativeFilePicker);
@@ -213,7 +212,7 @@ final class QuestScreenWidgets {
                 String candidate = orderedGroups.get(chapterIndex);
                 int index = chapterIndex;
                 int groupY = y + (chapterIndex - screen.chapterListState.firstVisibleRow()) * CHAPTER_ROW_HEIGHT;
-                Button button = Widgets.button(widget -> {
+                Button button = screen.buttons.button(List.of("chapter-select", candidate), widget -> {
                     int buttonWidth = sidebarWidth - (screen.mode.isAuthoring() ? 51 : screen.chapterListState.hasOverflow() ? 10 : 8);
                     widget
                         .withPosition(4, groupY)
@@ -229,7 +228,7 @@ final class QuestScreenWidgets {
                 });
                 screen.addScreenWidget(button);
                 if (screen.mode.isAuthoring()) {
-                    screen.addScreenWidget(Widgets.button(widget -> {
+                    screen.addScreenWidget(screen.buttons.button(List.of("chapter-up", candidate), widget -> {
                         widget.withPosition(sidebarWidth - 45, groupY).withSize(11, 20);
                         widget.withTexture(null);
                         widget.withRenderer(WidgetRenderers.text(Component.literal("↑")));
@@ -237,7 +236,7 @@ final class QuestScreenWidgets {
                         widget.active = index > 0;
                         widget.withTooltip(Component.translatable("gui.theseus.editor.move_chapter_up"));
                     }));
-                    screen.addScreenWidget(Widgets.button(widget -> {
+                    screen.addScreenWidget(screen.buttons.button(List.of("chapter-down", candidate), widget -> {
                         widget.withPosition(sidebarWidth - 32, groupY).withSize(11, 20);
                         widget.withTexture(null);
                         widget.withRenderer(WidgetRenderers.text(Component.literal("↓")));
@@ -245,7 +244,7 @@ final class QuestScreenWidgets {
                         widget.active = index < orderedGroups.size() - 1;
                         widget.withTooltip(Component.translatable("gui.theseus.editor.move_chapter_down"));
                     }));
-                    screen.addScreenWidget(Widgets.button(widget -> {
+                    screen.addScreenWidget(screen.buttons.button(List.of("chapter-edit", candidate), widget -> {
                         widget.withPosition(sidebarWidth - 19, groupY).withSize(11, 20);
                         widget.withTexture(null);
                         widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
@@ -255,7 +254,7 @@ final class QuestScreenWidgets {
                 }
             }
             int addChapterY = Math.max(CHAPTER_LIST_TOP, screen.guiHeight() - 24);
-            if (screen.mode.isAuthoring()) screen.addScreenWidget(Widgets.button(widget -> {
+            if (screen.mode.isAuthoring()) screen.addScreenWidget(screen.buttons.button("chapter-add", widget -> {
                 widget.withPosition(4, addChapterY).withSize(sidebarWidth - 8, 20);
                 widget.withTexture(null);
                 widget.withRenderer(screen.layout.addChapterButtonRenderer());
@@ -268,7 +267,7 @@ final class QuestScreenWidgets {
 
     /** Snaps the active authoring draft once, leaving the change for Save. */
     void addRawInspectorButton(int x, int y, int width, Runnable open) {
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("raw-inspector-open", widget -> {
             widget.withPosition(x, y).withSize(screen.guiWidth(), 24);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.raw_json")));
             widget.withCallback(open);
@@ -294,7 +293,7 @@ final class QuestScreenWidgets {
         value.setValue(screen.rawInspectorJson);
         value.active = false;
         screen.addScreenWidget(value);
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("raw-inspector-close", widget -> {
             widget.withPosition(left + inspectorWidth - 92, top + inspectorHeight - 28).withSize(80, 20);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.close")));
             widget.withCallback(() -> {
@@ -355,12 +354,12 @@ final class QuestScreenWidgets {
                 screen.descriptionEditor.insertObject("reward", screen.authoring.rewards.getFirst().id));
         }
 
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("description-cancel", widget -> {
             widget.withPosition(left + modalWidth - 174, top + modalHeight - 31).withSize(76, 20);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(this::closeDescriptionEditor);
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("description-apply", widget -> {
             widget.withPosition(left + modalWidth - 92, top + modalHeight - 31).withSize(80, 20);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.apply")));
             widget.withCallback(this::applyDescriptionEditor);
@@ -368,7 +367,7 @@ final class QuestScreenWidgets {
     }
 
     int addMarkdownSpriteAction(int x, int y, String tooltipKey, String icon, Runnable action) {
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button(List.of("markdown-sprite", tooltipKey), widget -> {
             widget.withPosition(x, y).withSize(MARKDOWN_ACTION_SIZE, MARKDOWN_ACTION_SIZE);
             widget.withTexture(null);
             Identifier normal = QuestScreenRenderer.sprite("editor/" + icon + "/normal");
@@ -381,7 +380,7 @@ final class QuestScreenWidgets {
     }
 
     int addMarkdownTextAction(int x, int y, String tooltipKey, String label, Runnable action) {
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button(List.of("markdown-text", tooltipKey), widget -> {
             widget.withPosition(x, y).withSize(MARKDOWN_ACTION_SIZE, MARKDOWN_ACTION_SIZE);
             widget.withRenderer(WidgetRenderers.center(
                 MARKDOWN_ACTION_SIZE,
@@ -438,7 +437,7 @@ final class QuestScreenWidgets {
         name.setValue(screen.chapterEditorName);
         name.setResponder(value -> screen.chapterEditorName = value);
         screen.addScreenWidget(name);
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("chapter-icon", widget -> {
             widget.withPosition(left + 14, top + 81).withSize(34, 24);
             widget.withRenderer((graphics, context, partialTick) -> {
                 try {
@@ -449,7 +448,7 @@ final class QuestScreenWidgets {
             widget.withCallback(() -> screen.editor.openPicker(Picker.ICON, PickerTarget.CHAPTER_ICON));
             widget.withTooltip(Component.translatable("gui.theseus.editor.choose_chapter_icon"));
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("chapter-icon-enabled", widget -> {
             widget.withPosition(left + 54, top + 81).withSize(100, 24);
             widget.withRenderer(WidgetRenderers.text(Component.translatable(
                 "gui.theseus.editor.chapter_icon_state",
@@ -472,12 +471,12 @@ final class QuestScreenWidgets {
             catch (NumberFormatException ignored) { screen.chapterEditorBackgroundOpacity = 100; }
         });
         screen.addScreenWidget(opacity);
-        if (screen.chapterEditorOriginal != null) screen.addScreenWidget(Widgets.button(widget -> {
+        if (screen.chapterEditorOriginal != null) screen.addScreenWidget(screen.buttons.button("chapter-delete", widget -> {
             widget.withPosition(left + 14, top + 201).withSize(72, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete")));
             widget.withCallback(this::deleteChapter);
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("chapter-cancel", widget -> {
             widget.withPosition(left + 94, top + 201).withSize(82, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> screen.editor.requestModalDiscard(() -> {
@@ -486,7 +485,7 @@ final class QuestScreenWidgets {
                 screen.rebuildWidgets();
             }));
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("chapter-save", widget -> {
             widget.withPosition(left + 184, top + 201).withSize(82, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.save")));
             widget.withCallback(this::saveChapter);
@@ -573,7 +572,7 @@ final class QuestScreenWidgets {
     void addDeleteQuestConfirmationWidgets() {
         int left = (screen.guiWidth() - 240) / 2;
         int top = (screen.guiHeight() - 110) / 2;
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("quest-delete-cancel", widget -> {
             widget.withPosition(left + 12, top + 70).withSize(102, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
@@ -581,7 +580,7 @@ final class QuestScreenWidgets {
                 screen.rebuildWidgets();
             });
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("quest-delete-confirm", widget -> {
             widget.withPosition(left + 126, top + 70).withSize(102, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete")));
             widget.withCallback(() -> {
@@ -593,7 +592,7 @@ final class QuestScreenWidgets {
     void addProgressResetConfirmationWidgets() {
         int left = (screen.guiWidth() - 280) / 2;
         int top = (screen.guiHeight() - 142) / 2;
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("progress-reset-cancel", widget -> {
             widget.withPosition(left + 12, top + 102).withSize(122, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
@@ -602,7 +601,7 @@ final class QuestScreenWidgets {
                 screen.rebuildWidgets();
             });
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("progress-reset-confirm", widget -> {
             widget.withPosition(left + 146, top + 102).withSize(122, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.reset_progress")));
             widget.withCallback(screen.editor::confirmProgressReset);
@@ -613,7 +612,7 @@ final class QuestScreenWidgets {
     void addDeleteTaskConfirmationWidgets() {
         int left = (screen.guiWidth() - 240) / 2;
         int top = (screen.guiHeight() - 110) / 2;
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("task-delete-cancel", widget -> {
             widget.withPosition(left + 12, top + 70).withSize(102, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
@@ -622,7 +621,7 @@ final class QuestScreenWidgets {
                 screen.rebuildWidgets();
             });
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("task-delete-confirm", widget -> {
             widget.withPosition(left + 126, top + 70).withSize(102, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete")));
             widget.withCallback(() -> {
@@ -634,7 +633,7 @@ final class QuestScreenWidgets {
     void addDiscardConfirmationWidgets() {
         int left = (screen.guiWidth() - 260) / 2;
         int top = (screen.guiHeight() - 116) / 2;
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("discard-cancel", widget -> {
             widget.withPosition(left + 12, top + 76).withSize(112, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.keep_editing")));
             widget.withCallback(() -> {
@@ -642,7 +641,7 @@ final class QuestScreenWidgets {
                 screen.rebuildWidgets();
             });
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("discard-confirm", widget -> {
             widget.withPosition(left + 136, top + 76).withSize(112, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.discard_changes")));
             widget.withCallback(() -> {
@@ -654,7 +653,7 @@ final class QuestScreenWidgets {
     void addDiagnosticsModalWidgets() {
         int left = (screen.guiWidth() - 440) / 2;
         int top = (screen.guiHeight() - 300) / 2;
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("diagnostics-close", widget -> {
             widget.withPosition(left + 330, top + 264).withSize(96, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.close")));
             widget.withCallback(() -> {
@@ -671,7 +670,7 @@ final class QuestScreenWidgets {
         screen.pasteIdField.setValue(QuestScreenActions.clipboardSourceId + "_copy");
         screen.addScreenWidget(screen.pasteIdField);
         screen.setScreenInitialFocus(screen.pasteIdField);
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("paste-cancel", widget -> {
             widget.withPosition(left + 14, top + 88).withSize(100, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> {
@@ -680,7 +679,7 @@ final class QuestScreenWidgets {
                 screen.rebuildWidgets();
             });
         }));
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("paste-confirm", widget -> {
             widget.withPosition(left + 166, top + 88).withSize(100, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.paste")));
             widget.withCallback(screen.actions::confirmPasteIdPrompt);

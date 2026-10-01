@@ -1,6 +1,5 @@
 package me.johardt.theseus.client;
 
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.List;
 import me.johardt.theseus.client.QuestAuthoringSession.RewardDraft;
@@ -50,13 +49,13 @@ final class QuestAuthoringPanelRewardEditor {
         title.setValue(jsonString(reward.source, "title", ""));
         title.setResponder(value -> QuestScreenEditor.setOptionalString(reward.source, "title", value));
         panel.host.addWidget(title);
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("reward-icon", widget -> {
             widget.withPosition(left + 14, top + 101).withSize(34, 24);
             widget.withRenderer(WidgetRenderers.text(Component.empty()));
             widget.withCallback(() -> panel.host.dispatch(new OpenPicker(Picker.ICON, PickerTarget.REWARD_ICON)));
             widget.withTooltip(Component.translatable("gui.theseus.editor.choose_reward_icon_override"));
         }));
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("reward-icon-clear", widget -> {
             widget.withPosition(left + 52, top + 101).withSize(24, 24);
             widget.withRenderer(WidgetRenderers.text(Component.literal("\u00d7")));
             widget.withCallback(() -> {
@@ -76,7 +75,7 @@ final class QuestAuthoringPanelRewardEditor {
                 item.setValue(rewardItemId(reward.source));
                 item.setResponder(value -> setRewardItem(reward.source, value, rewardItemCount(reward.source)));
                 panel.host.addWidget(item);
-                panel.host.addWidget(Widgets.button(widget -> {
+                panel.host.addWidget(panel.button("reward-item", widget -> {
                     widget.withPosition(left + 232, top + 139).withSize(54, 24);
                     widget.withRenderer(WidgetRenderers.text(Component.literal("…")));
                     widget.withCallback(() -> panel.host.dispatch(new OpenPicker(Picker.ICON, PickerTarget.REWARD_ITEM)));
@@ -88,7 +87,7 @@ final class QuestAuthoringPanelRewardEditor {
             case "theseus:command" -> addRewardTextField(reward, left, top, "command", "gui.theseus.editor.command");
             case "theseus:selectable" -> {
                 addRewardAmountField(reward, left + 14, top + 142, 92, "amount");
-                panel.host.addWidget(Widgets.button(widget -> {
+                panel.host.addWidget(panel.button("reward-choices", widget -> {
                     widget.withPosition(left + 114, top + 139).withSize(172, 24);
                     widget.withRenderer(WidgetRenderers.text(Component.translatable(
                         "gui.theseus.editor.manage_choices",
@@ -103,12 +102,12 @@ final class QuestAuthoringPanelRewardEditor {
             }
             default -> { }
         }
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("reward-cancel", widget -> {
             widget.withPosition(left + 14, top + 244).withSize(128, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(() -> panel.host.dispatch(new RequestModalDiscard(() -> closeRewardEditor(nested))));
         }));
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("reward-save", widget -> {
             widget.withPosition(left + 158, top + 244).withSize(128, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.save_reward")));
             widget.withCallback(() -> saveRewardEditor(nested));
@@ -137,7 +136,7 @@ final class QuestAuthoringPanelRewardEditor {
 
     void addRewardCycleButton(QuestAuthoringSession.RewardDraft reward, int x, int y, int width, String key, String fallback, List<String> values) {
         String current = jsonString(reward.source, key, fallback).toLowerCase(java.util.Locale.ROOT);
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button(List.of("reward-cycle", key), widget -> {
             widget.withPosition(x, y).withSize(width, 24);
             widget.withRenderer(WidgetRenderers.text(QuestScreenEditor.cycleValueLabel(key, current)));
             widget.withCallback(() -> {
@@ -176,7 +175,7 @@ final class QuestAuthoringPanelRewardEditor {
         for (int index = panel.authoring.nestedRewardScroll; index < end; index++) {
             int nestedIndex = index;
             int rowY = top + 42 + (index - panel.authoring.nestedRewardScroll) * 42;
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-reward-edit", rewards.get(nestedIndex).id), widget -> {
                 widget.withPosition(left + 14, rowY).withSize(180, 34);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable(
                     "gui.theseus.editor.nested_reward_label",
@@ -193,19 +192,19 @@ final class QuestAuthoringPanelRewardEditor {
                     ? QuestScreenEditor.editorText("gui.theseus.editor.edit_choice")
                     : Component.literal(panel.unavailableReason(EditorTypeRegistry.Kind.REWARD, rewards.get(nestedIndex).type)));
             }));
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-reward-up", rewards.get(nestedIndex).id), widget -> {
                 widget.withPosition(left + 200, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("↑")));
                 widget.withCallback(() -> moveNestedReward(nestedIndex, -1));
                 widget.active = nestedIndex > 0;
             }));
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-reward-down", rewards.get(nestedIndex).id), widget -> {
                 widget.withPosition(left + 228, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("↓")));
                 widget.withCallback(() -> moveNestedReward(nestedIndex, 1));
                 widget.active = nestedIndex < rewards.size() - 1;
             }));
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("child-reward-delete", rewards.get(nestedIndex).id), widget -> {
                 widget.withPosition(left + 256, rowY + 5).withSize(24, 24);
                 widget.withRenderer(WidgetRenderers.text(Component.literal("×")));
                 widget.withCallback(() -> {
@@ -215,7 +214,7 @@ final class QuestAuthoringPanelRewardEditor {
                 widget.withTooltip(Component.translatable("gui.theseus.editor.delete_choice"));
             }));
         }
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("child-reward-add", widget -> {
             widget.withPosition(left + 14, top + 218).withSize(128, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_choice")));
             widget.withCallback(() -> {
@@ -225,7 +224,7 @@ final class QuestAuthoringPanelRewardEditor {
                 panel.host.dispatch(new RebuildWidgets());
             });
         }));
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("child-reward-done", widget -> {
             widget.withPosition(left + 148, top + 218).withSize(128, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.done")));
             widget.withCallback(() -> {
@@ -233,7 +232,7 @@ final class QuestAuthoringPanelRewardEditor {
                 panel.host.dispatch(new RebuildWidgets());
             });
         }));
-        panel.host.addWidget(Widgets.button(widget -> {
+        panel.host.addWidget(panel.button("child-reward-heading", widget -> {
             widget.withPosition(left + 14, top + 14).withSize(272, 20);
             widget.withTexture(null);
             widget.withRenderer(WidgetRenderers.text(Component.literal(panel.authoring.editingReward.id)));

@@ -1,5 +1,6 @@
 package me.johardt.theseus.client;
 
+import java.util.List;
 import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.base.BaseWidget;
 import earth.terrarium.olympus.client.components.buttons.Button;
@@ -37,7 +38,7 @@ final class QuestAuthoringPanelDock {
         for (int index = 0; index < DetailTab.values().length; index++) {
             DetailTab tab = DetailTab.values()[index];
             int tabX = detailsLeft + 8 + index * tabWidth;
-            Button tabButton = Widgets.button(widget -> {
+            Button tabButton = panel.button(List.of("draft-tab", tab), widget -> {
                 widget.withPosition(tabX, 8).withSize(tabWidth - 3, 20);
                 widget.withRenderer(WidgetRenderers.text(
                     Component.translatable(tab.translationKey)
@@ -57,7 +58,7 @@ final class QuestAuthoringPanelDock {
             });
             panel.host.addWidget(tabButton);
         }
-        Button close = Widgets.button(widget -> {
+        Button close = panel.button("draft-close", widget -> {
             widget.withPosition(panel.width - 27, 8).withSize(19, 20);
             widget.withRenderer(WidgetRenderers.center(
                 11,
@@ -77,7 +78,7 @@ final class QuestAuthoringPanelDock {
 
         int x = detailsLeft + 12;
         int fieldWidth = panel.host.detailsWidth() - 24;
-        panel.createConfirmButton = Widgets.button(widget -> {
+        panel.createConfirmButton = panel.button("draft-save", widget -> {
             widget.withPosition(x, panel.height - 30).withSize(fieldWidth, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable(panel.authoring.editingExisting ? "gui.theseus.editor.save_quest" : "gui.theseus.editor.create_quest")));
             widget.withCallback(() -> panel.host.dispatch(new ConfirmCreateQuest()));
@@ -131,7 +132,7 @@ final class QuestAuthoringPanelDock {
 
         layout.addChild(dockSeparator(fieldWidth), row++, 0);
         layout.addChild(dockLabel("gui.theseus.editor.description", fieldWidth), row++, 0);
-        layout.addChild(Widgets.button(widget -> {
+        layout.addChild(panel.button("draft-description", widget -> {
             widget.withSize(fieldWidth, 32);
             widget.withRenderer(WidgetRenderers.text(Component.translatable(panel.authoring.body.isBlank()
                 ? "gui.theseus.editor.write_rich_description"
@@ -143,13 +144,13 @@ final class QuestAuthoringPanelDock {
         layout.addChild(dockSeparator(fieldWidth), row++, 0);
         layout.addChild(dockLabel("gui.theseus.editor.appearance", fieldWidth), row++, 0);
         GridLayout appearance = new GridLayout().columnSpacing(6);
-        Button icon = Widgets.button(widget -> {
+        Button icon = panel.button("draft-icon", widget -> {
             widget.withSize((fieldWidth - 6) / 2, 24);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.choose_icon")));
             widget.withCallback(() -> panel.host.dispatch(new OpenPicker(Picker.ICON, PickerTarget.QUEST_ICON)));
             widget.withTooltip(Component.translatable("gui.theseus.editor.choose_quest_icon"));
         });
-        Button background = Widgets.button(widget -> {
+        Button background = panel.button("draft-background", widget -> {
             widget.withSize((fieldWidth - 6) / 2, 24);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.choose_background")));
             widget.withCallback(() -> panel.host.dispatch(new OpenPicker(Picker.BACKGROUND, PickerTarget.QUEST_ICON)));
@@ -160,7 +161,7 @@ final class QuestAuthoringPanelDock {
         layout.addChild(appearance, row++, 0);
         layout.addChild(dockLabel("gui.theseus.editor.icon_size_range", fieldWidth), row++, 0);
         GridLayout iconSize = new GridLayout().columnSpacing(6);
-        Button decreaseIconSize = Widgets.button(widget -> {
+        Button decreaseIconSize = panel.button("draft-icon-smaller", widget -> {
             widget.withSize(28, 20);
             widget.withRenderer(WidgetRenderers.text(Component.literal("−")));
             widget.active = panel.authoring.iconSize > QuestSurfaceLayout.MIN_ICON_SIZE;
@@ -170,7 +171,7 @@ final class QuestAuthoringPanelDock {
         EditBox iconSizeField = new EditBox(panel.font, 0, 0, Math.max(44, fieldWidth - 68), 18, Component.translatable("gui.theseus.editor.icon_size"));
         iconSizeField.setValue(panel.authoring.iconSizeText);
         iconSizeField.setResponder(this::updateCreateQuestIconSize);
-        Button increaseIconSize = Widgets.button(widget -> {
+        Button increaseIconSize = panel.button("draft-icon-larger", widget -> {
             widget.withSize(28, 20);
             widget.withRenderer(WidgetRenderers.text(Component.literal("+")));
             widget.active = panel.authoring.iconSize < QuestSurfaceLayout.MAX_ICON_SIZE;
@@ -181,7 +182,7 @@ final class QuestAuthoringPanelDock {
         iconSize.addChild(iconSizeField, 0, 1);
         iconSize.addChild(increaseIconSize, 0, 2);
         layout.addChild(iconSize, row++, 0);
-        layout.addChild(Widgets.button(widget -> {
+        layout.addChild(panel.button("draft-display-json", widget -> {
             widget.withSize(fieldWidth, 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.inspect_display_json")));
             widget.withCallback(() -> panel.host.dispatch(new OpenRawInspector("Display", panel.draftDisplay())));
@@ -201,7 +202,7 @@ final class QuestAuthoringPanelDock {
         position.addChild(positionX, 0, 0);
         position.addChild(positionY, 0, 1);
         layout.addChild(position, row++, 0);
-        layout.addChild(Widgets.button(widget -> {
+        layout.addChild(panel.button("draft-snap", widget -> {
             widget.withSize(fieldWidth, 20);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.snap_position")));
             widget.withCallback(this::snapCurrentDraftPosition);
@@ -222,7 +223,7 @@ final class QuestAuthoringPanelDock {
             () -> panel.authoring.repeatable = !panel.authoring.repeatable), 1, 1);
         settings.addChild(settingButton(settingWidth, "setting.theseus.quest.auto_claim_rewards", panel.authoring.autoClaimRewards,
             () -> panel.authoring.autoClaimRewards = !panel.authoring.autoClaimRewards), 2, 0);
-        settings.addChild(Widgets.button(widget -> {
+        settings.addChild(panel.button("draft-visibility", widget -> {
             widget.withSize(settingWidth, 22);
             Component visibility = QuestPresentation.visibilityLabel(panel.authoring.hiddenUntil);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.visibility", visibility)));
@@ -239,7 +240,7 @@ final class QuestAuthoringPanelDock {
             layout.addChild(dockSeparator(fieldWidth), row++, 0);
             layout.addChild(dockLabel("gui.theseus.editor.quest_actions", fieldWidth), row++, 0);
             GridLayout actions = new GridLayout().columnSpacing(6);
-            Button delete = Widgets.button(widget -> {
+            Button delete = panel.button("draft-delete", widget -> {
                 widget.withSize((fieldWidth - 6) / 2, 22);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.delete_quest")));
                 widget.withCallback(() -> {
@@ -248,7 +249,7 @@ final class QuestAuthoringPanelDock {
                 });
             });
             actions.addChild(delete, 0, 0);
-            if (panel.authoring.groups.size() > 1) actions.addChild(Widgets.button(widget -> {
+            if (panel.authoring.groups.size() > 1) actions.addChild(panel.button("draft-remove-chapter", widget -> {
                 widget.withSize((fieldWidth - 6) / 2, 22);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.remove_from_chapter")));
                 widget.withCallback(() -> panel.host.dispatch(new RequestDiscard(() -> panel.host.dispatch(new RemoveExistingQuestFromChapter()))));
@@ -326,7 +327,7 @@ final class QuestAuthoringPanelDock {
     }
 
     Button settingButton(int width, String labelKey, boolean value, Runnable toggle) {
-        return Widgets.button(widget -> {
+        return panel.button(List.of("draft-setting", labelKey), widget -> {
             widget.withSize(width, 22);
             Component label = Component.translatable(labelKey);
             Component state = Component.translatable(value ? "gui.theseus.editor.state_on" : "gui.theseus.editor.state_off");

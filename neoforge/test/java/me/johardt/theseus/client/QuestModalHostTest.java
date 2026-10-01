@@ -8,6 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestModalHostTest {
     @Test
+    void replacingOrReopeningTheSameModalCreatesANewInputLifetime() {
+        QuestModalHost host = new QuestModalHost();
+        host.open(QuestModalHost.Modal.RAW_INSPECTOR);
+        Object first = host.inputLifetime();
+        host.open(QuestModalHost.Modal.RAW_INSPECTOR);
+        org.junit.jupiter.api.Assertions.assertSame(first, host.inputLifetime());
+        host.replace(QuestModalHost.Modal.RAW_INSPECTOR);
+        org.junit.jupiter.api.Assertions.assertNotSame(first, host.inputLifetime());
+        Object replacement = host.inputLifetime();
+        host.close();
+        host.open(QuestModalHost.Modal.RAW_INSPECTOR);
+        org.junit.jupiter.api.Assertions.assertNotSame(replacement, host.inputLifetime());
+    }
+
+    @Test
     void rawInspectorIsAnExclusiveModalLayerAndSurvivesScreenRebuildCopies() {
         QuestModalHost host = new QuestModalHost();
         host.open(QuestModalHost.Modal.EDITOR);

@@ -21,6 +21,10 @@ public final class QuestModalHost {
     private final Deque<Modal> layers = new ArrayDeque<>();
     private Runnable pendingDiscard;
     private boolean focusRestoreRequested;
+    private Object inputLifetime = new Object();
+
+    /** A replaced or reopened layer cannot inherit an earlier physical press. */
+    Object inputLifetime() { return inputLifetime; }
 
     public Modal active() {
         return layers.peekLast() == null ? Modal.NONE : layers.peekLast();
@@ -130,6 +134,7 @@ public final class QuestModalHost {
         requireRealModal(modal);
         if (active() == modal) return;
         layers.addLast(modal);
+        inputLifetime = new Object();
         focusRestoreRequested = true;
     }
 
@@ -139,6 +144,7 @@ public final class QuestModalHost {
         layers.clear();
         layers.addLast(modal);
         pendingDiscard = null;
+        inputLifetime = new Object();
         focusRestoreRequested = true;
     }
 
@@ -148,6 +154,7 @@ public final class QuestModalHost {
         boolean wasDiscard = active() == Modal.DISCARD_CONFIRMATION;
         layers.removeLast();
         if (wasDiscard) pendingDiscard = null;
+        inputLifetime = new Object();
         focusRestoreRequested = true;
     }
 
@@ -156,6 +163,7 @@ public final class QuestModalHost {
         if (layers.isEmpty() && pendingDiscard == null) return;
         layers.clear();
         pendingDiscard = null;
+        inputLifetime = new Object();
         focusRestoreRequested = true;
     }
 

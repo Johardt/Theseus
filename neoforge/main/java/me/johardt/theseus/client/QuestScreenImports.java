@@ -1,7 +1,6 @@
 package me.johardt.theseus.client;
 
 import com.google.gson.JsonObject;
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.ArrayList;
@@ -209,7 +208,7 @@ final class QuestScreenImports {
             id.setResponder(value -> changeImportId(entry.key(), value));
             screen.importIdFields.put(entry.key(), id);
             screen.addScreenWidget(id);
-            Button details = Widgets.button(widget -> {
+            Button details = screen.buttons.button(List.of("import-details", entry.key()), widget -> {
                 widget.withPosition(layout.detailsX(), controlsY).withSize(layout.detailsWidth(), 20);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.details")));
                 widget.withCallback(() -> openImportDiagnostics(entry.key()));
@@ -217,24 +216,24 @@ final class QuestScreenImports {
             });
             diagnosticButtons.put(entry.key(), details);
             screen.addScreenWidget(details);
-            screen.addScreenWidget(Widgets.button(widget -> {
+            screen.addScreenWidget(screen.buttons.button(List.of("import-remove", entry.key()), widget -> {
                 widget.withPosition(layout.removeX(), controlsY).withSize(layout.removeWidth(), 20);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.remove")));
                 widget.withCallback(() -> removeImportFile(entry.key()));
             }));
         }
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("import-cancel", widget -> {
             widget.withPosition(layout.cancelX(), layout.footerY()).withSize(layout.cancelWidth(), 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.cancel")));
             widget.withCallback(this::cancelImport);
         }));
-        if (!screen.importController.batchDiagnostics().isEmpty()) screen.addScreenWidget(Widgets.button(widget -> {
+        if (!screen.importController.batchDiagnostics().isEmpty()) screen.addScreenWidget(screen.buttons.button("import-batch-details", widget -> {
             widget.withPosition(layout.batchDetailsX(), layout.footerY()).withSize(layout.batchDetailsWidth(), 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.batch_details")));
             widget.withCallback(this::openBatchDiagnostics);
             widget.withTooltip(Component.translatable("gui.theseus.editor.view_batch_level_server_diagnostics"));
         }));
-        importButton = Widgets.button(widget -> {
+        importButton = screen.buttons.button("import-confirm", widget -> {
             widget.withPosition(layout.importX(), layout.footerY()).withSize(layout.importWidth(), 22);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.import")));
             widget.withCallback(this::sendImport);

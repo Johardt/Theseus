@@ -1,5 +1,7 @@
 package me.johardt.theseus.client;
 
+import earth.terrarium.olympus.client.components.buttons.Button;
+import java.util.function.Consumer;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
@@ -153,6 +155,9 @@ public final class QuestScreen extends Screen {
     final QuestScreenActions actions = new QuestScreenActions(this);
     final QuestScreenInput input = new QuestScreenInput(this);
     final QuestScreenImports imports = new QuestScreenImports(this);
+    final TheseusButtons buttons = new TheseusButtons(this::buttonLayer);
+
+    private Object buttonLayer() { return modalHost.inputLifetime(); }
 
     int guiWidth() { return width; }
     int guiHeight() { return height; }
@@ -334,7 +339,12 @@ public final class QuestScreen extends Screen {
 
     @Override
     protected void init() {
-        widgets.initialize();
+        buttons.beginBuild();
+        try {
+            widgets.initialize();
+        } finally {
+            buttons.endBuild();
+        }
     }
 
     @Override
@@ -379,6 +389,7 @@ public final class QuestScreen extends Screen {
         int mouseY,
         float partialTick
     ) {
+        buttons.reconcile();
         renderer.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -389,6 +400,18 @@ public final class QuestScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         return input.keyPressed(event);
+    }
+
+    @Override
+    public boolean keyReleased(KeyEvent event) {
+        buttons.keyReleased(event);
+        return super.keyReleased(event);
+    }
+
+    @Override
+    public void removed() {
+        buttons.cancel();
+        super.removed();
     }
 
     @Override
@@ -422,6 +445,7 @@ public final class QuestScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        buttons.mouseReleased(event);
         return input.mouseReleased(event);
     }
 
@@ -445,6 +469,11 @@ public final class QuestScreen extends Screen {
     }
 
     private final class AuthoringPanelHost implements QuestAuthoringPanel.Host {
+        @Override public Button button(
+            Object identity, Consumer<Button> configure
+        ) {
+            return buttons.button(identity, configure);
+        }
         @Override public void addWidget(net.minecraft.client.gui.components.AbstractWidget widget) {
             QuestScreen.this.addRenderableWidget(widget);
         }
