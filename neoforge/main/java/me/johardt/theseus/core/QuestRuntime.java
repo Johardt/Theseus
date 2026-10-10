@@ -1073,6 +1073,14 @@ public final class QuestRuntime {
         PartyLookup.Party party = parties.find(world.playerId(player));
         if (party == null) return;
         if (!party.members().contains(world.playerId(player))) throw new IllegalStateException("Player is not in party roster");
+        Map<UUID, Map<String, Boolean>> wasComplete = new HashMap<>();
+        for (ServerPlayer online : world.onlinePlayers()) {
+            UUID member = world.playerId(online);
+            if (!party.members().contains(member) || member.equals(world.playerId(player))) continue;
+            Map<String, Boolean> completed = new HashMap<>();
+            catalog.quests().forEach((id, quest) -> completed.put(id, tasksComplete(progress(member, id), quest)));
+            wasComplete.put(member, completed);
+        }
         JsonObject legacy = legacyPartyProgress.getAsJsonObject(party.id().toString());
         boolean changed = false;
         for (QuestDefinition quest : catalog.quests().values()) {
@@ -1105,7 +1113,16 @@ public final class QuestRuntime {
         if (changed) {
             saveProgress();
             for (ServerPlayer online : world.onlinePlayers()) {
-                if (party.members().contains(world.playerId(online)) && !world.playerId(online).equals(world.playerId(player))) sync(online, false);
+                UUID member = world.playerId(online);
+                Map<String, Boolean> completed = wasComplete.get(member);
+                if (completed == null) continue;
+                sync(online, false);
+                if (suppressNotifications.contains(member)) continue;
+                for (QuestDefinition quest : catalog.quests().values()) {
+                    if (!completed.getOrDefault(quest.id(), false) && tasksComplete(progress(member, quest.id()), quest)) {
+                        notify(online, "complete", "Quest completed", quest.title());
+                    }
+                }
             }
         }
     }

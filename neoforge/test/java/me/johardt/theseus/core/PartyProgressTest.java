@@ -26,6 +26,58 @@ class PartyProgressTest {
     @TempDir Path directory;
 
     @Test
+    void completingSharedQuestNotifiesOtherOnlineMembersExactlyOnce() throws Exception {
+        Fixture f = fixture("party", xpRewards());
+        ServerPlayer bob = playerIdentity();
+        f.world.identities.put(bob, BOB);
+        f.world.online = List.of(bob);
+        Sync sync = (Sync) f.runtime.questSync;
+        f.runtime.triggerDummy(null, "finish");
+        assertTrue(f.runtime.isComplete(bob, f.quest()));
+        assertEquals(1, sync.notifications.stream().filter(notification -> notification.player() == null && notification.kind().equals("complete")).count());
+        assertEquals(1, sync.notifications.stream().filter(notification -> notification.player() == bob && notification.kind().equals("complete")).count());
+        f.runtime.triggerDummy(null, "finish");
+        f.runtime.snapshot(bob, "Main");
+        assertEquals(1, sync.notifications.stream().filter(notification -> notification.player() == bob && notification.kind().equals("complete")).count());
+    }
+
+    @Test
+    void copiedCompletionRespectsRecipientNotificationSuppression() throws Exception {
+        Fixture f = fixture("party", xpRewards());
+        ServerPlayer bob = playerIdentity();
+        f.world.identities.put(bob, BOB);
+        f.world.online = List.of(bob);
+        f.runtime.suppressNotifications.add(BOB);
+        f.runtime.triggerDummy(null, "finish");
+        assertTrue(f.runtime.isComplete(bob, f.quest()));
+        f.runtime.suppressNotifications.remove(BOB);
+        f.runtime.snapshot(bob, "Main");
+        Sync sync = (Sync) f.runtime.questSync;
+        assertTrue(sync.notifications.stream().noneMatch(notification -> notification.player() == bob));
+    }
+
+    @Test
+    void individualCompletionDoesNotNotifyOtherPartyMembers() throws Exception {
+        Fixture f = fixture("self", xpRewards());
+        ServerPlayer bob = playerIdentity();
+        f.world.identities.put(bob, BOB);
+        f.world.online = List.of(bob);
+        f.runtime.triggerDummy(null, "finish");
+        assertFalse(f.runtime.isComplete(bob, f.quest()));
+        Sync sync = (Sync) f.runtime.questSync;
+        assertTrue(sync.notifications.stream().noneMatch(notification -> notification.player() == bob));
+    }
+
+    private static ServerPlayer playerIdentity() throws Exception {
+        // The runtime uses QuestWorld for identity; no game methods are invoked on this token.
+        me.johardt.theseus.client.MinecraftTestBootstrap.ensureBootstrapped();
+        Class<?> type = Class.forName("sun.misc.Unsafe");
+        var field = type.getDeclaredField("theUnsafe");
+        field.setAccessible(true);
+        return (ServerPlayer) type.getMethod("allocateInstance", Class.class).invoke(field.get(null), ServerPlayer.class);
+    }
+
+    @Test
     void independentChoicesAreNotChosenByTheCompleter() throws Exception {
         Fixture f = fixture("party", """
             {"choice":{"type":"theseus:selectable","amount":1,"rewards":{
@@ -536,19 +588,25 @@ class PartyProgressTest {
         }
     }
     static final class Sync implements QuestSync {
+        record Notification(ServerPlayer player, String kind, String title, String detail) {}
+        final List<Notification> notifications = new java.util.ArrayList<>();
         public void snapshot(ServerPlayer player, String json, boolean open) {}
-        public void notification(ServerPlayer player, String kind, String title, String detail) {}
+        public void notification(ServerPlayer player, String kind, String title, String detail) {
+            notifications.add(new Notification(player, kind, title, detail));
+        }
     }
     static final class World implements QuestWorld {
         final QuestCatalog catalog;
         final Path directory;
         UUID player = ALICE;
+        final Map<ServerPlayer, UUID> identities = new java.util.IdentityHashMap<>();
+        List<ServerPlayer> online = List.of();
         final Map<UUID, Integer> xp = new HashMap<>();
         boolean commandFails;
         World(QuestCatalog catalog, Path directory) { this.catalog = catalog; this.directory = directory; }
         public QuestCatalog loadCatalog() { return QuestCatalog.load(directory); }
-        public UUID playerId(ServerPlayer player) { return this.player; }
-        public List<ServerPlayer> onlinePlayers() { return List.of(); }
+        public UUID playerId(ServerPlayer player) { return identities.getOrDefault(player, this.player); }
+        public List<ServerPlayer> onlinePlayers() { return online; }
         public boolean canEdit(ServerPlayer player) { return true; }
         public boolean isIntegratedServer() { return false; }
         public boolean containsRegistryTarget(RegistryValidation.Target target, String value) { return true; }
