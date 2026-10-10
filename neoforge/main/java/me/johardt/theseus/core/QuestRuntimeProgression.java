@@ -44,8 +44,8 @@ final class QuestRuntimeProgression {
     }
 
     void initialize(ServerPlayer player) {
-        // Baseline persisted completions before passive/login signals: installing OPAC
-        // or joining a party must not distribute historical completions.
+        // Record completion history before passive login signals. Shared progress
+        // has already been reconciled into this player’s own state.
         runtime.baselineCompletions(player);
         runtime.suppressNotifications.add(runtime.world.playerId(player));
         try {
@@ -440,17 +440,12 @@ final class QuestRuntimeProgression {
         runtime.deferredProgress.getOrDefault(playerId, Map.of()).values().forEach(value -> {
             if (value.isJsonObject()) value.getAsJsonObject().remove("tasks");
         });
+        for (QuestDefinition quest : runtime.catalog.quests().values()) runtime.resetTasks(player, quest, null);
         runtime.changed(player);
     }
 
     boolean isUnlocked(ServerPlayer player, QuestDefinition quest) {
-        return quest
-            .dependencies()
-            .stream()
-            .allMatch(dependency -> {
-                QuestDefinition required = runtime.catalog.quests().get(dependency);
-                return required != null && isComplete(player, required);
-            });
+        return runtime.prerequisitesMet(runtime.world.playerId(player), quest);
     }
 
     boolean isComplete(ServerPlayer player, QuestDefinition quest) {
@@ -474,6 +469,9 @@ final class QuestRuntimeProgression {
     ) {
         QuestProgressState progress = runtime.progress(player, quest.id());
         int previous = progress.getTaskProgress(progressKey);
+        if (task.kind() != QuestDefinition.TaskKind.COMPOSITE && previous >= task.target()) value = Math.max(previous, value);
+        if (task.kind() != QuestDefinition.TaskKind.COMPOSITE && !quest.settings().individualProgress()
+            && (progress.partyRewardSource() != null || runtime.progressParty(runtime.world.playerId(player), quest) != null)) value = Math.max(previous, value);
         if (previous == value) return false;
         progress.setTaskProgress(progressKey, value);
         return true;

@@ -674,8 +674,8 @@ final class QuestScreenRenderer {
         Component detail = target == null
             ? Component.translatable("gui.theseus.editor.no_reset_target")
             : switch (target.scope()) {
-                case "quest" -> Component.translatable("gui.theseus.party_rewards.reset_tasks_body", target.questTitle());
-                case "task" -> Component.translatable("gui.theseus.editor.reset_task_progress_body", target.displayLabel(), target.entryId(), target.questTitle());
+                case "quest" -> Component.translatable("gui.theseus.shared_progress.reset_quest_body", target.questTitle());
+                case "task" -> Component.translatable("gui.theseus.party_progress.reset_task_body", target.displayLabel(), target.entryId(), target.questTitle());
                 case "reward" -> Component.translatable("gui.theseus.party_rewards.reset_reward_body", target.displayLabel(), target.entryId(), target.questTitle());
                 default -> Component.translatable("gui.theseus.editor.reset_selected_progress_body");
         };
@@ -929,11 +929,6 @@ final class QuestScreenRenderer {
                 (int) Math.round(icon.y()),
                 (int) Math.round(icon.width())
             );
-            if (quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY || !quest.partyRewardSource().isEmpty()) {
-                graphics.fill(nodeX + nodeWidth - 7, nodeY - 3, nodeX + nodeWidth + 3, nodeY + 7, 0xFF20242B);
-                graphics.text(screen.guiFont(), Component.translatable("gui.theseus.party_rewards.badge"),
-                    nodeX + nodeWidth - 6, nodeY - 2, quest.rewardsAvailable() ? 0xFFFFD966 : 0xFFADB4BF, false);
-            }
         }
     }
 

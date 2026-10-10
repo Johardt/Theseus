@@ -66,7 +66,7 @@ final class QuestScreenEditor {
             x = (int) snapped.x();
             y = (int) snapped.y();
         }
-        screen.authoring.beginNew(screen.group, x, y, screen.snapshots.partyAvailable());
+        screen.authoring.beginNew(screen.group, x, y);
         screen.authoringPanel.resetDraftTaskScroll();
         screen.authoringPanel.createQuestTab = DetailTab.OVERVIEW;
         screen.authoringPanel.resetOverviewScroll();

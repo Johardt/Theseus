@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 public final class QuestDraft {
     private static final Set<String> CLIENT_RUNTIME_FIELDS = Set.of(
         "progress", "unlocked", "complete", "claimed", "claimed_rewards", "pinned", "issues",
-        "reward_eligible", "party_reward_source", "pending_rewards", "reward_claim_pending"
+        "reward_eligible", "party_reward_source", "pending_rewards", "reward_claim_pending", "progress_scope", "progress_party"
     );
     private static final Set<String> SYNC_METADATA_FIELDS = Set.of("__chapters", "__editor_types", "__party");
 
@@ -36,6 +36,7 @@ public final class QuestDraft {
         this.id = id == null ? "" : id;
         this.baseline = baseline.deepCopy();
         this.document = document.deepCopy();
+        if (this.document.has("settings") && this.document.get("settings").isJsonObject()) this.document.getAsJsonObject("settings").remove("reward_audience");
     }
 
     public static QuestDraft open(JsonObject rawQuest) {
@@ -262,12 +263,6 @@ public final class QuestDraft {
         setting(settings, "showDependencyArrow", "show_dependency_arrow", showDependencyArrow, true);
         setting(settings, "repeatable", null, repeatable, false);
         setting(settings, "autoClaimRewards", "auto_claim_rewards", autoClaimRewards, false);
-    }
-
-    public void setRewardAudience(QuestDefinition.RewardAudience audience) {
-        JsonObject settings = object(document, "settings");
-        document.add("settings", settings);
-        settings.addProperty("reward_audience", audience.name().toLowerCase(java.util.Locale.ROOT));
     }
 
     public void setGroupPosition(String group, int x, int y) {

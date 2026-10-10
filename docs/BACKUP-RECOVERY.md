@@ -1,9 +1,9 @@
 # Backup and recovery
 
-Party reward eligibility, completion history, claim receipts, and interrupted
+Player-owned shared progress, completion history, claim receipts, and interrupted
 grant reservations live in the same `theseus_progress.json` file as task
-progress and pins. Back up the entire file. Its version-2 `version`/`players`
-format migrates automatically from the legacy UUID-keyed root; older Theseus
+progress and pins. Back up the entire file. Its version-4 `version`/`players`
+format migrates automatically from versions 2/3 or the legacy UUID-keyed root; older Theseus
 versions cannot read it. Keep a pre-upgrade backup if you need to downgrade.
 See [party reward recovery](PARTY-REWARDS.md#operator-inspection-and-recovery)
 before retrying any interrupted grant or resetting a receipt.

@@ -256,6 +256,9 @@ final class QuestScreenActions {
     String claimBlockedReason(ClientQuest quest) {
         if (quest.hasPendingRewards()) return Component.translatable("gui.theseus.party_rewards.interrupted").getString();
         if (quest.definition().rewards().isEmpty()) return "This quest has no rewards";
+        if (!quest.unlocked()) return Component.translatable("gui.theseus.shared_progress.locked_rewards").getString();
+        if (!quest.complete()) return Component.translatable("gui.theseus.party_rewards.not_eligible_self").getString();
+        if (quest.claimed()) return Component.translatable("quest.theseus.claimed").getString();
         if (
             quest.definition()
                 .rewards()
@@ -411,7 +414,8 @@ final class QuestScreenActions {
             quest.claimedRewards(),
             quest.rewardEligible(),
             quest.partyRewardSource(),
-            quest.hasPendingRewards()
+            quest.hasPendingRewards(),
+            quest.progressParty()
         );
         QuestSurfaceLayout.LockExplanation lockExplanation = null;
         if (quest != null) {
@@ -419,7 +423,7 @@ final class QuestScreenActions {
             for (ClientQuest candidate : screen.quests) states.put(candidate.definition().id(),
                 new QuestSurfaceLayout.LockState(
                     candidate.definition().title(),
-                    candidate.complete(),
+                    candidate.complete() && candidate.unlocked(),
                     candidate.definition().display().groups().keySet()
                 ));
             lockExplanation = QuestSurfaceLayout.explainLock(quest.definition(), states, screen.group);
@@ -429,8 +433,7 @@ final class QuestScreenActions {
             lockExplanation,
             screen.detailTab,
             screen.rewardSelections,
-            screen.serverRewardTypes,
-            screen.snapshots.partyAvailable()
+            screen.serverRewardTypes
         );
     }
 

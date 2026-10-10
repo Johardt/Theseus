@@ -284,6 +284,11 @@ final class QuestDetailsPanel {
                     quest.progress().getOrDefault(task.id(), 0) >= task.target()
             )
             .count();
+        if (quest.definition().settings().individualProgress()) {
+            Component scope = Component.translatable("gui.theseus.party_progress.personal");
+            graphics.textWithWordWrap(font, scope, x, y, contentWidth, 0xFFADB4BF);
+            y += font.wordWrapHeight(scope, contentWidth) + 6;
+        }
         graphics.text(
             font,
             Component.translatable("gui.theseus.editor.quest_progress"),
@@ -354,6 +359,9 @@ final class QuestDetailsPanel {
         int contentWidth
     ) {
         int startY = y;
+        Component scope = progressScopeLabel(quest);
+        graphics.textWithWordWrap(font, scope, x, y, contentWidth, 0xFFADB4BF);
+        y += font.wordWrapHeight(scope, contentWidth) + 6;
         if (!quest.unlocked()) y += content.drawLockedBanner(
             graphics,
             quest,
@@ -461,25 +469,16 @@ final class QuestDetailsPanel {
             );
             return 18;
         }
-        Component audience = Component.translatable("gui.theseus.party_rewards.audience",
-            Component.translatable(quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY
-                ? "gui.theseus.party_rewards.party" : "gui.theseus.party_rewards.self"));
-        graphics.textWithWordWrap(font, audience, x, y, contentWidth, 0xFFADB4BF);
-        y += font.wordWrapHeight(audience, contentWidth) + 6;
         Component eligibility = quest.pendingRewards()
             ? Component.translatable("gui.theseus.party_rewards.interrupted")
             : quest.claimed() ? Component.translatable("quest.theseus.claimed")
-            : !quest.partyRewardSource().isEmpty() ? Component.translatable("gui.theseus.party_rewards.earned", quest.partyRewardSource())
+            : quest.complete() && !quest.unlocked() ? Component.translatable("gui.theseus.shared_progress.locked_rewards")
             : quest.rewardEligible() ? Component.translatable("gui.theseus.party_rewards.available")
-            : Component.translatable(quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY
-                ? "gui.theseus.party_rewards.not_eligible" : "gui.theseus.party_rewards.not_eligible_self");
+            : Component.translatable("gui.theseus.party_rewards.not_eligible_self");
         graphics.textWithWordWrap(font, eligibility, x, y, contentWidth, 0xFFFFD966);
         y += font.wordWrapHeight(eligibility, contentWidth) + 6;
-        if (quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY && !model.partyAvailable()) {
-            Component warning = Component.translatable("gui.theseus.party_rewards.unavailable");
-            graphics.textWithWordWrap(font, warning, x, y, contentWidth, 0xFFFFAA77);
-            y += font.wordWrapHeight(warning, contentWidth) + 6;
-        }
+        if (quest.complete() && !quest.unlocked()) y += content.drawLockedBanner(
+            graphics, quest, model.lockExplanation(), x, y, contentWidth);
         y = content.drawSectionHeading(
             graphics,
             (quest.claimed() ? Component.translatable("quest.theseus.claimed") : Component.translatable("gui.theseus.rewards.title")).getString(),
@@ -660,22 +659,28 @@ final class QuestDetailsPanel {
 
 
 
+    private static Component progressScopeLabel(QuestData quest) {
+        return Component.translatable(quest.definition().settings().individualProgress()
+            ? "gui.theseus.party_progress.tasks_individual"
+            : "gui.theseus.party_progress.tasks_shared");
+    }
+
     record QuestData(QuestDefinition definition, Map<String, Integer> progress, boolean unlocked,
         boolean complete, boolean claimed, Set<String> claimedRewards, boolean rewardEligible,
-        String partyRewardSource, boolean pendingRewards) {
+        String partyRewardSource, boolean pendingRewards, String progressParty) {
+        QuestData(QuestDefinition definition, Map<String, Integer> progress, boolean unlocked,
+            boolean complete, boolean claimed, Set<String> claimedRewards, boolean rewardEligible,
+            String partyRewardSource, boolean pendingRewards) {
+            this(definition, progress, unlocked, complete, claimed, claimedRewards, rewardEligible, partyRewardSource, pendingRewards, "");
+        }
         QuestData(QuestDefinition definition, Map<String, Integer> progress, boolean unlocked,
             boolean complete, boolean claimed, Set<String> claimedRewards) {
-            this(definition, progress, unlocked, complete, claimed, claimedRewards, complete, "", false);
+            this(definition, progress, unlocked, complete, claimed, claimedRewards, complete && unlocked, "", false, "");
         }
     }
 
     record Model(QuestData selected, QuestSurfaceLayout.LockExplanation lockExplanation,
-        QuestScreen.DetailTab tab, Map<String, Set<String>> rewardSelections, Set<String> serverRewardTypes, boolean partyAvailable) {
-        Model(QuestData selected, QuestSurfaceLayout.LockExplanation lockExplanation,
-            QuestScreen.DetailTab tab, Map<String, Set<String>> rewardSelections, Set<String> serverRewardTypes) {
-            this(selected, lockExplanation, tab, rewardSelections, serverRewardTypes, false);
-        }
-    }
+        QuestScreen.DetailTab tab, Map<String, Set<String>> rewardSelections, Set<String> serverRewardTypes) {}
 
     record RewardChoiceTarget(String selectionKey, String choiceId, int maximumSelections, Bounds bounds) {}
 

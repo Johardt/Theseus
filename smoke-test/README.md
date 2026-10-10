@@ -1,42 +1,35 @@
 # Theseus 1.1.0 smoke-test kit
 
-## OPAC party reward pass
+## OPAC shared progress pass
 
-Use `./gradlew runServer -Popac` for the OPAC development dependency, or install
-OPAC 0.31.6+ for 26.1.2 in a disposable dedicated server. Also run without OPAC
-to verify optional loading. Full behavior is in [party rewards](../docs/PARTY-REWARDS.md).
+Use `./gradlew runServer -Popac` with three players in a disposable OPAC party.
+Also test startup without OPAC. Full behavior is in [shared quests](../docs/PARTY-REWARDS.md).
 
-1. With three members in an OPAC built-in party, create a new quest in Theseus.
-   Reward audience must default to Party members; explicitly switch a second
-   quest to Individual. Imported legacy quests must stay Individual.
-2. Give the party quest a manual check task and a selectable XP reward. Take
-   one member offline, then complete it with another member.
-3. The online recipient sees available rewards without personal task completion
-   or descendant unlocks. Each member chooses and claims separately. The offline
-   member can claim after reconnecting. Each receives the full chosen reward.
-4. Invite a late joiner and ally another party. Neither gets this old reward.
-   Complete a different member's first completion after the late join: that
-   completion can include the new roster, without paying existing claimants again.
-5. Try duplicate claims, task resets, leaving/switching parties, renaming the
-   party, transferring ownership, disbanding, and a server restart. Earned
-   eligibility persists, while claimed reward IDs never pay again.
-6. Remove OPAC from the server and from the Theseus client. Solo quests and saved
-   eligibility still work; saved party audience stays visible with a warning.
-   New quests without the integration default to Individual.
-7. Use the display menu's Available rewards filter, including a personally
-   locked quest earned through a party. Check personal graph colors, badge,
-   rewards tab, current-party context, and individual selectable controls.
-8. Inspect and repair an offline UUID with `/theseus rewards inspect` and
-   `/theseus rewards repair`. Verify neither operation erases receipts or tasks.
-   Explicit reward reset can allow payout again; acknowledgement runs no effects.
-9. Test a failing add-on reward on a copy of the world: delivered receipts survive,
-   interrupted grants block retry, and other members can still claim. Investigate
-   delivery before retrying or acknowledging. Check the warning for global command
-   rewards and verify malformed `reward_audience` values fail validation.
+1. Create shared quests with Individual Progress Off and one individual quest
+   with it On. Confirm Reward audience is absent. Without server OPAC,
+   Individual Progress is disabled and its tooltip explains the requirement.
+2. Have different members finish separate tasks and contribute to a cumulative
+   kill task. All members retain synchronized counters, including an offline
+   member. Inventory snapshots do not sum or undo copied achievements.
+3. Submit consumable items and XP: only the contributor spends resources.
+   Make independent selectable reward choices and verify one claim per member.
+4. Build A → B → C with B individual and C shared. Alice completes B and works
+   on C. Bob sees copied C progress but cannot contribute before finishing B.
+   Complete C: Bob sees Locked rewards and cannot claim. Finish Bob's B and
+   claim C immediately without repeating it, including after leaving the party.
+5. Leave, join another party, transfer ownership, disband, and restart. Progress
+   stays with every player; reconciliation uses maximum counters, not sums.
+   Late joiners receive historical shared progress, subject to their prerequisites.
+6. Verify prerequisite chains cannot be skipped through copied completions.
+   Shared task resets affect current members and recompute composite parents;
+   reward receipts remain intact. Individual quests never copy to teammates.
+7. Remove OPAC: retained progress and eligible claims still work. Migrate a
+   backed-up version-3 file and verify counters/receipts survive, including
+   offline old recipients and deferred legacy records.
+8. Test failing reward handlers and interrupted grants: successful receipts
+   survive, retries require operator review, and other members can claim.
+   Explicit reward reset can pay twice; acknowledgement runs no effects.
 
-This directory is a disposable fixture pack for a real NeoForge client/server
-run. It is intentionally outside `examples/` and is not copied into a shipped
-mod or the dev profile automatically.
 
 ## Requirements
 

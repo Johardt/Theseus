@@ -236,23 +236,6 @@ final class QuestAuthoringPanelDock {
         }), 2, 1);
         layout.addChild(settings, row++, 0);
 
-        if (panel.host.partyAvailable() || panel.authoring.rewardAudience == me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY) {
-            layout.addChild(panel.button("draft-reward-audience", widget -> {
-                widget.withSize(fieldWidth, 22);
-                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.party_rewards.audience",
-                    Component.translatable(panel.authoring.rewardAudience == me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY
-                        ? "gui.theseus.party_rewards.party" : "gui.theseus.party_rewards.self"))));
-                widget.withCallback(() -> {
-                    panel.authoring.rewardAudience = panel.authoring.rewardAudience == me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY
-                        ? me.johardt.theseus.core.QuestDefinition.RewardAudience.SELF : me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY;
-                    panel.host.dispatch(new RebuildWidgets());
-                });
-                widget.active = panel.host.partyAvailable();
-                widget.withTooltip(Component.translatable(panel.host.partyAvailable()
-                    ? "gui.theseus.party_rewards.audience_tooltip" : "gui.theseus.party_rewards.unavailable"));
-            }), row++, 0);
-        }
-
         if (panel.authoring.editingExisting) {
             layout.addChild(dockSeparator(fieldWidth), row++, 0);
             layout.addChild(dockLabel("gui.theseus.editor.quest_actions", fieldWidth), row++, 0);
@@ -349,7 +332,12 @@ final class QuestAuthoringPanelDock {
             Component label = Component.translatable(labelKey);
             Component state = Component.translatable(value ? "gui.theseus.editor.state_on" : "gui.theseus.editor.state_off");
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.setting_value", label, state)));
-            widget.withTooltip(Component.translatable("gui.theseus.editor.setting_narration", label, state));
+            widget.withTooltip(labelKey.equals("setting.theseus.quest.individual_progress")
+                ? Component.translatable(panel.host.partyAvailable()
+                    ? "setting.theseus.quest.individual_progress.tooltip"
+                    : "setting.theseus.quest.individual_progress.unavailable")
+                : Component.translatable("gui.theseus.editor.setting_narration", label, state));
+            if (labelKey.equals("setting.theseus.quest.individual_progress")) widget.active = panel.host.partyAvailable();
             widget.withCallback(() -> {
                 toggle.run();
                 panel.host.dispatch(new RebuildWidgets());

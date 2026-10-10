@@ -40,7 +40,8 @@ final class PartyRewardCommands {
         QuestProgressState state = runtime.progress(player, id);
         if (operation.equals("inspect")) {
             context.getSource().sendSuccess(() -> Component.literal("Player " + player + ", quest " + id
-                + ": party eligibility=" + state.partyRewardSource() + ", completion recorded=" + state.completionRecorded()
+                + ": shared source=" + state.partyRewardSource() + ", prerequisites met=" + runtime.prerequisitesMet(player, quest)
+                + ", completion recorded=" + state.completionRecorded()
                 + ", claimed=" + state.claimedRewards() + ", interrupted=" + state.pendingRewards()), false);
             return 1;
         }
@@ -48,6 +49,7 @@ final class PartyRewardCommands {
             UUID operator = context.getSource().getEntity() instanceof net.minecraft.server.level.ServerPlayer actor
                 ? runtime.world.playerId(actor) : new UUID(0, 0);
             state.earnPartyRewards(new QuestProgressState.PartyRewardSource(new UUID(0, 0), "Operator repair", operator));
+            completeTasks(state, quest.tasks(), "");
         } else {
             if (!quest.rewards().containsKey(reward)) {
                 context.getSource().sendFailure(Component.literal("Unknown reward '" + reward + "'"));
@@ -65,9 +67,16 @@ final class PartyRewardCommands {
         runtime.world.onlinePlayers().stream().filter(online -> runtime.world.playerId(online).equals(player))
             .forEach(online -> runtime.sync(online, false));
         context.getSource().sendSuccess(() -> Component.literal(operation.equals("repair")
-            ? "Reward eligibility repaired; existing claims are preserved."
+            ? "Quest tasks marked complete; prerequisites still gate rewards and existing claims are preserved."
             : operation.equals("acknowledge") ? "Reward recorded as delivered without granting it again."
             : "Reward receipt reset. This player can receive this reward again if eligible."), true);
         return 1;
+    }
+
+    private static void completeTasks(QuestProgressState state, java.util.Map<String, QuestDefinition.Task> tasks, String prefix) {
+        tasks.forEach((id, task) -> {
+            state.setTaskProgress(prefix + id, task.target());
+            completeTasks(state, task.tasks(), prefix + id + "/");
+        });
     }
 }

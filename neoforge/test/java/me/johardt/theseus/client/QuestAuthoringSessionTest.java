@@ -12,19 +12,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestAuthoringSessionTest {
     @Test
-    void newQuestAudienceUsesServerCapabilityAndIsExplicitlySaved() {
+    void newQuestsUseIndividualProgressWithoutRewardAudience() {
         QuestAuthoringSession session = new QuestAuthoringSession(16);
-        session.beginNew("Main", 0, 0, true);
-        assertEquals(QuestDefinition.RewardAudience.PARTY, session.rewardAudience);
-        assertEquals("party", session.draft().snapshot().getAsJsonObject("settings").get("reward_audience").getAsString());
-        assertEquals(QuestDefinition.RewardAudience.PARTY, session.copy().rewardAudience);
-        session.beginNew("Main", 0, 0, false);
-        assertEquals(QuestDefinition.RewardAudience.SELF, session.rewardAudience);
-        assertEquals("self", session.draft().snapshot().getAsJsonObject("settings").get("reward_audience").getAsString());
+        for (boolean partyAvailable : new boolean[] {true, false}) {
+            session.beginNew("Main", 0, 0);
+            assertFalse(session.individualProgress);
+            assertFalse(session.copy().individualProgress);
+            assertFalse(session.draft().snapshot().getAsJsonObject("settings").has("reward_audience"));
+        }
     }
 
     @Test
-    void editingLegacyOrPartyQuestPreservesAudienceAndStripsRuntimeEligibility() {
+    void editingRemovesObsoleteAudienceAndRuntimeEligibility() {
         for (String audience : new String[] {"", "self", "party"}) {
             JsonObject document = JsonParser.parseString("""
                 {"display":{"title":"Quest"},"tasks":{},"rewards":{},"settings":{},
@@ -35,7 +34,7 @@ class QuestAuthoringSessionTest {
             QuestDefinition definition = QuestDefinition.parse("quest", document);
             QuestAuthoringSession session = new QuestAuthoringSession(16);
             session.beginExisting(definition, document, "Main");
-            assertEquals(audience.equals("party") ? QuestDefinition.RewardAudience.PARTY : QuestDefinition.RewardAudience.SELF, session.rewardAudience);
+            assertFalse(session.draft().snapshot().getAsJsonObject("settings").has("reward_audience"));
             JsonObject saved = session.draft().transferSnapshot();
             assertFalse(saved.has("reward_eligible"));
             assertFalse(saved.has("party_reward_source"));

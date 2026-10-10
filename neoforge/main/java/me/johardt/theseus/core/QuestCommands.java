@@ -77,8 +77,9 @@ public final class QuestCommands {
     }
 
     private static int reset(CommandSourceStack source, QuestRuntime runtime) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        if (!runtime.partyProgressReady(source.getPlayerOrException())) return 0;
         runtime.reset(source.getPlayerOrException());
-        source.sendSuccess(() -> Component.literal("Your Theseus tasks were reset. Earned eligibility and reward receipts are preserved."), false);
+        source.sendSuccess(() -> Component.literal("Your individual tasks and your OPAC party's shared tasks were reset. Reward receipts and completion history are preserved."), false);
         return 1;
     }
 

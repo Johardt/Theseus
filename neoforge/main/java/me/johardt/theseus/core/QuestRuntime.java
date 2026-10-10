@@ -38,12 +38,15 @@ public final class QuestRuntime {
     final QuestWorld world;
     final QuestSync questSync;
     final PartyLookup parties;
+    private JsonObject legacyPartyProgress = new JsonObject();
     QuestCatalog catalog;
     final Map<UUID, Map<String, QuestProgressState>> progress =
         new HashMap<>();
     /** Raw progress held until a quest that failed catalog loading is available again. */
     final Map<UUID, Map<String, JsonElement>> deferredProgress = new HashMap<>();
     final Set<UUID> suppressNotifications = new java.util.HashSet<>();
+    private final Map<UUID, PartyLookup.Party> visibleParties = new HashMap<>();
+    private final Set<UUID> failedPartyLookups = new java.util.HashSet<>();
     private boolean progressLoadFailed;
 
     /** Builds a runtime from handlers registered with QuestRuntime before server startup. */
@@ -404,10 +407,14 @@ public final class QuestRuntime {
     }
 
     public void initialize(ServerPlayer player) {
+        if (!partyProgressReady(player)) return;
+        reconcilePartyProgress(player);
         progression.initialize(player);
     }
 
     public boolean triggerDummy(ServerPlayer player, String value) {
+        if (!partyProgressReady(player)) return false;
+        reconcilePartyProgress(player);
         return progression.triggerDummy(player, value);
     }
 
@@ -416,14 +423,28 @@ public final class QuestRuntime {
     }
 
     public void updateInventoryTasks(ServerPlayer player) {
+        if (!partyProgressReady(player)) return;
+        reconcilePartyProgress(player);
+        refreshPartyMembership(player);
         progression.updateInventoryTasks(player);
     }
 
+    void refreshPartyMembership(ServerPlayer player) {
+        if (!parties.available()) return;
+        PartyLookup.Party party = parties.find(world.playerId(player));
+        PartyLookup.Party previous = visibleParties.put(world.playerId(player), party);
+        if (!java.util.Objects.equals(previous, party)) sync(player, false);
+    }
+
     public boolean signal(ServerPlayer player, TaskEngine.Signal signal) {
+        if (!partyProgressReady(player)) return false;
+        reconcilePartyProgress(player);
         return progression.signal(player, signal);
     }
 
     public boolean submit(ServerPlayer player, String questId, String taskId) {
+        if (!partyProgressReady(player)) return false;
+        reconcilePartyProgress(player);
         return progression.submit(player, questId, taskId);
     }
 
@@ -451,6 +472,7 @@ public final class QuestRuntime {
     }
 
     public boolean claim(ServerPlayer player, String questId) {
+        if (partyProgressReady(player)) reconcilePartyProgress(player);
         return progression.claim(player, questId);
     }
 
@@ -459,6 +481,7 @@ public final class QuestRuntime {
         String questId,
         Map<String, List<String>> selections
     ) {
+        if (partyProgressReady(player)) reconcilePartyProgress(player);
         return progression.claim(player, questId, selections);
     }
 
@@ -467,6 +490,7 @@ public final class QuestRuntime {
     }
 
     public void reset(ServerPlayer player) {
+        if (!partyProgressReady(player)) return;
         progression.reset(player);
     }
 
@@ -646,9 +670,81 @@ public final class QuestRuntime {
             .computeIfAbsent(questId, ignored -> new QuestProgressState());
     }
 
+    PartyLookup.Party progressParty(UUID player, QuestDefinition quest) {
+        if (quest.settings().individualProgress() || !parties.available()) return null;
+        PartyLookup.Party party = parties.find(player);
+        if (party != null && !party.members().contains(player)) throw new IllegalStateException("Player is not in party roster");
+        return party;
+    }
+
+    boolean partyProgressReady(ServerPlayer player) {
+        if (!parties.available() || catalog.quests().values().stream().allMatch(quest -> quest.settings().individualProgress())) return true;
+        UUID id = world.playerId(player);
+        try {
+            parties.find(id);
+            failedPartyLookups.remove(id);
+            return true;
+        } catch (RuntimeException exception) {
+            if (failedPartyLookups.add(id)) {
+                Theseus.LOGGER.error("OPAC lookup failed; quest contributions paused for {}", id, exception);
+                world.message(player, "OPAC party progress is temporarily unavailable. Quest contributions are paused; try again later.");
+            }
+            return false;
+        }
+    }
+
+    boolean prerequisitesMet(UUID player, QuestDefinition quest) {
+        return prerequisitesMet(player, quest, new java.util.HashSet<>());
+    }
+
+    private boolean prerequisitesMet(UUID player, QuestDefinition quest, Set<String> visiting) {
+        if (!visiting.add(quest.id())) return false;
+        boolean met = quest.dependencies().stream().allMatch(id -> {
+            QuestDefinition required = catalog.quests().get(id);
+            return required != null && tasksComplete(progress(player, id), required) && prerequisitesMet(player, required, visiting);
+        });
+        visiting.remove(quest.id());
+        return met;
+    }
+
+    void resetTasks(ServerPlayer player, QuestDefinition quest, String path) {
+        PartyLookup.Party party = progressParty(world.playerId(player), quest);
+        Set<UUID> members = party == null ? Set.of(world.playerId(player)) : party.members();
+        for (UUID member : members) {
+            QuestProgressState state = progress(member, quest.id());
+            if (path == null) state.clearTasks();
+            else state.resetTaskPath(path);
+            // Reset composite parents too, so an explicit reset can decrease their summaries.
+            if (path != null) {
+                String parent = path;
+                while (parent.contains("/")) {
+                    parent = parent.substring(0, parent.lastIndexOf('/'));
+                    state.setTaskProgress(parent, 0);
+                }
+                refreshSharedComposites(state, quest.tasks(), "");
+            }
+        }
+    }
+
+    void syncPartyProgress(ServerPlayer player) {
+        if (!parties.available()) return;
+        PartyLookup.Party party;
+        try {
+            party = parties.find(world.playerId(player));
+        } catch (RuntimeException exception) {
+            Theseus.LOGGER.warn("Could not sync party progress: {}", exception.toString());
+            return;
+        }
+        if (party == null) return;
+        for (ServerPlayer member : world.onlinePlayers()) {
+            if (!world.playerId(member).equals(world.playerId(player)) && party.members().contains(world.playerId(member))) sync(member, false);
+        }
+    }
+
     void changed(ServerPlayer player) {
         saveProgress();
         sync(player, false);
+        syncPartyProgress(player);
     }
 
     void changed(
@@ -656,23 +752,13 @@ public final class QuestRuntime {
         Map<String, Boolean> wasUnlocked,
         Map<String, Boolean> wasComplete
     ) {
-        Map<UUID, List<QuestDefinition>> recipients = new HashMap<>();
+        reconcilePartyProgress(player);
         for (QuestDefinition quest : catalog.quests().values()) {
-            if (!wasComplete.getOrDefault(quest.id(), false) && isComplete(player, quest)) {
-                for (UUID recipient : recordCompletion(world.playerId(player), quest)) {
-                    recipients.computeIfAbsent(recipient, ignored -> new java.util.ArrayList<>()).add(quest);
-                }
-            }
+            if (!wasComplete.getOrDefault(quest.id(), false) && isComplete(player, quest)) recordCompletion(world.playerId(player), quest);
         }
         saveProgress();
         sync(player, false);
-        for (ServerPlayer recipient : world.onlinePlayers()) {
-            UUID id = world.playerId(recipient);
-            if (!recipients.containsKey(id) || id.equals(world.playerId(player))) continue;
-            sync(recipient, false);
-            for (QuestDefinition quest : recipients.get(id)) notify(recipient, "reward", "Party rewards available",
-                (player == null ? "A party member" : player.getName().getString()) + " completed " + quest.title() + ". Your rewards are available.");
-        }
+        syncPartyProgress(player);
         if (suppressNotifications.contains(world.playerId(player))) return;
         for (QuestDefinition quest : catalog.quests().values()) {
             boolean unlocked = isUnlocked(player, quest);
@@ -730,6 +816,8 @@ public final class QuestRuntime {
     * task, reward, and description data is sent only for a requested chapter.
     */
     String snapshot(ServerPlayer player, String chapter) {
+        boolean partyReady = partyProgressReady(player);
+        if (partyReady) reconcilePartyProgress(player);
         JsonObject root = new JsonObject();
         root.add("__party", partyContext(world.playerId(player)));
         JsonObject editorTypes = new JsonObject();
@@ -759,6 +847,10 @@ public final class QuestRuntime {
             json.addProperty("unlocked", isUnlocked(player, quest));
             json.addProperty("complete", isComplete(player, quest));
             json.addProperty("reward_eligible", rewardEligible(player, quest));
+            PartyLookup.Party progressParty = partyReady ? progressParty(world.playerId(player), quest) : null;
+            json.addProperty("progress_scope", progressParty == null ? "individual" : "shared");
+            json.addProperty("progress_party", progressParty == null ? "" : progressParty.name());
+            json.remove("party_reward_source");
             if (state.partyRewardSource() != null) {
                 json.addProperty("party_reward_source", state.partyRewardSource().partyName());
             }
@@ -777,7 +869,9 @@ public final class QuestRuntime {
 
     JsonObject fullQuest(QuestDefinition quest) {
         try {
-            return catalog.rawQuest(quest.id());
+            JsonObject json = catalog.rawQuest(quest.id());
+            if (json.has("settings") && json.get("settings").isJsonObject()) json.getAsJsonObject("settings").remove("reward_audience");
+            return json;
         } catch (Exception ignored) {
             return GSON.toJsonTree(quest).getAsJsonObject();
         }
@@ -809,7 +903,8 @@ public final class QuestRuntime {
             quest.settings().hiddenUntil().name().toLowerCase(java.util.Locale.ROOT)
         );
         settings.addProperty("showDependencyArrow", quest.settings().showDependencyArrow());
-        settings.addProperty("reward_audience", quest.settings().rewardAudience().name().toLowerCase(java.util.Locale.ROOT));
+        settings.addProperty("individual_progress", quest.settings().individualProgress());
+
         root.add("settings", settings);
 
         JsonArray dependencies = new JsonArray();
@@ -824,11 +919,15 @@ public final class QuestRuntime {
         progressLoadFailed = true;
         try {
             JsonObject storedProgress = progressStore.load();
+            int loadedVersion = storedProgress.has("version") ? storedProgress.get("version").getAsInt() : 1;
             if (storedProgress.has("version")) {
-                if (storedProgress.get("version").getAsInt() != 2 || !storedProgress.has("players")
+                int version = storedProgress.get("version").getAsInt();
+                if ((version != 2 && version != 3 && version != 4) || !storedProgress.has("players")
                     || !storedProgress.get("players").isJsonObject()) {
                     throw new IllegalArgumentException("Unsupported progress document version");
                 }
+                if (storedProgress.has("parties")) legacyPartyProgress = storedProgress.getAsJsonObject("parties").deepCopy();
+                if (storedProgress.has("legacy_parties")) legacyPartyProgress = storedProgress.getAsJsonObject("legacy_parties").deepCopy();
                 storedProgress = storedProgress.getAsJsonObject("players");
             }
             long fileReadMillis = elapsedMillis(loadStarted);
@@ -849,6 +948,12 @@ public final class QuestRuntime {
                 }
             });
             progressLoadFailed = false;
+            if (loadedVersion < 4) deferredProgress.values().forEach(quests -> quests.values().forEach(value -> {
+                if (value.isJsonObject() && value.getAsJsonObject().has("party_reward_source")) {
+                    value.getAsJsonObject().addProperty("legacy_reward_eligible", true);
+                }
+            }));
+            migrateLegacyRecipients(loadedVersion < 4);
             // Re-emit legacy entries in the current explicit shape, while
             // retaining valid progress from other players.
             saveProgress();
@@ -879,7 +984,10 @@ public final class QuestRuntime {
             }
             try {
                 if (!entry.getValue().isJsonObject()) throw new IllegalArgumentException("Progress entry must be an object");
-                result.put(entry.getKey(), QuestProgressState.fromJson(quest, entry.getValue().getAsJsonObject()));
+                QuestProgressState state = QuestProgressState.fromJson(quest, entry.getValue().getAsJsonObject());
+                if (entry.getValue().getAsJsonObject().has("legacy_reward_eligible")
+                    && entry.getValue().getAsJsonObject().get("legacy_reward_eligible").getAsBoolean()) completeLegacyTasks(state, quest.tasks(), "");
+                result.put(entry.getKey(), state);
             } catch (RuntimeException exception) {
                 Theseus.LOGGER.warn("Ignoring malformed progress for quest '{}': {}", entry.getKey(), exception.getMessage());
             }
@@ -899,6 +1007,8 @@ public final class QuestRuntime {
                 try {
                     if (!entry.getValue().isJsonObject()) throw new IllegalArgumentException("Progress entry must be an object");
                     QuestProgressState state = QuestProgressState.fromJson(quest, entry.getValue().getAsJsonObject());
+                    if (entry.getValue().getAsJsonObject().has("legacy_reward_eligible")
+                        && entry.getValue().getAsJsonObject().get("legacy_reward_eligible").getAsBoolean()) completeLegacyTasks(state, quest.tasks(), "");
                     progress.computeIfAbsent(playerId, ignored -> new HashMap<>()).putIfAbsent(entry.getKey(), state);
                     iterator.remove();
                 } catch (RuntimeException exception) {
@@ -928,8 +1038,9 @@ public final class QuestRuntime {
                 root.add(playerId.toString(), player);
             });
             JsonObject document = new JsonObject();
-            document.addProperty("version", 2);
+            document.addProperty("version", 4);
             document.add("players", root);
+            if (!legacyPartyProgress.isEmpty()) document.add("legacy_parties", legacyPartyProgress.deepCopy());
             progressStore.save(document);
             return true;
         } catch (Exception exception) {
@@ -943,7 +1054,7 @@ public final class QuestRuntime {
     }
 
     public boolean rewardEligible(ServerPlayer player, QuestDefinition quest) {
-        return !quest.rewards().isEmpty() && (isComplete(player, quest) || progress(player, quest.id()).partyRewardSource() != null);
+        return !quest.rewards().isEmpty() && isComplete(player, quest) && isUnlocked(player, quest);
     }
 
     void baselineCompletions(ServerPlayer player) {
@@ -952,30 +1063,103 @@ public final class QuestRuntime {
         }
     }
 
-    /** Records one completion without merging task progress into any other player's state. */
-    Set<UUID> recordCompletion(UUID completer, QuestDefinition quest) {
-        QuestProgressState state = progress(completer, quest.id());
-        if (state.completionRecorded()) return Set.of();
-        state.recordCompletion();
-        if (quest.settings().rewardAudience() != QuestDefinition.RewardAudience.PARTY || quest.rewards().isEmpty()) return Set.of();
-        try {
-            PartyLookup.Party party = parties.find(completer);
-            if (party == null) return Set.of();
-            if (!party.members().contains(completer)) throw new IllegalStateException("Completer is not in party roster");
-            Set<UUID> recipients = new java.util.HashSet<>();
-            var source = new QuestProgressState.PartyRewardSource(party.id(), party.name(), completer);
+    void recordCompletion(UUID completer, QuestDefinition quest) {
+        progress(completer, quest.id()).recordCompletion();
+    }
+
+    /** Reconcile shared achievements by maximum, never adding potentially duplicated history. */
+    void reconcilePartyProgress(ServerPlayer player) {
+        if (!parties.available()) return;
+        PartyLookup.Party party = parties.find(world.playerId(player));
+        if (party == null) return;
+        if (!party.members().contains(world.playerId(player))) throw new IllegalStateException("Player is not in party roster");
+        JsonObject legacy = legacyPartyProgress.getAsJsonObject(party.id().toString());
+        boolean changed = false;
+        for (QuestDefinition quest : catalog.quests().values()) {
+            if (quest.settings().individualProgress()) continue;
+            Map<String, Integer> maximum = new HashMap<>();
+            for (UUID member : party.members()) progress(member, quest.id()).taskProgress().forEach((path, value) -> maximum.merge(path, value, Math::max));
+            if (legacy != null && legacy.has(quest.id())) {
+                QuestProgressState old = QuestProgressState.fromJson(quest, legacy.getAsJsonObject(quest.id()));
+                old.taskProgress().forEach((path, value) -> maximum.merge(path, value, Math::max));
+                // Preserve completed legacy recipients even if they already left the party.
+                for (var member : progress.entrySet()) {
+                    QuestProgressState state = member.getValue().get(quest.id());
+                    if (state != null && state.partyRewardSource() != null && state.partyRewardSource().partyId().equals(party.id())) {
+                        changed |= mergeSharedTasks(state, quest, maximum);
+                    }
+                }
+                legacy.remove(quest.id());
+                changed = true;
+            }
+            var source = new QuestProgressState.PartyRewardSource(party.id(), party.name(), world.playerId(player));
             for (UUID member : party.members()) {
-                QuestProgressState recipient = progress(member, quest.id());
-                if (recipient.earnPartyRewards(source) && !recipient.allRewardsClaimed(quest)) recipients.add(member);
+                QuestProgressState state = progress(member, quest.id());
+                boolean copied = mergeSharedTasks(state, quest, maximum);
+                if (copied || maximum.values().stream().anyMatch(value -> value > 0)) changed |= state.earnPartyRewards(source);
+                changed |= copied;
+                if (tasksComplete(state, quest)) state.recordCompletion();
             }
-            return recipients;
-        } catch (RuntimeException exception) {
-            Theseus.LOGGER.error("Party reward distribution failed for quest {} completed by {}; use eligibility repair", quest.id(), completer, exception);
-            for (ServerPlayer player : world.onlinePlayers()) {
-                if (world.playerId(player).equals(completer)) world.message(player, "Party rewards could not be distributed. Ask an operator to repair eligibility for " + quest.id());
-            }
-            return Set.of();
         }
+        if (legacy != null && legacy.isEmpty()) legacyPartyProgress.remove(party.id().toString());
+        if (changed) {
+            saveProgress();
+            for (ServerPlayer online : world.onlinePlayers()) {
+                if (party.members().contains(world.playerId(online)) && !world.playerId(online).equals(world.playerId(player))) sync(online, false);
+            }
+        }
+    }
+
+    private void migrateLegacyRecipients(boolean legacyRewardEligibility) {
+        progress.values().forEach(quests -> quests.forEach((id, state) -> {
+            if (state.partyRewardSource() == null) return;
+            QuestDefinition definition = catalog.quests().get(id);
+            if (legacyRewardEligibility && definition != null) completeLegacyTasks(state, definition.tasks(), "");
+            JsonObject legacy = legacyPartyProgress.getAsJsonObject(state.partyRewardSource().partyId().toString());
+            QuestDefinition quest = catalog.quests().get(id);
+            if (legacy != null && quest != null && legacy.has(id)) {
+                mergeSharedTasks(state, quest, QuestProgressState.fromJson(quest, legacy.getAsJsonObject(id)).taskProgress());
+            }
+        }));
+    }
+
+    private static void completeLegacyTasks(QuestProgressState state, Map<String, QuestDefinition.Task> tasks, String prefix) {
+        tasks.forEach((id, task) -> {
+            state.setTaskProgress(prefix + id, Math.max(state.getTaskProgress(prefix + id), task.target()));
+            completeLegacyTasks(state, task.tasks(), prefix + id + "/");
+        });
+    }
+
+    private static boolean mergeSharedTasks(QuestProgressState state, QuestDefinition quest, Map<String, Integer> maximum) {
+        Map<String, Integer> before = state.taskProgress();
+        maximum.forEach((path, value) -> state.setTaskProgress(path, Math.max(value, state.getTaskProgress(path))));
+        refreshSharedComposites(state, quest.tasks(), "");
+        return !before.equals(state.taskProgress());
+    }
+
+    private static void refreshSharedComposites(QuestProgressState state, Map<String, QuestDefinition.Task> tasks, String prefix) {
+        tasks.forEach((id, task) -> {
+            String path = prefix + id;
+            if (task.kind() != QuestDefinition.TaskKind.COMPOSITE) return;
+            refreshSharedComposites(state, task.tasks(), path + "/");
+            double total = task.tasks().values().stream().mapToDouble(child -> Math.min(1,
+                state.getTaskProgress(path + "/" + child.id()) / (double) Math.max(1, child.target()))).sum();
+            state.setTaskProgress(path, Math.max(state.getTaskProgress(path), Math.min(task.target(), (int) Math.floor(total + 0.000001))));
+        });
+    }
+
+    private static boolean tasksComplete(QuestProgressState state, QuestDefinition quest) {
+        return quest.tasks().values().stream().allMatch(task -> state.getTaskProgress(task.id()) >= task.target());
+    }
+
+    void editLegacyPartyProgress(String oldId, String newId, boolean reset) {
+        legacyPartyProgress.entrySet().forEach(party -> {
+            JsonObject quests = party.getValue().getAsJsonObject();
+            if (!quests.has(oldId)) return;
+            JsonObject state = quests.getAsJsonObject(oldId);
+            if (reset) state.remove("tasks");
+            if (newId != null && !oldId.equals(newId)) { quests.remove(oldId); quests.add(newId, state); }
+        });
     }
 
     private JsonObject partyContext(UUID player) {

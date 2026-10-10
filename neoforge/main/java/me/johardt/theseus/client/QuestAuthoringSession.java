@@ -49,7 +49,6 @@ class QuestAuthoringSession {
     boolean showDependencyArrow = true;
     boolean repeatable;
     boolean autoClaimRewards;
-    QuestDefinition.RewardAudience rewardAudience = QuestDefinition.RewardAudience.SELF;
     JsonObject groups = new JsonObject();
     int iconSize;
     String iconSizeText;
@@ -106,7 +105,6 @@ class QuestAuthoringSession {
         this.showDependencyArrow = source.showDependencyArrow;
         this.repeatable = source.repeatable;
         this.autoClaimRewards = source.autoClaimRewards;
-        this.rewardAudience = source.rewardAudience;
         this.groups = source.groups.deepCopy();
         this.iconSize = source.iconSize;
         this.iconSizeText = source.iconSizeText;
@@ -165,7 +163,6 @@ class QuestAuthoringSession {
         showDependencyArrow = definition.settings().showDependencyArrow();
         repeatable = definition.settings().repeatable();
         autoClaimRewards = definition.settings().autoClaimRewards();
-        rewardAudience = definition.settings().rewardAudience();
         groups = new JsonObject();
         definition.display().groups().forEach((name, position) -> {
             JsonObject placement = new JsonObject();
@@ -192,10 +189,6 @@ class QuestAuthoringSession {
     }
 
     void beginNew(String group, int x, int y) {
-        beginNew(group, x, y, false);
-    }
-
-    void beginNew(String group, int x, int y, boolean partyAvailable) {
         id = "";
         title = "";
         subtitle = "";
@@ -214,7 +207,6 @@ class QuestAuthoringSession {
         showDependencyArrow = true;
         repeatable = false;
         autoClaimRewards = false;
-        rewardAudience = partyAvailable ? QuestDefinition.RewardAudience.PARTY : QuestDefinition.RewardAudience.SELF;
         tasks.clear();
         rewards.clear();
         editingExisting = false;
@@ -488,7 +480,6 @@ class QuestAuthoringSession {
             repeatable,
             autoClaimRewards
         );
-        result.setRewardAudience(rewardAudience);
         JsonObject taskDocument = new JsonObject();
         tasks.forEach(task -> taskDocument.add(task.id, task.source.deepCopy()));
         result.replaceTasks(taskDocument);

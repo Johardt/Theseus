@@ -70,8 +70,7 @@ public record QuestDefinition(
             bool(settingsJson, "unlockNotification", "unlock_notification", false),
             bool(settingsJson, "showDependencyArrow", "show_dependency_arrow", true),
             bool(settingsJson, "repeatable", false),
-            bool(settingsJson, "autoClaimRewards", "auto_claim_rewards", false),
-            RewardAudience.parse(settingsJson, issues)
+            bool(settingsJson, "autoClaimRewards", "auto_claim_rewards", false)
         );
 
         return new QuestDefinition(
@@ -324,26 +323,7 @@ public record QuestDefinition(
         }
     }
     public record GroupDisplay(int x, int y) {}
-    public enum RewardAudience {
-        SELF, PARTY;
-
-        static RewardAudience parse(JsonObject settings, List<ValidationIssue> issues) {
-            if (!settings.has("reward_audience")) return SELF;
-            JsonElement value = settings.get("reward_audience");
-            if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
-                if (value.getAsString().equals("self")) return SELF;
-                if (value.getAsString().equals("party")) return PARTY;
-            }
-            issues.add(new ValidationIssue(Severity.ERROR, "settings.reward_audience", "Expected 'self' or 'party'"));
-            return SELF;
-        }
-    }
-
-    public record Settings(boolean individualProgress, Visibility hiddenUntil, boolean unlockNotification, boolean showDependencyArrow, boolean repeatable, boolean autoClaimRewards, RewardAudience rewardAudience) {
-        public Settings(boolean individualProgress, Visibility hiddenUntil, boolean unlockNotification, boolean showDependencyArrow, boolean repeatable, boolean autoClaimRewards) {
-            this(individualProgress, hiddenUntil, unlockNotification, showDependencyArrow, repeatable, autoClaimRewards, RewardAudience.SELF);
-        }
-    }
+    public record Settings(boolean individualProgress, Visibility hiddenUntil, boolean unlockNotification, boolean showDependencyArrow, boolean repeatable, boolean autoClaimRewards) {}
     public record Task(String id, String type, TaskKind kind, String title, String value, int target, JsonObject source, Map<String, Task> tasks) {}
     public record Reward(String id, String type, RewardKind kind, String title, String value, int amount, JsonObject source, Map<String, Reward> rewards) {}
     public record ValidationIssue(Severity severity, String path, String message) {}

@@ -210,10 +210,11 @@ final class QuestClientSnapshot {
         JsonObject raw
     ) {
         boolean rewardEligible() {
-            return raw.has("reward_eligible") ? raw.get("reward_eligible").getAsBoolean() : complete;
+            return raw.has("reward_eligible") ? raw.get("reward_eligible").getAsBoolean() : complete && unlocked;
         }
         boolean rewardsAvailable() { return rewardEligible() && !claimed; }
         String partyRewardSource() { return jsonString(raw, "party_reward_source", ""); }
+        String progressParty() { return jsonString(raw, "progress_party", ""); }
         boolean hasPendingRewards() {
             if (raw.has("reward_claim_pending")) return raw.get("reward_claim_pending").getAsBoolean();
             return raw.has("pending_rewards") && raw.get("pending_rewards").isJsonArray()

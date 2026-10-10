@@ -40,13 +40,18 @@ Unknown runtime task or reward types need a Theseus add-on handler.
 - The editor checks imports and saves against the server's registries and
   permissions.
 - Saving changes to a quest's tasks or rewards can reset task progress, while
-  preserving earned reward eligibility, receipts, pins, and completion history.
+  preserving receipts, pins, and completion history. Reset tasks must be
+  completed again before claiming rewards.
   Renaming moves the retained state to the new ID. Explicit operator reward
   resets allow another payout; ordinary task/quest resets do not.
-- Progress files migrate from the legacy UUID-keyed root to a version-2
+- Progress files migrate from the legacy UUID-keyed root to a version-4
   `version`/`players` document. Back up before upgrading or downgrading.
-- [Party reward audience](PARTY-REWARDS.md) is separate from personal quest
-  completion. Existing/imported quests default to individual rewards.
+- `individual_progress` follows Heracles: false shares tasks through OPAC;
+  true keeps tasks personal. Without OPAC or a party, tasks are personal.
+  Existing quests with this field omitted or false become shared with OPAC.
+- [Shared quests](PARTY-REWARDS.md) retain player-owned progress across party
+  changes. Prerequisites gate contributions and claims, while copied progress
+  remains visible. The Reward audience setting has been removed.
 
 Use the [backup and recovery guide](BACKUP-RECOVERY.md) before a migration or
 bulk edit.

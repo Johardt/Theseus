@@ -739,7 +739,7 @@ class QuestRuntimeSeamTest {
         );
 
         runtime.loadProgress();
-        assertEquals(2, JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject().get("version").getAsInt());
+        assertEquals(4, JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject().get("version").getAsInt());
         assertEquals(new JsonObject(), JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject().getAsJsonObject("players"));
         assertTrue(runtime.triggerDummy(null, "persist_after_empty_load"));
         runtime.close();

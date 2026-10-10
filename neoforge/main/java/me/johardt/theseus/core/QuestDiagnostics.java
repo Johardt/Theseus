@@ -47,9 +47,9 @@ public final class QuestDiagnostics {
         try {
             QuestDefinition definition = QuestDefinition.parse(questId == null ? "invalid" : questId, root);
             addDefinitionIssues(questId, definition, results);
-            if (definition.settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY
+            if (!definition.settings().individualProgress()
                 && definition.rewards().values().stream().anyMatch(QuestDiagnostics::hasRecipientSideEffects)) {
-                results.add(warning("party_reward_side_effects", questId, "settings.reward_audience",
+                results.add(warning("party_reward_side_effects", questId, "settings.individual_progress",
                     "Party command and add-on rewards run separately for every claiming member",
                     "Use recipient-specific effects; global commands may repeat for every party member."));
             }
