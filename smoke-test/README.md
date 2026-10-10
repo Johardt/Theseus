@@ -1,4 +1,38 @@
-# Theseus 1.0.0 smoke-test kit
+# Theseus 1.1.0 smoke-test kit
+
+## OPAC party reward pass
+
+Use `./gradlew runServer -Popac` for the OPAC development dependency, or install
+OPAC 0.31.6+ for 26.1.2 in a disposable dedicated server. Also run without OPAC
+to verify optional loading. Full behavior is in [party rewards](../docs/PARTY-REWARDS.md).
+
+1. With three members in an OPAC built-in party, create a new quest in Theseus.
+   Reward audience must default to Party members; explicitly switch a second
+   quest to Individual. Imported legacy quests must stay Individual.
+2. Give the party quest a manual check task and a selectable XP reward. Take
+   one member offline, then complete it with another member.
+3. The online recipient sees available rewards without personal task completion
+   or descendant unlocks. Each member chooses and claims separately. The offline
+   member can claim after reconnecting. Each receives the full chosen reward.
+4. Invite a late joiner and ally another party. Neither gets this old reward.
+   Complete a different member's first completion after the late join: that
+   completion can include the new roster, without paying existing claimants again.
+5. Try duplicate claims, task resets, leaving/switching parties, renaming the
+   party, transferring ownership, disbanding, and a server restart. Earned
+   eligibility persists, while claimed reward IDs never pay again.
+6. Remove OPAC from the server and from the Theseus client. Solo quests and saved
+   eligibility still work; saved party audience stays visible with a warning.
+   New quests without the integration default to Individual.
+7. Use the display menu's Available rewards filter, including a personally
+   locked quest earned through a party. Check personal graph colors, badge,
+   rewards tab, current-party context, and individual selectable controls.
+8. Inspect and repair an offline UUID with `/theseus rewards inspect` and
+   `/theseus rewards repair`. Verify neither operation erases receipts or tasks.
+   Explicit reward reset can allow payout again; acknowledgement runs no effects.
+9. Test a failing add-on reward on a copy of the world: delivered receipts survive,
+   interrupted grants block retry, and other members can still claim. Investigate
+   delivery before retrying or acknowledging. Check the warning for global command
+   rewards and verify malformed `reward_audience` values fail validation.
 
 This directory is a disposable fixture pack for a real NeoForge client/server
 run. It is intentionally outside `examples/` and is not copied into a shipped
@@ -21,7 +55,7 @@ instance (client and, for the dedicated-server pass below, server):
 
 The artifact is:
 
-`build/libs/theseus-neoforge-26.1.2-1.0.0.jar`
+`build/libs/theseus-neoforge-26.1.2-1.1.0.jar`
 
 Copy that JAR and Resourceful Lib into the instance's `mods/` directory,
 launch NeoForge, create a test world, and continue with the steps below. In a

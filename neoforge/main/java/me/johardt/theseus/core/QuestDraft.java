@@ -21,9 +21,10 @@ import java.util.function.Predicate;
  */
 public final class QuestDraft {
     private static final Set<String> CLIENT_RUNTIME_FIELDS = Set.of(
-        "progress", "unlocked", "complete", "claimed", "claimed_rewards", "pinned", "issues"
+        "progress", "unlocked", "complete", "claimed", "claimed_rewards", "pinned", "issues",
+        "reward_eligible", "party_reward_source", "pending_rewards", "reward_claim_pending"
     );
-    private static final Set<String> SYNC_METADATA_FIELDS = Set.of("__chapters", "__editor_types");
+    private static final Set<String> SYNC_METADATA_FIELDS = Set.of("__chapters", "__editor_types", "__party");
 
     private final String originalId;
     private String id;
@@ -261,6 +262,12 @@ public final class QuestDraft {
         setting(settings, "showDependencyArrow", "show_dependency_arrow", showDependencyArrow, true);
         setting(settings, "repeatable", null, repeatable, false);
         setting(settings, "autoClaimRewards", "auto_claim_rewards", autoClaimRewards, false);
+    }
+
+    public void setRewardAudience(QuestDefinition.RewardAudience audience) {
+        JsonObject settings = object(document, "settings");
+        document.add("settings", settings);
+        settings.addProperty("reward_audience", audience.name().toLowerCase(java.util.Locale.ROOT));
     }
 
     public void setGroupPosition(String group, int x, int y) {

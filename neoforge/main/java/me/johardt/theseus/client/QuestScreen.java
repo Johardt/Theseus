@@ -109,6 +109,7 @@ public final class QuestScreen extends Screen {
     String editorMessage = "";
     boolean editorMessageSuccess;
     boolean clipboardMutationPending;
+    boolean availableRewardsOnly;
     EditBox pasteIdField;
     final QuestMutationCoordinator mutations;
     final QuestModalHost modalHost;
@@ -238,6 +239,7 @@ public final class QuestScreen extends Screen {
     private QuestScreen(QuestClientSnapshot snapshots, QuestScreen previous, boolean preserveDockMotion) {
         super(Component.translatable("gui.theseus.editor.theseus_quests"));
         this.snapshots = snapshots;
+        this.availableRewardsOnly = previous != null && previous.availableRewardsOnly;
         this.quests = snapshots.quests();
         this.chapters = snapshots.chapters();
         this.chapterDisplays = snapshots.chapterDisplays();
@@ -516,6 +518,7 @@ public final class QuestScreen extends Screen {
         @Override public String draftValidationError() { return QuestScreen.this.editor.draftValidationError(); }
         @Override public boolean validCreateQuestDraft() { return QuestScreen.this.editor.validCreateQuestDraft(); }
         @Override public boolean mutationPending() { return mutations.isPending(); }
+        @Override public boolean partyAvailable() { return snapshots.partyAvailable(); }
         @Override public void dispatch(QuestAuthoringPanel.Action action) {
             if (action instanceof QuestAuthoringPanel.RebuildWidgets) QuestScreen.this.rebuildWidgets();
             else if (action instanceof QuestAuthoringPanel.OpenPicker open) {

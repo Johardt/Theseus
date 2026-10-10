@@ -133,7 +133,9 @@ final class QuestHud {
             QuestDefinition quest = QuestDefinition.parse(entry.getKey(), json);
             graphics.text(
                 minecraft.font,
-                Component.literal(quest.title()),
+                Component.literal(quest.title()).append(json.has("reward_eligible") && json.get("reward_eligible").getAsBoolean()
+                    && (!json.has("claimed") || !json.get("claimed").getAsBoolean())
+                    ? Component.translatable("gui.theseus.party_rewards.hud_available") : Component.empty()),
                 x + 6,
                 y,
                 theme.quest(),

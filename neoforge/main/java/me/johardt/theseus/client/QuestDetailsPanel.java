@@ -337,6 +337,12 @@ final class QuestDetailsPanel {
             QuestPresentation.nodeStateColor(quest.unlocked(), quest.claimed(), quest.complete()),
             false
         );
+        y += 14;
+        if (!quest.partyRewardSource().isEmpty()) {
+            Component explanation = Component.translatable("gui.theseus.party_rewards.earned", quest.partyRewardSource());
+            graphics.textWithWordWrap(font, explanation, x, y, contentWidth, 0xFFFFD966);
+            y += font.wordWrapHeight(explanation, contentWidth) + 4;
+        }
         return y - startY + 18;
     }
 
@@ -454,6 +460,25 @@ final class QuestDetailsPanel {
                 false
             );
             return 18;
+        }
+        Component audience = Component.translatable("gui.theseus.party_rewards.audience",
+            Component.translatable(quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY
+                ? "gui.theseus.party_rewards.party" : "gui.theseus.party_rewards.self"));
+        graphics.textWithWordWrap(font, audience, x, y, contentWidth, 0xFFADB4BF);
+        y += font.wordWrapHeight(audience, contentWidth) + 6;
+        Component eligibility = quest.pendingRewards()
+            ? Component.translatable("gui.theseus.party_rewards.interrupted")
+            : quest.claimed() ? Component.translatable("quest.theseus.claimed")
+            : !quest.partyRewardSource().isEmpty() ? Component.translatable("gui.theseus.party_rewards.earned", quest.partyRewardSource())
+            : quest.rewardEligible() ? Component.translatable("gui.theseus.party_rewards.available")
+            : Component.translatable(quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY
+                ? "gui.theseus.party_rewards.not_eligible" : "gui.theseus.party_rewards.not_eligible_self");
+        graphics.textWithWordWrap(font, eligibility, x, y, contentWidth, 0xFFFFD966);
+        y += font.wordWrapHeight(eligibility, contentWidth) + 6;
+        if (quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY && !model.partyAvailable()) {
+            Component warning = Component.translatable("gui.theseus.party_rewards.unavailable");
+            graphics.textWithWordWrap(font, warning, x, y, contentWidth, 0xFFFFAA77);
+            y += font.wordWrapHeight(warning, contentWidth) + 6;
         }
         y = content.drawSectionHeading(
             graphics,
@@ -636,10 +661,21 @@ final class QuestDetailsPanel {
 
 
     record QuestData(QuestDefinition definition, Map<String, Integer> progress, boolean unlocked,
-        boolean complete, boolean claimed, Set<String> claimedRewards) {}
+        boolean complete, boolean claimed, Set<String> claimedRewards, boolean rewardEligible,
+        String partyRewardSource, boolean pendingRewards) {
+        QuestData(QuestDefinition definition, Map<String, Integer> progress, boolean unlocked,
+            boolean complete, boolean claimed, Set<String> claimedRewards) {
+            this(definition, progress, unlocked, complete, claimed, claimedRewards, complete, "", false);
+        }
+    }
 
     record Model(QuestData selected, QuestSurfaceLayout.LockExplanation lockExplanation,
-        QuestScreen.DetailTab tab, Map<String, Set<String>> rewardSelections, Set<String> serverRewardTypes) {}
+        QuestScreen.DetailTab tab, Map<String, Set<String>> rewardSelections, Set<String> serverRewardTypes, boolean partyAvailable) {
+        Model(QuestData selected, QuestSurfaceLayout.LockExplanation lockExplanation,
+            QuestScreen.DetailTab tab, Map<String, Set<String>> rewardSelections, Set<String> serverRewardTypes) {
+            this(selected, lockExplanation, tab, rewardSelections, serverRewardTypes, false);
+        }
+    }
 
     record RewardChoiceTarget(String selectionKey, String choiceId, int maximumSelections, Bounds bounds) {}
 

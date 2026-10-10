@@ -10,6 +10,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestClientSnapshotTest {
     @Test
+    void partyRewardsDoNotPretendPersonalCompletionAndContextUpdatesWithChapter() {
+        JsonObject initial = index();
+        initial.add("__party", JsonParser.parseString("{\"available\":true,\"name\":\"Builders\",\"members\":3}"));
+        initial.getAsJsonObject("quest").addProperty("reward_eligible", true);
+        initial.getAsJsonObject("quest").addProperty("party_reward_source", "Builders");
+        initial.getAsJsonObject("quest").addProperty("unlocked", false);
+        QuestClientSnapshot snapshots = new QuestClientSnapshot(initial);
+        assertTrue(snapshots.partyAvailable());
+        assertEquals("Builders", snapshots.partyName());
+        assertEquals(3, snapshots.partyMemberCount());
+        assertTrue(snapshots.quests().getFirst().rewardsAvailable());
+        assertFalse(snapshots.quests().getFirst().complete());
+        assertFalse(snapshots.quests().getFirst().unlocked());
+        JsonObject next = chapter();
+        next.add("__party", JsonParser.parseString("{\"available\":false}"));
+        next.getAsJsonObject("quest").addProperty("reward_eligible", true);
+        next.getAsJsonObject("quest").add("pending_rewards", JsonParser.parseString("[\"first\"]"));
+        snapshots.accept(next);
+        assertFalse(snapshots.partyAvailable());
+        assertEquals("", snapshots.partyName());
+        assertTrue(snapshots.quests().getFirst().hasPendingRewards());
+    }
+
+    @Test
     void indexChapterAndRefreshShareOneRawAndParsedLifecycle() {
         QuestClientSnapshot snapshots = new QuestClientSnapshot();
 

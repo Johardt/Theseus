@@ -12,9 +12,10 @@
 | Resourceful Config | 4.0.1 or newer | Optional client config screen. |
 | JEI | 29.0 or newer | Optional client integration. The build uses 29.43.0.104. |
 | REI | 26.1 or newer | Optional client integration. The build uses 26.1.819. |
+| Open Parties and Claims | 0.31.6 or newer for 26.1.2 | Optional server integration for its built-in parties; not required on Theseus clients. |
 
 The release file is
-`theseus-neoforge-26.1.2-1.0.0.jar`. Do not install the separate
+`theseus-neoforge-26.1.2-1.1.0.jar`. Do not install the separate
 `-sources.jar` file as a mod. Theseus has no Fabric or Forge build.
 
 ## Quest data compatibility
@@ -38,10 +39,14 @@ Unknown runtime task or reward types need a Theseus add-on handler.
 - Theseus installs its demo quest pack when the quest folder has no JSON files.
 - The editor checks imports and saves against the server's registries and
   permissions.
-- Saving changes to a quest's tasks or rewards can reset that quest's player
-  progress. Renaming a quest without changing its tasks or rewards moves its
-  progress to the new ID. Treat a quest definition as part of the live pack
-  data.
+- Saving changes to a quest's tasks or rewards can reset task progress, while
+  preserving earned reward eligibility, receipts, pins, and completion history.
+  Renaming moves the retained state to the new ID. Explicit operator reward
+  resets allow another payout; ordinary task/quest resets do not.
+- Progress files migrate from the legacy UUID-keyed root to a version-2
+  `version`/`players` document. Back up before upgrading or downgrading.
+- [Party reward audience](PARTY-REWARDS.md) is separate from personal quest
+  completion. Existing/imported quests default to individual rewards.
 
 Use the [backup and recovery guide](BACKUP-RECOVERY.md) before a migration or
 bulk edit.

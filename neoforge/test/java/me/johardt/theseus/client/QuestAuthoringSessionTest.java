@@ -12,6 +12,39 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestAuthoringSessionTest {
     @Test
+    void newQuestAudienceUsesServerCapabilityAndIsExplicitlySaved() {
+        QuestAuthoringSession session = new QuestAuthoringSession(16);
+        session.beginNew("Main", 0, 0, true);
+        assertEquals(QuestDefinition.RewardAudience.PARTY, session.rewardAudience);
+        assertEquals("party", session.draft().snapshot().getAsJsonObject("settings").get("reward_audience").getAsString());
+        assertEquals(QuestDefinition.RewardAudience.PARTY, session.copy().rewardAudience);
+        session.beginNew("Main", 0, 0, false);
+        assertEquals(QuestDefinition.RewardAudience.SELF, session.rewardAudience);
+        assertEquals("self", session.draft().snapshot().getAsJsonObject("settings").get("reward_audience").getAsString());
+    }
+
+    @Test
+    void editingLegacyOrPartyQuestPreservesAudienceAndStripsRuntimeEligibility() {
+        for (String audience : new String[] {"", "self", "party"}) {
+            JsonObject document = JsonParser.parseString("""
+                {"display":{"title":"Quest"},"tasks":{},"rewards":{},"settings":{},
+                 "reward_eligible":true,"party_reward_source":"Builders","pending_rewards":["first"],
+                 "__party":{"available":true}}
+                """).getAsJsonObject();
+            if (!audience.isEmpty()) document.getAsJsonObject("settings").addProperty("reward_audience", audience);
+            QuestDefinition definition = QuestDefinition.parse("quest", document);
+            QuestAuthoringSession session = new QuestAuthoringSession(16);
+            session.beginExisting(definition, document, "Main");
+            assertEquals(audience.equals("party") ? QuestDefinition.RewardAudience.PARTY : QuestDefinition.RewardAudience.SELF, session.rewardAudience);
+            JsonObject saved = session.draft().transferSnapshot();
+            assertFalse(saved.has("reward_eligible"));
+            assertFalse(saved.has("party_reward_source"));
+            assertFalse(saved.has("pending_rewards"));
+            assertFalse(saved.has("__party"));
+        }
+    }
+
+    @Test
     void composesTheAuthoringStateIntoOneLosslessDraft() {
         QuestAuthoringSession session = new QuestAuthoringSession(16);
         session.begin(QuestDraft.create(null));

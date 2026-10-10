@@ -45,7 +45,14 @@ public final class QuestDiagnostics {
         if (tasks.isEmpty()) results.add(warning("empty_tasks", questId, "tasks", "This quest completes immediately when unlocked", "Add a task if immediate completion is not intended."));
         if (object(root, "rewards").isEmpty()) results.add(warning("empty_rewards", questId, "rewards", "This quest has no rewards", "This is valid for progression-only quests."));
         try {
-            addDefinitionIssues(questId, QuestDefinition.parse(questId == null ? "invalid" : questId, root), results);
+            QuestDefinition definition = QuestDefinition.parse(questId == null ? "invalid" : questId, root);
+            addDefinitionIssues(questId, definition, results);
+            if (definition.settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY
+                && definition.rewards().values().stream().anyMatch(QuestDiagnostics::hasRecipientSideEffects)) {
+                results.add(warning("party_reward_side_effects", questId, "settings.reward_audience",
+                    "Party command and add-on rewards run separately for every claiming member",
+                    "Use recipient-specific effects; global commands may repeat for every party member."));
+            }
         } catch (RuntimeException exception) {
             results.add(error("invalid_structure", questId, "$", "Quest structure could not be parsed: " + exception.getMessage(), "Fix the malformed field."));
         }
@@ -55,6 +62,12 @@ public final class QuestDiagnostics {
         validateNestedIcons(questId, object(root, "rewards"), "rewards", EditorTypeRegistry.Kind.REWARD, validItem, results);
         validateDepth(questId, tasks, "tasks", 1, results);
         return List.copyOf(results);
+    }
+
+    private static boolean hasRecipientSideEffects(QuestDefinition.Reward reward) {
+        return reward.kind() == QuestDefinition.RewardKind.COMMAND
+            || reward.kind() == QuestDefinition.RewardKind.UNSUPPORTED
+            || reward.rewards().values().stream().anyMatch(QuestDiagnostics::hasRecipientSideEffects);
     }
 
     /** Compact wire representation used by editor acknowledgements. */

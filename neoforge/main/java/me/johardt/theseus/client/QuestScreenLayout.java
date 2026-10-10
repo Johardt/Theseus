@@ -356,19 +356,19 @@ final class QuestScreenLayout {
                 .withPosition(detailsLeft + 9, screen.guiHeight() - 36)
                 .withSize(actionWidth, 20);
             widget.withRenderer(
-                WidgetRenderers.text(Component.translatable("gui.theseus.editor.claim_rewards"))
+                WidgetRenderers.text(Component.translatable("gui.theseus.party_rewards.claim_yours"))
             );
             widget.withCallback(screen.actions::claimSelected);
             widget.active =
                 selected != null &&
-                selected.complete() &&
+                selected.rewardEligible() &&
                 !selected.claimed() &&
                 !screen.mutations.isPending() &&
                 screen.actions.canClaimRewards(selected);
             widget.withTooltip(Component.translatable("gui.theseus.editor.claim_rewards"));
             if (
                 selected != null &&
-                selected.complete() &&
+                selected.rewardEligible() &&
                 !selected.claimed() &&
                 !screen.actions.canClaimRewards(selected)
             ) {

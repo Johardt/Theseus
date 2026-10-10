@@ -16,7 +16,8 @@ public final class QuestCommands {
         Supplier<QuestRuntime> runtime
     ) {
         dispatcher.register(Commands.literal("theseus")
-            .executes(context -> status(context.getSource()))
+            .executes(context -> status(context.getSource(), runtime.get()))
+            .then(PartyRewardCommands.create(runtime))
             .then(Commands.literal("open").executes(context -> open(context.getSource(), runtime.get())))
             .then(Commands.literal("dummy")
                 .then(Commands.argument("value", StringArgumentType.string())
@@ -42,8 +43,10 @@ public final class QuestCommands {
         );
     }
 
-    private static int status(CommandSourceStack source) {
-        source.sendSuccess(() -> Component.literal("Theseus core quests are active. Use /theseus open or press H."), false);
+    private static int status(CommandSourceStack source, QuestRuntime runtime) {
+        source.sendSuccess(() -> Component.literal("Theseus quests are active. Party rewards: "
+            + (runtime.parties.available() ? "OPAC available" : "personal completions and saved eligibility")
+            + ". Use /theseus open or press H."), false);
         return 1;
     }
 
@@ -63,7 +66,7 @@ public final class QuestCommands {
 
     private static int claim(CommandSourceStack source, String quest, QuestRuntime runtime) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         boolean claimed = runtime.claim(source.getPlayerOrException(), quest);
-        source.sendSuccess(() -> Component.literal(claimed ? "Quest rewards claimed." : "Quest is missing, incomplete, or already claimed."), false);
+        source.sendSuccess(() -> Component.literal(claimed ? "Your quest rewards were claimed." : "Rewards are unavailable, already claimed, or need a choice or operator review."), false);
         return claimed ? 1 : 0;
     }
 
@@ -75,7 +78,7 @@ public final class QuestCommands {
 
     private static int reset(CommandSourceStack source, QuestRuntime runtime) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         runtime.reset(source.getPlayerOrException());
-        source.sendSuccess(() -> Component.literal("Your Theseus quest progress was reset."), false);
+        source.sendSuccess(() -> Component.literal("Your Theseus tasks were reset. Earned eligibility and reward receipts are preserved."), false);
         return 1;
     }
 

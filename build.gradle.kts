@@ -33,30 +33,38 @@ repositories {
     maven("https://maven.blamejared.com")
     maven("https://maven.shedaniel.me")
     maven("https://maven.architectury.dev")
+    maven("https://chocolateminecraft.com/maven") {
+        content { includeGroup("xaero.pac") }
+    }
 }
 
 dependencies {
+    compileOnly("xaero.pac:open-parties-and-claims-neoforge-26.1.2:${property("openPartiesAndClaimsVersion")}")
+    if (providers.gradleProperty("opac").isPresent) {
+        runtimeOnly("xaero.pac:open-parties-and-claims-neoforge-26.1.2:${property("openPartiesAndClaimsVersion")}")
+    }
     implementation("com.teamresourceful.resourcefullib:resourcefullib-neoforge-26.1:${property("resourcefulLibVersion")}")
     compileOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.1:${property("resourcefulConfigVersion")}")
     runtimeOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.1:${property("resourcefulConfigVersion")}")
     implementation("earth.terrarium.olympus:olympus-neoforge-26.1:${property("olympusVersion")}")
     jarJar("earth.terrarium.olympus:olympus-neoforge-26.1:${property("olympusVersion")}")
-    compileOnly("mezz.jei:jei-26.1.2-common-api:29.43.0.104")
-    compileOnly("mezz.jei:jei-26.1.2-neoforge-api:29.43.0.104")
-    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.1.819")
-    compileOnly("dev.architectury:architectury-neoforge:20.0.6")
+    compileOnly("mezz.jei:jei-26.1.2-common-api:${property("jeiVersion")}")
+    compileOnly("mezz.jei:jei-26.1.2-neoforge-api:${property("jeiVersion")}")
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${property("reiVersion")}")
+    compileOnly("dev.architectury:architectury-neoforge:${property("architecturyVersion")}")
 
     when (providers.gradleProperty("recipeViewer").orNull?.lowercase()) {
         "rei" -> {
-            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.1.819")
-            runtimeOnly("dev.architectury:architectury-neoforge:20.0.6")
+            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${property("reiVersion")}")
+            runtimeOnly("dev.architectury:architectury-neoforge:${property("architecturyVersion")}")
         }
-        "jei" -> runtimeOnly("mezz.jei:jei-26.1.2-neoforge:29.43.0.104")
+        "jei" -> runtimeOnly("mezz.jei:jei-26.1.2-neoforge:${property("jeiVersion")}")
     }
 
     testImplementation(platform("org.junit:junit-bom:6.0.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("com.google.code.gson:gson:2.13.2")
+    testRuntimeOnly("xaero.pac:open-parties-and-claims-neoforge-26.1.2:${property("openPartiesAndClaimsVersion")}")
     testCompileOnly(files(sourceSets.main.get().compileClasspath))
     testRuntimeOnly(files(sourceSets.main.get().runtimeClasspath))
     testRuntimeOnly(files(layout.buildDirectory.file(

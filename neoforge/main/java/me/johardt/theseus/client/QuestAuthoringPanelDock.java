@@ -236,6 +236,23 @@ final class QuestAuthoringPanelDock {
         }), 2, 1);
         layout.addChild(settings, row++, 0);
 
+        if (panel.host.partyAvailable() || panel.authoring.rewardAudience == me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY) {
+            layout.addChild(panel.button("draft-reward-audience", widget -> {
+                widget.withSize(fieldWidth, 22);
+                widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.party_rewards.audience",
+                    Component.translatable(panel.authoring.rewardAudience == me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY
+                        ? "gui.theseus.party_rewards.party" : "gui.theseus.party_rewards.self"))));
+                widget.withCallback(() -> {
+                    panel.authoring.rewardAudience = panel.authoring.rewardAudience == me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY
+                        ? me.johardt.theseus.core.QuestDefinition.RewardAudience.SELF : me.johardt.theseus.core.QuestDefinition.RewardAudience.PARTY;
+                    panel.host.dispatch(new RebuildWidgets());
+                });
+                widget.active = panel.host.partyAvailable();
+                widget.withTooltip(Component.translatable(panel.host.partyAvailable()
+                    ? "gui.theseus.party_rewards.audience_tooltip" : "gui.theseus.party_rewards.unavailable"));
+            }), row++, 0);
+        }
+
         if (panel.authoring.editingExisting) {
             layout.addChild(dockSeparator(fieldWidth), row++, 0);
             layout.addChild(dockLabel("gui.theseus.editor.quest_actions", fieldWidth), row++, 0);

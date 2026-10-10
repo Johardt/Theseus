@@ -223,6 +223,7 @@ final class QuestAuthoringPanel {
         String draftValidationError();
         boolean validCreateQuestDraft();
         boolean mutationPending();
+        default boolean partyAvailable() { return false; }
         void dispatch(Action action);
     }
 

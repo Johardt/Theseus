@@ -37,6 +37,7 @@ public final class QuestRuntime {
     final ProgressStore progressStore;
     final QuestWorld world;
     final QuestSync questSync;
+    final PartyLookup parties;
     QuestCatalog catalog;
     final Map<UUID, Map<String, QuestProgressState>> progress =
         new HashMap<>();
@@ -73,12 +74,25 @@ public final class QuestRuntime {
         QuestWorld world,
         QuestSync questSync
     ) {
+        this(catalog, taskEngine, rewardEngine, progressStore, world, questSync, PartyLookup.NONE);
+    }
+
+    public QuestRuntime(
+        QuestCatalog catalog,
+        TaskEngine taskEngine,
+        RewardEngine rewardEngine,
+        ProgressStore progressStore,
+        QuestWorld world,
+        QuestSync questSync,
+        PartyLookup parties
+    ) {
         this.catalog = java.util.Objects.requireNonNull(catalog, "catalog");
         this.taskEngine = java.util.Objects.requireNonNull(taskEngine, "taskEngine");
         this.rewardEngine = java.util.Objects.requireNonNull(rewardEngine, "rewardEngine");
         this.progressStore = java.util.Objects.requireNonNull(progressStore, "progressStore");
         this.world = java.util.Objects.requireNonNull(world, "world");
         this.questSync = java.util.Objects.requireNonNull(questSync, "questSync");
+        this.parties = java.util.Objects.requireNonNull(parties, "parties");
     }
 
     public static QuestRuntime create(MinecraftServer server) {
@@ -109,7 +123,10 @@ public final class QuestRuntime {
                     .resolve("data/theseus_progress.json")
             ),
             world,
-            new PacketQuestSync()
+            new PacketQuestSync(),
+            net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")
+                ? new me.johardt.theseus.compat.opac.OpacPartyLookup(server)
+                : PartyLookup.NONE
         );
         long progressStarted = System.nanoTime();
         runtime.loadProgress();
@@ -620,8 +637,12 @@ public final class QuestRuntime {
     }
 
     QuestProgressState progress(ServerPlayer player, String questId) {
+        return progress(world.playerId(player), questId);
+    }
+
+    QuestProgressState progress(UUID playerId, String questId) {
         return progress
-            .computeIfAbsent(world.playerId(player), ignored -> new HashMap<>())
+            .computeIfAbsent(playerId, ignored -> new HashMap<>())
             .computeIfAbsent(questId, ignored -> new QuestProgressState());
     }
 
@@ -635,8 +656,23 @@ public final class QuestRuntime {
         Map<String, Boolean> wasUnlocked,
         Map<String, Boolean> wasComplete
     ) {
+        Map<UUID, List<QuestDefinition>> recipients = new HashMap<>();
+        for (QuestDefinition quest : catalog.quests().values()) {
+            if (!wasComplete.getOrDefault(quest.id(), false) && isComplete(player, quest)) {
+                for (UUID recipient : recordCompletion(world.playerId(player), quest)) {
+                    recipients.computeIfAbsent(recipient, ignored -> new java.util.ArrayList<>()).add(quest);
+                }
+            }
+        }
         saveProgress();
         sync(player, false);
+        for (ServerPlayer recipient : world.onlinePlayers()) {
+            UUID id = world.playerId(recipient);
+            if (!recipients.containsKey(id) || id.equals(world.playerId(player))) continue;
+            sync(recipient, false);
+            for (QuestDefinition quest : recipients.get(id)) notify(recipient, "reward", "Party rewards available",
+                (player == null ? "A party member" : player.getName().getString()) + " completed " + quest.title() + ". Your rewards are available.");
+        }
         if (suppressNotifications.contains(world.playerId(player))) return;
         for (QuestDefinition quest : catalog.quests().values()) {
             boolean unlocked = isUnlocked(player, quest);
@@ -695,6 +731,7 @@ public final class QuestRuntime {
     */
     String snapshot(ServerPlayer player, String chapter) {
         JsonObject root = new JsonObject();
+        root.add("__party", partyContext(world.playerId(player)));
         JsonObject editorTypes = new JsonObject();
         java.util.Set<String> taskTypes = new java.util.LinkedHashSet<>(taskEngine.types());
         // Composite tasks are evaluated structurally by QuestRuntime, not by a TaskEngine handler.
@@ -721,6 +758,12 @@ public final class QuestRuntime {
             QuestProgressState state = progress(player, quest.id());
             json.addProperty("unlocked", isUnlocked(player, quest));
             json.addProperty("complete", isComplete(player, quest));
+            json.addProperty("reward_eligible", rewardEligible(player, quest));
+            if (state.partyRewardSource() != null) {
+                json.addProperty("party_reward_source", state.partyRewardSource().partyName());
+            }
+            json.add("pending_rewards", GSON.toJsonTree(state.pendingRewards()));
+            json.addProperty("reward_claim_pending", state.pendingRewards().stream().anyMatch(quest.rewards()::containsKey));
             json.addProperty("claimed", state.allRewardsClaimed(quest));
             json.addProperty("pinned", state.isPinned());
             if (chapter != null) {
@@ -766,6 +809,7 @@ public final class QuestRuntime {
             quest.settings().hiddenUntil().name().toLowerCase(java.util.Locale.ROOT)
         );
         settings.addProperty("showDependencyArrow", quest.settings().showDependencyArrow());
+        settings.addProperty("reward_audience", quest.settings().rewardAudience().name().toLowerCase(java.util.Locale.ROOT));
         root.add("settings", settings);
 
         JsonArray dependencies = new JsonArray();
@@ -780,6 +824,13 @@ public final class QuestRuntime {
         progressLoadFailed = true;
         try {
             JsonObject storedProgress = progressStore.load();
+            if (storedProgress.has("version")) {
+                if (storedProgress.get("version").getAsInt() != 2 || !storedProgress.has("players")
+                    || !storedProgress.get("players").isJsonObject()) {
+                    throw new IllegalArgumentException("Unsupported progress document version");
+                }
+                storedProgress = storedProgress.getAsJsonObject("players");
+            }
             long fileReadMillis = elapsedMillis(loadStarted);
             Theseus.LOGGER.info(
                 "Read progress data for {} player records in {} ms",
@@ -823,12 +874,7 @@ public final class QuestRuntime {
         root.entrySet().forEach(entry -> {
             QuestDefinition quest = catalog.quests().get(entry.getKey());
             if (quest == null) {
-                if (catalog.failedQuestIds().contains(entry.getKey())) {
-                    deferred.put(entry.getKey(), entry.getValue().deepCopy());
-                    Theseus.LOGGER.warn("Deferring progress for quest '{}' because its quest file failed to load", entry.getKey());
-                } else {
-                    Theseus.LOGGER.warn("Ignoring progress for unknown quest '{}'", entry.getKey());
-                }
+                deferred.put(entry.getKey(), entry.getValue().deepCopy());
                 return;
             }
             try {
@@ -848,7 +894,6 @@ public final class QuestRuntime {
                 Map.Entry<String, JsonElement> entry = iterator.next();
                 QuestDefinition quest = catalog.quests().get(entry.getKey());
                 if (quest == null) {
-                    if (!catalog.failedQuestIds().contains(entry.getKey())) iterator.remove();
                     continue;
                 }
                 try {
@@ -864,8 +909,8 @@ public final class QuestRuntime {
         deferredProgress.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 
-    void saveProgress() {
-        if (progressLoadFailed) return;
+    boolean saveProgress() {
+        if (progressLoadFailed) return false;
         try {
             JsonObject root = new JsonObject();
             Set<UUID> playerIds = new java.util.HashSet<>(progress.keySet());
@@ -882,14 +927,72 @@ public final class QuestRuntime {
                 }
                 root.add(playerId.toString(), player);
             });
-            progressStore.save(root);
+            JsonObject document = new JsonObject();
+            document.addProperty("version", 2);
+            document.add("players", root);
+            progressStore.save(document);
+            return true;
         } catch (Exception exception) {
             Theseus.LOGGER.error(
                 "Failed to save quest progress to {}",
                 progressStore,
                 exception
             );
+            return false;
         }
+    }
+
+    public boolean rewardEligible(ServerPlayer player, QuestDefinition quest) {
+        return !quest.rewards().isEmpty() && (isComplete(player, quest) || progress(player, quest.id()).partyRewardSource() != null);
+    }
+
+    void baselineCompletions(ServerPlayer player) {
+        for (QuestDefinition quest : catalog.quests().values()) {
+            if (isComplete(player, quest)) progress(player, quest.id()).recordCompletion();
+        }
+    }
+
+    /** Records one completion without merging task progress into any other player's state. */
+    Set<UUID> recordCompletion(UUID completer, QuestDefinition quest) {
+        QuestProgressState state = progress(completer, quest.id());
+        if (state.completionRecorded()) return Set.of();
+        state.recordCompletion();
+        if (quest.settings().rewardAudience() != QuestDefinition.RewardAudience.PARTY || quest.rewards().isEmpty()) return Set.of();
+        try {
+            PartyLookup.Party party = parties.find(completer);
+            if (party == null) return Set.of();
+            if (!party.members().contains(completer)) throw new IllegalStateException("Completer is not in party roster");
+            Set<UUID> recipients = new java.util.HashSet<>();
+            var source = new QuestProgressState.PartyRewardSource(party.id(), party.name(), completer);
+            for (UUID member : party.members()) {
+                QuestProgressState recipient = progress(member, quest.id());
+                if (recipient.earnPartyRewards(source) && !recipient.allRewardsClaimed(quest)) recipients.add(member);
+            }
+            return recipients;
+        } catch (RuntimeException exception) {
+            Theseus.LOGGER.error("Party reward distribution failed for quest {} completed by {}; use eligibility repair", quest.id(), completer, exception);
+            for (ServerPlayer player : world.onlinePlayers()) {
+                if (world.playerId(player).equals(completer)) world.message(player, "Party rewards could not be distributed. Ask an operator to repair eligibility for " + quest.id());
+            }
+            return Set.of();
+        }
+    }
+
+    private JsonObject partyContext(UUID player) {
+        JsonObject result = new JsonObject();
+        result.addProperty("available", parties.available());
+        try {
+            PartyLookup.Party party = parties.find(player);
+            if (party != null) {
+                result.addProperty("name", party.name());
+                result.addProperty("members", party.members().size());
+            }
+        } catch (RuntimeException exception) {
+            result.addProperty("available", false);
+            result.addProperty("error", true);
+            Theseus.LOGGER.warn("Could not read OPAC party context for {}: {}", player, exception.toString());
+        }
+        return result;
     }
 
     private static long elapsedMillis(long startedAt) {

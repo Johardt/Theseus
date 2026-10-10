@@ -368,14 +368,14 @@ final class QuestScreenRenderer {
     }
 
     private void drawChapterName(GuiGraphicsExtractor graphics) {
-        if (!screen.mode.isAuthoring()) graphics.text(
-            screen.guiFont(),
-            Component.literal(screen.group),
-            screen.layout.sidebarWidth() + 10,
-            10,
-            0xFFB8C0CC,
-            false
-        );
+        if (screen.mode.isAuthoring()) return;
+        String label = screen.group;
+        if (screen.availableRewardsOnly) label += " · " + Component.translatable("gui.theseus.party_rewards.filter").getString();
+        if (!screen.snapshots.partyName().isEmpty()) label += " · " + Component.translatable("gui.theseus.party_rewards.context",
+            screen.snapshots.partyName(), screen.snapshots.partyMemberCount()).getString();
+        int availableWidth = Math.max(1, screen.layout.headerLayout().fitX() - screen.layout.sidebarWidth() - 16);
+        graphics.text(screen.guiFont(), Component.literal(screen.guiFont().plainSubstrByWidth(label, availableWidth)),
+            screen.layout.sidebarWidth() + 10, 10, 0xFFB8C0CC, false);
     }
 
     void drawBaseForeground(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -655,7 +655,7 @@ final class QuestScreenRenderer {
         graphics.fill(left, top, left + 240, top + 110, 0xFF20242B);
         graphics.outline(left, top, 240, 110, 0xFF8A929F);
         graphics.text(screen.guiFont(), Component.translatable("gui.theseus.editor.confirm_delete_quest"), left + 12, top + 12, 0xFFFFFFFF, true);
-        graphics.textWithWordWrap(screen.guiFont(), Component.translatable("gui.theseus.editor.this_deletes_the_quest_file_and_resets_its_player_progress"), left + 12, top + 32, 216, 0xFFFFAAAA, false);
+        graphics.textWithWordWrap(screen.guiFont(), Component.translatable("gui.theseus.party_rewards.delete_quest_body"), left + 12, top + 32, 216, 0xFFFFAAAA, false);
     }
 
     void drawProgressResetConfirmation(GuiGraphicsExtractor graphics) {
@@ -674,9 +674,9 @@ final class QuestScreenRenderer {
         Component detail = target == null
             ? Component.translatable("gui.theseus.editor.no_reset_target")
             : switch (target.scope()) {
-                case "quest" -> Component.translatable("gui.theseus.editor.reset_quest_progress_body", target.questTitle());
+                case "quest" -> Component.translatable("gui.theseus.party_rewards.reset_tasks_body", target.questTitle());
                 case "task" -> Component.translatable("gui.theseus.editor.reset_task_progress_body", target.displayLabel(), target.entryId(), target.questTitle());
-                case "reward" -> Component.translatable("gui.theseus.editor.reset_reward_progress_body", target.displayLabel(), target.entryId(), target.questTitle());
+                case "reward" -> Component.translatable("gui.theseus.party_rewards.reset_reward_body", target.displayLabel(), target.entryId(), target.questTitle());
                 default -> Component.translatable("gui.theseus.editor.reset_selected_progress_body");
         };
         graphics.text(screen.guiFont(), title, left + 12, top + 12, 0xFFFFFFFF, true);
@@ -894,7 +894,7 @@ final class QuestScreenRenderer {
             if (node == null) continue;
             QuestGraphLayout.NodeBounds bounds = node.bounds();
             QuestBackground background = questBackground(quest.definition());
-            int frame = quest.claimed() ? 3 : quest.complete() ? 2 : quest.unlocked() ? 1 : 0;
+            int frame = !quest.unlocked() ? 0 : quest.complete() ? quest.claimed() ? 3 : 2 : 1;
             drawQuestBackground(graphics, node, background.texture(), frame, 0xFFFFFFFF);
             if (hoverEnabled && node.contains(mouseX, mouseY)) {
                 drawQuestBackground(graphics, node, background.texture(), 4, 0xFFFFFFFF);
@@ -929,6 +929,11 @@ final class QuestScreenRenderer {
                 (int) Math.round(icon.y()),
                 (int) Math.round(icon.width())
             );
+            if (quest.definition().settings().rewardAudience() == QuestDefinition.RewardAudience.PARTY || !quest.partyRewardSource().isEmpty()) {
+                graphics.fill(nodeX + nodeWidth - 7, nodeY - 3, nodeX + nodeWidth + 3, nodeY + 7, 0xFF20242B);
+                graphics.text(screen.guiFont(), Component.translatable("gui.theseus.party_rewards.badge"),
+                    nodeX + nodeWidth - 6, nodeY - 2, quest.rewardsAvailable() ? 0xFFFFD966 : 0xFFADB4BF, false);
+            }
         }
     }
 

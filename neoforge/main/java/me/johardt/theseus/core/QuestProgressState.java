@@ -21,6 +21,26 @@ public final class QuestProgressState {
     private final Map<String, Integer> taskProgress = new LinkedHashMap<>();
     private final Set<String> claimedRewards = new LinkedHashSet<>();
     private boolean pinned;
+    private boolean completionRecorded;
+    private PartyRewardSource partyRewardSource;
+    private final Set<String> pendingRewards = new LinkedHashSet<>();
+
+    public record PartyRewardSource(java.util.UUID partyId, String partyName, java.util.UUID completedBy) {}
+
+    public boolean completionRecorded() { return completionRecorded; }
+    public void recordCompletion() { completionRecorded = true; }
+    public PartyRewardSource partyRewardSource() { return partyRewardSource; }
+    public boolean earnPartyRewards(PartyRewardSource source) {
+        if (partyRewardSource != null) return false;
+        partyRewardSource = java.util.Objects.requireNonNull(source);
+        return true;
+    }
+    public Set<String> pendingRewards() { return Set.copyOf(pendingRewards); }
+    public boolean beginRewardGrant(String id) { return pendingRewards.add(id); }
+    public void finishRewardGrant(String id) { pendingRewards.remove(id); }
+
+    /** Task resets retain earned rewards, claim receipts, and completion history. */
+    public void clearTasks() { taskProgress.clear(); }
 
     public QuestProgressState() {}
 
@@ -67,7 +87,8 @@ public final class QuestProgressState {
 
     public boolean unmarkRewardClaimed(String rewardId) {
         if (rewardId == null || rewardId.isBlank()) return false;
-        return claimedRewards.remove(rewardId);
+        boolean changed = pendingRewards.remove(rewardId);
+        return claimedRewards.remove(rewardId) || changed;
     }
 
     public boolean allRewardsClaimed(QuestDefinition quest) {
@@ -93,6 +114,17 @@ public final class QuestProgressState {
         claimedRewards.stream().sorted().forEach(rewards::add);
         json.add("claimed_rewards", rewards);
         json.addProperty("pinned", pinned);
+        json.addProperty("completion_recorded", completionRecorded);
+        JsonArray pending = new JsonArray();
+        pendingRewards.stream().sorted().forEach(pending::add);
+        json.add("pending_rewards", pending);
+        if (partyRewardSource != null) {
+            JsonObject source = new JsonObject();
+            source.addProperty("party_id", partyRewardSource.partyId().toString());
+            source.addProperty("party_name", partyRewardSource.partyName());
+            source.addProperty("completed_by", partyRewardSource.completedBy().toString());
+            json.add("party_reward_source", source);
+        }
         return json;
     }
 
@@ -123,7 +155,9 @@ public final class QuestProgressState {
                     throw new IllegalArgumentException("claimed_rewards entries must be strings");
                 }
                 String id = reward.getAsString();
-                if (quest.rewards().containsKey(id)) state.claimedRewards.add(id);
+                // Keep receipts for temporarily removed rewards so reintroducing an ID
+                // cannot pay it again after a restart.
+                state.claimedRewards.add(id);
             }
         } else if (json.has("claimed")) {
             JsonElement claimed = json.get("claimed");
@@ -139,6 +173,28 @@ public final class QuestProgressState {
                 throw new IllegalArgumentException("pinned must be a boolean");
             }
             state.pinned = pinned.getAsBoolean();
+        }
+        if (json.has("completion_recorded")) {
+            JsonElement value = json.get("completion_recorded");
+            if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isBoolean()) {
+                throw new IllegalArgumentException("completion_recorded must be a boolean");
+            }
+            state.completionRecorded = value.getAsBoolean();
+        }
+        if (json.has("pending_rewards")) {
+            if (!json.get("pending_rewards").isJsonArray()) throw new IllegalArgumentException("pending_rewards must be an array");
+            for (JsonElement value : json.getAsJsonArray("pending_rewards")) {
+                if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) throw new IllegalArgumentException("pending_rewards entries must be strings");
+                state.pendingRewards.add(value.getAsString());
+            }
+        }
+        if (json.has("party_reward_source")) {
+            JsonObject source = json.getAsJsonObject("party_reward_source");
+            state.partyRewardSource = new PartyRewardSource(
+                java.util.UUID.fromString(source.get("party_id").getAsString()),
+                source.get("party_name").getAsString(),
+                java.util.UUID.fromString(source.get("completed_by").getAsString())
+            );
         }
         return state;
     }

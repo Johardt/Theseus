@@ -261,7 +261,7 @@ final class QuestRuntimeMutations {
 
     static JsonObject authoredDocument(JsonObject source) {
         JsonObject document = source == null ? new JsonObject() : source.deepCopy();
-        List.of("progress", "unlocked", "complete", "claimed", "claimed_rewards", "pinned", "issues", "__chapters", "__editor_types")
+        List.of("progress", "unlocked", "complete", "claimed", "claimed_rewards", "pinned", "issues", "reward_eligible", "party_reward_source", "pending_rewards", "reward_claim_pending", "__chapters", "__editor_types", "__party")
             .forEach(document::remove);
         return document;
     }
@@ -590,9 +590,9 @@ final class QuestRuntimeMutations {
         switch (scope) {
             case "quest" -> {
                 if (!entry.isBlank()) return MutationResult.failure("Quest reset does not accept an entry");
-                state.clearProgress();
+                state.clearTasks();
                 runtime.changed(player);
-                return MutationResult.success("Reset quest progress for '" + quest.title() + "' (" + questId + ") for the current player");
+                return MutationResult.success("Reset tasks for '" + quest.title() + "' (" + questId + "); earned rewards and receipts are preserved for the current player");
             }
             case "task" -> {
                 if (entry.isBlank()) return MutationResult.failure("Task reset requires a task path");
@@ -610,7 +610,7 @@ final class QuestRuntimeMutations {
                 }
                 state.unmarkRewardClaimed(entry);
                 runtime.changed(player);
-                return MutationResult.success("Reset reward progress for '" + entry + "' in quest '" + questId + "' for the current player");
+                return MutationResult.success("Reset reward receipt for '" + entry + "' in quest '" + questId + "'; the current player may claim it again if eligible");
             }
             default -> {
                 return MutationResult.failure("Unknown reset progress scope '" + scope + "'");
@@ -728,12 +728,22 @@ final class QuestRuntimeMutations {
 
     void resetQuestProgress(String oldId, String newId) {
         runtime.progress.values().forEach(quests -> {
-            quests.remove(oldId);
-            if (newId != null) quests.remove(newId);
+            QuestProgressState state = quests.get(oldId);
+            if (state == null) return;
+            state.clearTasks();
+            if (newId != null && !oldId.equals(newId)) {
+                quests.remove(oldId);
+                quests.put(newId, state);
+            }
         });
         runtime.deferredProgress.values().forEach(quests -> {
-            quests.remove(oldId);
-            if (newId != null) quests.remove(newId);
+            JsonElement state = quests.get(oldId);
+            if (state == null) return;
+            if (state.isJsonObject()) state.getAsJsonObject().remove("tasks");
+            if (newId != null && !oldId.equals(newId)) {
+                quests.remove(oldId);
+                quests.put(newId, state);
+            }
         });
         runtime.saveProgress();
     }

@@ -126,10 +126,12 @@ final class QuestScreenActions {
                 quest.definition().display().groups().containsKey(screen.group)
             )
             .filter(this::isVisible)
+            .filter(quest -> !screen.availableRewardsOnly || quest.rewardsAvailable())
             .toList();
     }
 
     boolean isVisible(ClientQuest quest) {
+        if (!quest.partyRewardSource().isEmpty()) return true;
         return switch (quest.definition().settings().hiddenUntil()) {
             case LOCKED -> true;
             case IN_PROGRESS -> quest.unlocked();
@@ -219,6 +221,7 @@ final class QuestScreenActions {
     }
 
     boolean canClaimRewards(ClientQuest quest) {
+        if (!quest.rewardsAvailable() || quest.hasPendingRewards()) return false;
         if (quest.definition().rewards().isEmpty()) return false;
         for (QuestDefinition.Reward reward : quest.definition()
             .rewards()
@@ -251,6 +254,7 @@ final class QuestScreenActions {
     }
 
     String claimBlockedReason(ClientQuest quest) {
+        if (quest.hasPendingRewards()) return Component.translatable("gui.theseus.party_rewards.interrupted").getString();
         if (quest.definition().rewards().isEmpty()) return "This quest has no rewards";
         if (
             quest.definition()
@@ -404,7 +408,10 @@ final class QuestScreenActions {
             quest.unlocked(),
             quest.complete(),
             quest.claimed(),
-            quest.claimedRewards()
+            quest.claimedRewards(),
+            quest.rewardEligible(),
+            quest.partyRewardSource(),
+            quest.hasPendingRewards()
         );
         QuestSurfaceLayout.LockExplanation lockExplanation = null;
         if (quest != null) {
@@ -422,7 +429,8 @@ final class QuestScreenActions {
             lockExplanation,
             screen.detailTab,
             screen.rewardSelections,
-            screen.serverRewardTypes
+            screen.serverRewardTypes,
+            screen.snapshots.partyAvailable()
         );
     }
 
@@ -550,6 +558,17 @@ final class QuestScreenActions {
 
     void openDisplayMenu(int mouseX, int mouseY) {
         List<QuestContextMenu.Entry> entries = new ArrayList<>();
+        if (!screen.authoring.open) entries.add(QuestContextMenu.Entry.item(
+            Component.translatable("gui.theseus.party_rewards.filter").getString(), "", true,
+            screen.availableRewardsOnly, () -> {
+                screen.availableRewardsOnly = !screen.availableRewardsOnly;
+                screen.rebuildWidgets();
+            }
+        ));
+        if (!screen.snapshots.partyName().isEmpty()) entries.add(QuestContextMenu.Entry.item(
+            Component.translatable("gui.theseus.party_rewards.context", screen.snapshots.partyName(), screen.snapshots.partyMemberCount()).getString(),
+            "", false, false, () -> {}
+        ));
         entries.add(QuestContextMenu.Entry.item(
             Component.translatable("screen.theseus.display_menu.move_tracker").getString(),
             "",
