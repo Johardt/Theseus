@@ -126,10 +126,12 @@ final class QuestScreenActions {
                 quest.definition().display().groups().containsKey(screen.group)
             )
             .filter(this::isVisible)
+            .filter(quest -> !screen.availableRewardsOnly || quest.rewardsAvailable())
             .toList();
     }
 
     boolean isVisible(ClientQuest quest) {
+        if (!quest.partyRewardSource().isEmpty()) return true;
         return switch (quest.definition().settings().hiddenUntil()) {
             case LOCKED -> true;
             case IN_PROGRESS -> quest.unlocked();
@@ -219,6 +221,7 @@ final class QuestScreenActions {
     }
 
     boolean canClaimRewards(ClientQuest quest) {
+        if (!quest.rewardsAvailable() || quest.hasPendingRewards()) return false;
         if (quest.definition().rewards().isEmpty()) return false;
         for (QuestDefinition.Reward reward : quest.definition()
             .rewards()
@@ -251,7 +254,11 @@ final class QuestScreenActions {
     }
 
     String claimBlockedReason(ClientQuest quest) {
+        if (quest.hasPendingRewards()) return Component.translatable("gui.theseus.party_rewards.interrupted").getString();
         if (quest.definition().rewards().isEmpty()) return "This quest has no rewards";
+        if (!quest.unlocked()) return Component.translatable("gui.theseus.shared_progress.locked_rewards").getString();
+        if (!quest.complete()) return Component.translatable("gui.theseus.party_rewards.not_eligible_self").getString();
+        if (quest.claimed()) return Component.translatable("quest.theseus.claimed").getString();
         if (
             quest.definition()
                 .rewards()
@@ -404,7 +411,11 @@ final class QuestScreenActions {
             quest.unlocked(),
             quest.complete(),
             quest.claimed(),
-            quest.claimedRewards()
+            quest.claimedRewards(),
+            quest.rewardEligible(),
+            quest.partyRewardSource(),
+            quest.hasPendingRewards(),
+            quest.progressParty()
         );
         QuestSurfaceLayout.LockExplanation lockExplanation = null;
         if (quest != null) {
@@ -412,7 +423,7 @@ final class QuestScreenActions {
             for (ClientQuest candidate : screen.quests) states.put(candidate.definition().id(),
                 new QuestSurfaceLayout.LockState(
                     candidate.definition().title(),
-                    candidate.complete(),
+                    candidate.complete() && candidate.unlocked(),
                     candidate.definition().display().groups().keySet()
                 ));
             lockExplanation = QuestSurfaceLayout.explainLock(quest.definition(), states, screen.group);
@@ -427,9 +438,9 @@ final class QuestScreenActions {
     }
 
     boolean openProgressCardContextMenu(int mouseX, int mouseY) {
-        if (!canEdit() || !screen.detailsOpen) return false;
+        if (!canEdit() || !screen.detailsOpen || !screen.layout.detailsDockContains(mouseX, mouseY)) return false;
         ClientQuest quest = selected();
-        QuestDetailsPanel.ProgressCardTarget target = screen.detailsPanel.progressCardAt(mouseX, mouseY, screen.detailTab);
+        QuestDetailsPanel.ProgressCardTarget target = screen.detailsPanel.progressCardAt((int) Math.round(screen.docks.contentX(mouseX)), mouseY, screen.detailTab);
         if (quest == null || target == null) return false;
         boolean task = target.kind().equals("task");
         List<QuestContextMenu.Entry> entries = new ArrayList<>();
@@ -550,6 +561,17 @@ final class QuestScreenActions {
 
     void openDisplayMenu(int mouseX, int mouseY) {
         List<QuestContextMenu.Entry> entries = new ArrayList<>();
+        if (!screen.authoring.open) entries.add(QuestContextMenu.Entry.item(
+            Component.translatable("gui.theseus.party_rewards.filter").getString(), "", true,
+            screen.availableRewardsOnly, () -> {
+                screen.availableRewardsOnly = !screen.availableRewardsOnly;
+                screen.rebuildWidgets();
+            }
+        ));
+        if (!screen.snapshots.partyName().isEmpty()) entries.add(QuestContextMenu.Entry.item(
+            Component.translatable("gui.theseus.party_rewards.context", screen.snapshots.partyName(), screen.snapshots.partyMemberCount()).getString(),
+            "", false, false, () -> {}
+        ));
         entries.add(QuestContextMenu.Entry.item(
             Component.translatable("screen.theseus.display_menu.move_tracker").getString(),
             "",

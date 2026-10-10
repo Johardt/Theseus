@@ -41,6 +41,20 @@ final class QuestClientSnapshot {
         accept(initial);
     }
 
+    boolean partyAvailable() {
+        return raw.has("__party") && raw.get("__party").isJsonObject()
+            && raw.getAsJsonObject("__party").has("available")
+            && raw.getAsJsonObject("__party").get("available").getAsBoolean();
+    }
+    String partyName() {
+        return raw.has("__party") && raw.get("__party").isJsonObject()
+            ? jsonString(raw.getAsJsonObject("__party"), "name", "") : "";
+    }
+    int partyMemberCount() {
+        return raw.has("__party") && raw.get("__party").isJsonObject()
+            && raw.getAsJsonObject("__party").has("members")
+            ? raw.getAsJsonObject("__party").get("members").getAsInt() : 0;
+    }
     JsonObject raw() { return raw; }
     List<ClientQuest> quests() { return questView; }
     List<String> chapters() { return chapterView; }
@@ -108,7 +122,7 @@ final class QuestClientSnapshot {
         incoming.entrySet().forEach(entry -> {
             String key = entry.getKey();
             if (key.equals("__snapshot_kind") || key.equals("__chapter")) return;
-            if (key.startsWith("__") && raw.has(key)) return;
+            if (key.startsWith("__") && raw.has(key) && !key.equals("__party")) return;
             raw.add(key, entry.getValue().deepCopy());
         });
     }
@@ -194,5 +208,17 @@ final class QuestClientSnapshot {
         boolean pinned,
         Set<String> claimedRewards,
         JsonObject raw
-    ) {}
+    ) {
+        boolean rewardEligible() {
+            return raw.has("reward_eligible") ? raw.get("reward_eligible").getAsBoolean() : complete && unlocked;
+        }
+        boolean rewardsAvailable() { return rewardEligible() && !claimed; }
+        String partyRewardSource() { return jsonString(raw, "party_reward_source", ""); }
+        String progressParty() { return jsonString(raw, "progress_party", ""); }
+        boolean hasPendingRewards() {
+            if (raw.has("reward_claim_pending")) return raw.get("reward_claim_pending").getAsBoolean();
+            return raw.has("pending_rewards") && raw.get("pending_rewards").isJsonArray()
+                && !raw.getAsJsonArray("pending_rewards").isEmpty();
+        }
+    }
 }

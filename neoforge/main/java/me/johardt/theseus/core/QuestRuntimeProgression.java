@@ -44,6 +44,9 @@ final class QuestRuntimeProgression {
     }
 
     void initialize(ServerPlayer player) {
+        // Record completion history before passive login signals. Shared progress
+        // has already been reconciled into this player’s own state.
+        runtime.baselineCompletions(player);
         runtime.suppressNotifications.add(runtime.world.playerId(player));
         try {
             updateInventoryTasks(player);
@@ -362,12 +365,16 @@ final class QuestRuntimeProgression {
         Map<String, List<String>> selections
     ) {
         QuestDefinition quest = runtime.catalog.quests().get(questId);
-        if (quest == null || !isComplete(player, quest) || quest.rewards().isEmpty()) return false;
+        if (quest == null || !runtime.rewardEligible(player, quest) || quest.rewards().isEmpty()) return false;
         QuestProgressState state = runtime.progress(player, questId);
         List<QuestDefinition.Reward> missing = quest.rewards().values().stream()
             .filter(reward -> !state.claimedRewards().contains(reward.id()))
             .toList();
         if (missing.isEmpty()) return false;
+        if (missing.stream().anyMatch(reward -> state.pendingRewards().contains(reward.id()))) {
+            runtime.world.message(player, "An interrupted reward grant needs operator review before retrying.");
+            return false;
+        }
         for (QuestDefinition.Reward reward : missing) {
             if (
                 !canClaimReward(
@@ -386,13 +393,27 @@ final class QuestRuntimeProgression {
         }
         List<String> granted = new java.util.ArrayList<>();
         for (QuestDefinition.Reward reward : missing) {
-            grantReward(
-                player,
-                reward,
-                selections.getOrDefault(reward.id(), List.of()),
-                granted
-            );
-            state.markRewardClaimed(reward.id());
+            if (!state.beginRewardGrant(reward.id())) return false;
+            if (!runtime.saveProgress()) {
+                state.finishRewardGrant(reward.id());
+                runtime.world.message(player, "Cannot save reward claim; nothing was granted.");
+                return false;
+            }
+            try {
+                grantReward(player, reward, selections.getOrDefault(reward.id(), List.of()), granted);
+                state.markRewardClaimed(reward.id());
+                state.finishRewardGrant(reward.id());
+                if (!runtime.saveProgress()) {
+                    runtime.world.message(player, "Reward granted, but saving failed. Ask an operator to review this claim before restarting.");
+                    runtime.sync(player, false);
+                    return false;
+                }
+            } catch (RuntimeException exception) {
+                me.johardt.theseus.Theseus.LOGGER.error("Reward grant interrupted for quest {} reward {}", questId, reward.id(), exception);
+                runtime.world.message(player, "Reward grant interrupted. Ask an operator to review it before retrying.");
+                runtime.changed(player);
+                return false;
+            }
         }
         runtime.changed(player);
         runtime.notify(
@@ -415,19 +436,16 @@ final class QuestRuntimeProgression {
 
     void reset(ServerPlayer player) {
         var playerId = runtime.world.playerId(player);
-        runtime.progress.remove(playerId);
-        runtime.deferredProgress.remove(playerId);
+        runtime.progress.getOrDefault(playerId, Map.of()).values().forEach(QuestProgressState::clearTasks);
+        runtime.deferredProgress.getOrDefault(playerId, Map.of()).values().forEach(value -> {
+            if (value.isJsonObject()) value.getAsJsonObject().remove("tasks");
+        });
+        for (QuestDefinition quest : runtime.catalog.quests().values()) runtime.resetTasks(player, quest, null);
         runtime.changed(player);
     }
 
     boolean isUnlocked(ServerPlayer player, QuestDefinition quest) {
-        return quest
-            .dependencies()
-            .stream()
-            .allMatch(dependency -> {
-                QuestDefinition required = runtime.catalog.quests().get(dependency);
-                return required != null && isComplete(player, required);
-            });
+        return runtime.prerequisitesMet(runtime.world.playerId(player), quest);
     }
 
     boolean isComplete(ServerPlayer player, QuestDefinition quest) {
@@ -451,6 +469,9 @@ final class QuestRuntimeProgression {
     ) {
         QuestProgressState progress = runtime.progress(player, quest.id());
         int previous = progress.getTaskProgress(progressKey);
+        if (task.kind() != QuestDefinition.TaskKind.COMPOSITE && previous >= task.target()) value = Math.max(previous, value);
+        if (task.kind() != QuestDefinition.TaskKind.COMPOSITE && !quest.settings().individualProgress()
+            && (progress.partyRewardSource() != null || runtime.progressParty(runtime.world.playerId(player), quest) != null)) value = Math.max(previous, value);
         if (previous == value) return false;
         progress.setTaskProgress(progressKey, value);
         return true;

@@ -1,6 +1,5 @@
 package me.johardt.theseus.client;
 
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import java.util.List;
@@ -36,7 +35,7 @@ final class QuestAuthoringPanelDrafts {
             int actionY = cardY + (42 - QuestAuthoringPanel.EDITOR_LIST_ACTION_HEIGHT) / 2;
             int deleteX = x + width - QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH - 8;
             int editX = deleteX - 4 - QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH;
-            Button edit = Widgets.button(widget -> {
+            Button edit = panel.button(List.of("task-edit", panel.authoring.tasks.get(taskIndex)), widget -> {
                 widget.withPosition(editX, actionY).withSize(QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH, QuestAuthoringPanel.EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(panel.listActionRenderer("edit"));
                 widget.withCallback(() -> panel.taskEditor.openTaskEditor(taskIndex));
@@ -46,7 +45,7 @@ final class QuestAuthoringPanelDrafts {
                     : Component.literal(panel.unavailableReason(EditorTypeRegistry.Kind.TASK, panel.authoring.tasks.get(taskIndex).type)));
             });
             panel.host.addWidget(edit);
-            Button delete = Widgets.button(widget -> {
+            Button delete = panel.button(List.of("task-delete", panel.authoring.tasks.get(taskIndex)), widget -> {
                 widget.withPosition(deleteX, actionY).withSize(QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH, QuestAuthoringPanel.EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(panel.listActionRenderer("delete"));
                 widget.withCallback(() -> {
@@ -61,7 +60,7 @@ final class QuestAuthoringPanelDrafts {
         int addIndex = panel.authoring.tasks.size();
         if (addIndex >= panel.createTaskScroll && addIndex < panel.createTaskScroll + taskListCapacity()) {
             int addY = y + (addIndex - panel.createTaskScroll) * 48;
-            Button add = Widgets.button(widget -> {
+            Button add = panel.button("task-add", widget -> {
                 widget.withPosition(x, addY).withSize(width, 42);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_task")));
                 widget.withCallback(() -> {
@@ -85,7 +84,7 @@ final class QuestAuthoringPanelDrafts {
             int actionY = cardY + (42 - QuestAuthoringPanel.EDITOR_LIST_ACTION_HEIGHT) / 2;
             int deleteX = x + width - QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH - 8;
             int editX = deleteX - 4 - QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH;
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("reward-edit", panel.authoring.rewards.get(rewardIndex)), widget -> {
                 widget.withPosition(editX, actionY).withSize(QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH, QuestAuthoringPanel.EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(panel.listActionRenderer("edit"));
                 widget.withCallback(() -> panel.rewardEditor.openRewardEditor(rewardIndex));
@@ -94,7 +93,7 @@ final class QuestAuthoringPanelDrafts {
                     ? QuestScreenEditor.editorText("gui.theseus.editor.edit_reward")
                     : Component.literal(panel.unavailableReason(EditorTypeRegistry.Kind.REWARD, panel.authoring.rewards.get(rewardIndex).type)));
             }));
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button(List.of("reward-delete", panel.authoring.rewards.get(rewardIndex)), widget -> {
                 widget.withPosition(deleteX, actionY).withSize(QuestAuthoringPanel.EDITOR_LIST_ACTION_WIDTH, QuestAuthoringPanel.EDITOR_LIST_ACTION_HEIGHT);
                 widget.withRenderer(panel.listActionRenderer("delete"));
                 widget.withCallback(() -> {
@@ -109,7 +108,7 @@ final class QuestAuthoringPanelDrafts {
         int addIndex = panel.authoring.rewards.size();
         if (addIndex >= panel.createRewardScroll && addIndex < panel.createRewardScroll + rewardListCapacity()) {
             int addY = y + (addIndex - panel.createRewardScroll) * 48;
-            panel.host.addWidget(Widgets.button(widget -> {
+            panel.host.addWidget(panel.button("reward-add", widget -> {
                 widget.withPosition(x, addY).withSize(width, 42);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.add_reward")));
                 widget.withCallback(() -> {

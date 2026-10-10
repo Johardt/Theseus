@@ -1,8 +1,35 @@
-# Theseus 1.0.0 smoke-test kit
+# Theseus 1.1.0 smoke-test kit
 
-This directory is a disposable fixture pack for a real NeoForge client/server
-run. It is intentionally outside `examples/` and is not copied into a shipped
-mod or the dev profile automatically.
+## OPAC shared progress pass
+
+Use `./gradlew runServer -Popac` with three players in a disposable OPAC party.
+Also test startup without OPAC. Full behavior is in [shared quests](../docs/PARTY-REWARDS.md).
+
+1. Create shared quests with Individual Progress Off and one individual quest
+   with it On. Confirm Reward audience is absent. Without server OPAC,
+   Individual Progress is disabled and its tooltip explains the requirement.
+2. Have different members finish separate tasks and contribute to a cumulative
+   kill task. All members retain synchronized counters, including an offline
+   member. Inventory snapshots do not sum or undo copied achievements.
+3. Submit consumable items and XP: only the contributor spends resources.
+   Make independent selectable reward choices and verify one claim per member.
+4. Build A → B → C with B individual and C shared. Alice completes B and works
+   on C. Bob sees copied C progress but cannot contribute before finishing B.
+   Complete C: Bob sees Locked rewards and cannot claim. Finish Bob's B and
+   claim C immediately without repeating it, including after leaving the party.
+5. Leave, join another party, transfer ownership, disband, and restart. Progress
+   stays with every player; reconciliation uses maximum counters, not sums.
+   Late joiners receive historical shared progress, subject to their prerequisites.
+6. Verify prerequisite chains cannot be skipped through copied completions.
+   Shared task resets affect current members and recompute composite parents;
+   reward receipts remain intact. Individual quests never copy to teammates.
+7. Remove OPAC: retained progress and eligible claims still work. Migrate a
+   backed-up version-3 file and verify counters/receipts survive, including
+   offline old recipients and deferred legacy records.
+8. Test failing reward handlers and interrupted grants: successful receipts
+   survive, retries require operator review, and other members can claim.
+   Explicit reward reset can pay twice; acknowledgement runs no effects.
+
 
 ## Requirements
 
@@ -21,7 +48,7 @@ instance (client and, for the dedicated-server pass below, server):
 
 The artifact is:
 
-`build/libs/theseus-neoforge-26.2-1.0.0.jar`
+`build/libs/theseus-neoforge-26.2-1.1.0.jar`
 
 Copy that JAR and Resourceful Lib into the instance's `mods/` directory,
 launch NeoForge, create a test world, and continue with the steps below. In a

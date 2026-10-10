@@ -33,33 +33,39 @@ repositories {
     maven("https://maven.blamejared.com")
     maven("https://maven.shedaniel.me")
     maven("https://maven.architectury.dev")
+    maven("https://chocolateminecraft.com/maven") {
+        content { includeGroup("xaero.pac") }
+    }
 }
 
 dependencies {
+    compileOnly("xaero.pac:open-parties-and-claims-neoforge-26.2:${property("openPartiesAndClaimsVersion")}")
+    if (providers.gradleProperty("opac").isPresent) {
+        runtimeOnly("xaero.pac:open-parties-and-claims-neoforge-26.2:${property("openPartiesAndClaimsVersion")}")
+    }
     implementation("com.teamresourceful.resourcefullib:resourcefullib-neoforge-26.2:${property("resourcefulLibVersion")}")
     compileOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.2:${property("resourcefulConfigVersion")}")
     runtimeOnly("com.teamresourceful.resourcefulconfig:resourcefulconfig-neoforge-26.2:${property("resourcefulConfigVersion")}")
     implementation("earth.terrarium.olympus:olympus-neoforge-26.2:${property("olympusVersion")}")
     jarJar("earth.terrarium.olympus:olympus-neoforge-26.2:${property("olympusVersion")}")
-    compileOnly("mezz.jei:jei-26.2-common-api:30.32.0.221")
-    compileOnly("mezz.jei:jei-26.2-neoforge-api:30.32.0.221")
-    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.2.821")
-    // REI 26.2.821 declares Architectury 21.0.2, which references a NeoForge event
-    // removed before the project's 26.2.0.86 target.  21.0.7 is the compatible
-    // 26.2 NeoForge build and wins Gradle's same-module version selection.
-    compileOnly("dev.architectury:architectury-neoforge:21.0.7")
+    compileOnly("mezz.jei:jei-26.2-common-api:${property("jeiVersion")}")
+    compileOnly("mezz.jei:jei-26.2-neoforge-api:${property("jeiVersion")}")
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${property("reiVersion")}")
+    // REI declares Architectury 21.0.2; 21.0.7 supports this NeoForge target.
+    compileOnly("dev.architectury:architectury-neoforge:${property("architecturyVersion")}")
 
     when (providers.gradleProperty("recipeViewer").orNull?.lowercase()) {
         "rei" -> {
-            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:26.2.821")
-            runtimeOnly("dev.architectury:architectury-neoforge:21.0.7")
+            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${property("reiVersion")}")
+            runtimeOnly("dev.architectury:architectury-neoforge:${property("architecturyVersion")}")
         }
-        "jei" -> runtimeOnly("mezz.jei:jei-26.2-neoforge:30.32.0.221")
+        "jei" -> runtimeOnly("mezz.jei:jei-26.2-neoforge:${property("jeiVersion")}")
     }
 
     testImplementation(platform("org.junit:junit-bom:6.0.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("com.google.code.gson:gson:2.13.2")
+    testRuntimeOnly("xaero.pac:open-parties-and-claims-neoforge-26.2:${property("openPartiesAndClaimsVersion")}")
     testCompileOnly(files(sourceSets.main.get().compileClasspath))
     testRuntimeOnly(files(sourceSets.main.get().runtimeClasspath))
     testRuntimeOnly(files(layout.buildDirectory.file(
@@ -77,6 +83,9 @@ neoForge {
             systemProperty("neoforge.enabledGameTestNamespaces", "theseus")
             providers.gradleProperty("quickPlayWorld").orNull?.let { world ->
                 programArguments.addAll("--quickPlaySingleplayer", world)
+            }
+            providers.gradleProperty("dockAnimationMillis").orNull?.let { duration ->
+                systemProperty("theseus.dockAnimationMillis", duration)
             }
             if (providers.gradleProperty("openQuestScreen").isPresent) {
                 systemProperty("theseus.openQuestScreen", "true")

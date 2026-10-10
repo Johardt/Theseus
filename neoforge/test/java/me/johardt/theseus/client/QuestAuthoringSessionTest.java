@@ -12,6 +12,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestAuthoringSessionTest {
     @Test
+    void newQuestsUseIndividualProgressWithoutRewardAudience() {
+        QuestAuthoringSession session = new QuestAuthoringSession(16);
+        for (boolean partyAvailable : new boolean[] {true, false}) {
+            session.beginNew("Main", 0, 0);
+            assertFalse(session.individualProgress);
+            assertFalse(session.copy().individualProgress);
+            assertFalse(session.draft().snapshot().getAsJsonObject("settings").has("reward_audience"));
+        }
+    }
+
+    @Test
+    void editingRemovesObsoleteAudienceAndRuntimeEligibility() {
+        for (String audience : new String[] {"", "self", "party"}) {
+            JsonObject document = JsonParser.parseString("""
+                {"display":{"title":"Quest"},"tasks":{},"rewards":{},"settings":{},
+                 "reward_eligible":true,"party_reward_source":"Builders","pending_rewards":["first"],
+                 "__party":{"available":true}}
+                """).getAsJsonObject();
+            if (!audience.isEmpty()) document.getAsJsonObject("settings").addProperty("reward_audience", audience);
+            QuestDefinition definition = QuestDefinition.parse("quest", document);
+            QuestAuthoringSession session = new QuestAuthoringSession(16);
+            session.beginExisting(definition, document, "Main");
+            assertFalse(session.draft().snapshot().getAsJsonObject("settings").has("reward_audience"));
+            JsonObject saved = session.draft().transferSnapshot();
+            assertFalse(saved.has("reward_eligible"));
+            assertFalse(saved.has("party_reward_source"));
+            assertFalse(saved.has("pending_rewards"));
+            assertFalse(saved.has("__party"));
+        }
+    }
+
+    @Test
     void composesTheAuthoringStateIntoOneLosslessDraft() {
         QuestAuthoringSession session = new QuestAuthoringSession(16);
         session.begin(QuestDraft.create(null));

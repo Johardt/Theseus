@@ -1,6 +1,5 @@
 package me.johardt.theseus.client;
 
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import me.johardt.theseus.client.description.DescriptionDocument;
@@ -23,6 +22,7 @@ public final class QuestTutorialScreen extends Screen {
     private static final int CONTENT_MARGIN = 16;
     private static final int FOOTER_HEIGHT = 38;
     private final Screen parent;
+    private final TheseusButtons buttons = new TheseusButtons(() -> "screen");
     private final DescriptionDocument document;
     private List<QuestDescriptionRenderer.Interaction> interactions = List.of();
     private int contentScroll;
@@ -43,11 +43,12 @@ public final class QuestTutorialScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        buttons.beginBuild();
         contentLeft = Math.max(CONTENT_MARGIN, (width - Math.min(720, width - CONTENT_MARGIN * 2)) / 2);
         contentWidth = Math.max(1, Math.min(720, width - CONTENT_MARGIN * 2));
         contentTop = 28;
         contentBottom = Math.max(contentTop + 1, height - FOOTER_HEIGHT);
-        addRenderableWidget(Widgets.button(widget -> {
+        addRenderableWidget(buttons.button("tutorial-auto-show", widget -> {
             widget.withPosition(contentLeft, height - 28).withSize(146, 20);
             widget.withRenderer(WidgetRenderers.text(Component.translatable(
                 TheseusClientOptions.tutorialAutoShow()
@@ -60,12 +61,31 @@ public final class QuestTutorialScreen extends Screen {
             });
             widget.withTooltip(Component.translatable("screen.theseus.tutorial.auto_show.tooltip"));
         }));
-        Button done = Widgets.button(widget -> {
+        Button done = buttons.button("tutorial-done", widget -> {
             widget.withPosition(width - contentLeft - 100, height - 28).withSize(100, 20);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.done")));
             widget.withCallback(this::closeToParent);
         });
         addRenderableWidget(done);
+        buttons.endBuild();
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        buttons.mouseReleased(event);
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean keyReleased(KeyEvent event) {
+        buttons.keyReleased(event);
+        return super.keyReleased(event);
+    }
+
+    @Override
+    public void removed() {
+        buttons.cancel();
+        super.removed();
     }
 
     @Override
@@ -90,6 +110,7 @@ public final class QuestTutorialScreen extends Screen {
         int mouseY,
         float partialTick
     ) {
+        buttons.reconcile();
         graphics.text(font, getTitle(), contentLeft, 8, ClientThemeLoader.active().modals().title(), true);
         graphics.enableScissor(contentLeft, contentTop, contentLeft + contentWidth, contentBottom);
         QuestDescriptionRenderer.Result result = QuestDescriptionRenderer.render(

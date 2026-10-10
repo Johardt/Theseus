@@ -5,6 +5,7 @@ import me.johardt.theseus.core.QuestDefinition;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestPresentationTest {
+    @Test
+    void partyRewardReceiptDoesNotColorIncompletePersonalProgressAsCompleted() {
+        assertEquals(0xFF4C9AFF, QuestPresentation.nodeStateColor(true, true, false));
+        assertEquals(0xFF737B87, QuestPresentation.nodeStateColor(false, true, false));
+        assertEquals(0xFF55D86A, QuestPresentation.nodeStateColor(true, true, true));
+        assertEquals(Component.translatable("quest.theseus.in_progress").getString(), QuestPresentation.status(true, true, false).getString());
+    }
     @BeforeAll
     static void bootstrapMinecraft() {
         MinecraftTestBootstrap.ensureBootstrapped();

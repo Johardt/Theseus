@@ -12,9 +12,10 @@
 | Resourceful Config | 5.0.0 or newer | Optional client config screen. |
 | JEI | 30.0 or newer | Optional client integration. The build uses 30.32.0.221. |
 | REI | 26.2 or newer | Optional client integration. The build uses 26.2.821. |
+| Open Parties and Claims | 0.31.6 or newer for 26.2 | Optional server integration for its built-in parties; not required on Theseus clients. |
 
 The release file is
-`theseus-neoforge-26.2-1.0.0.jar`. Do not install the separate
+`theseus-neoforge-26.2-1.1.0.jar`. Do not install the separate
 `-sources.jar` file as a mod. Theseus has no Fabric or Forge build.
 
 ## Quest data compatibility
@@ -38,10 +39,19 @@ Unknown runtime task or reward types need a Theseus add-on handler.
 - Theseus installs its demo quest pack when the quest folder has no JSON files.
 - The editor checks imports and saves against the server's registries and
   permissions.
-- Saving changes to a quest's tasks or rewards can reset that quest's player
-  progress. Renaming a quest without changing its tasks or rewards moves its
-  progress to the new ID. Treat a quest definition as part of the live pack
-  data.
+- Saving changes to a quest's tasks or rewards can reset task progress, while
+  preserving receipts, pins, and completion history. Reset tasks must be
+  completed again before claiming rewards.
+  Renaming moves the retained state to the new ID. Explicit operator reward
+  resets and explicit whole-quest resets allow another payout; single-task resets do not.
+- Progress files migrate from the legacy UUID-keyed root to a version-4
+  `version`/`players` document. Back up before upgrading or downgrading.
+- `individual_progress` follows Heracles: false shares tasks through OPAC;
+  true keeps tasks personal. Without OPAC or a party, tasks are personal.
+  Existing quests with this field omitted or false become shared with OPAC.
+- [Shared quests](PARTY-REWARDS.md) retain player-owned progress across party
+  changes. Prerequisites gate contributions and claims, while copied progress
+  remains visible. The Reward audience setting has been removed.
 
 Use the [backup and recovery guide](BACKUP-RECOVERY.md) before a migration or
 bulk edit.

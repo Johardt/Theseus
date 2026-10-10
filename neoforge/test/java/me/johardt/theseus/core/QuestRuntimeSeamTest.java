@@ -739,12 +739,13 @@ class QuestRuntimeSeamTest {
         );
 
         runtime.loadProgress();
-        assertEquals(new JsonObject(), JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject());
+        assertEquals(4, JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject().get("version").getAsInt());
+        assertEquals(new JsonObject(), JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject().getAsJsonObject("players"));
         assertTrue(runtime.triggerDummy(null, "persist_after_empty_load"));
         runtime.close();
 
         JsonObject savedProgress = JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject();
-        JsonObject savedQuest = savedProgress.getAsJsonObject(new UUID(0, 1).toString())
+        JsonObject savedQuest = savedProgress.getAsJsonObject("players").getAsJsonObject(new UUID(0, 1).toString())
             .getAsJsonObject("progress_contract");
         assertEquals(1, savedQuest.getAsJsonObject("tasks").get("event").getAsInt());
     }
@@ -779,7 +780,7 @@ class QuestRuntimeSeamTest {
         recoveredRuntime.close();
 
         JsonObject savedProgress = JsonParser.parseString(Files.readString(progressFile)).getAsJsonObject();
-        assertEquals(1, savedProgress.getAsJsonObject(new UUID(0, 1).toString())
+        assertEquals(1, savedProgress.getAsJsonObject("players").getAsJsonObject(new UUID(0, 1).toString())
             .getAsJsonObject("progress_contract")
             .getAsJsonObject("tasks")
             .get("event")

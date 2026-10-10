@@ -62,6 +62,13 @@ ordering="AFTER"
 side="CLIENT"
 
 [[dependencies.theseus]]
+modId="openpartiesandclaims"
+type="optional"
+versionRange="[0.31.6,)"
+ordering="AFTER"
+side="SERVER"
+
+[[dependencies.theseus]]
 modId="jei"
 type="optional"
 versionRange="[30.0,)"

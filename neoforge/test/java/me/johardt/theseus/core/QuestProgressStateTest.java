@@ -10,6 +10,28 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestProgressStateTest {
+    @Test
+    void earnedEligibilityPendingGrantsAndCompletionHistorySurviveRoundTripAndTaskReset() {
+        QuestProgressState state = new QuestProgressState();
+        var source = new QuestProgressState.PartyRewardSource(new java.util.UUID(1, 1), "Builders", new java.util.UUID(0, 1));
+        state.earnPartyRewards(source);
+        state.recordCompletion();
+        state.setTaskProgress("root/leaf", 1);
+        state.markRewardClaimed("temporarily_removed_reward");
+        state.beginRewardGrant("first");
+        state.setPinned(true);
+        QuestProgressState restored = QuestProgressState.fromJson(quest(), state.toJson());
+        assertEquals(source, restored.partyRewardSource());
+        assertTrue(restored.completionRecorded());
+        assertEquals(Set.of("first"), restored.pendingRewards());
+        restored.clearTasks();
+        assertTrue(restored.taskProgress().isEmpty());
+        assertTrue(restored.isPinned());
+        assertEquals(Set.of("temporarily_removed_reward"), restored.claimedRewards());
+        assertTrue(restored.unmarkRewardClaimed("first"));
+        assertTrue(restored.pendingRewards().isEmpty());
+    }
+
     private static QuestDefinition quest() {
         return QuestDefinition.parse("quest", JsonParser.parseString("""
             {

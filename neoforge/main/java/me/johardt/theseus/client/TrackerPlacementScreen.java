@@ -1,6 +1,6 @@
 package me.johardt.theseus.client;
 
-import earth.terrarium.olympus.client.components.Widgets;
+import java.util.List;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
 import com.teamresourceful.resourcefullib.common.color.Color;
@@ -39,6 +39,7 @@ public final class TrackerPlacementScreen extends Screen {
     );
 
     private final Screen parent;
+    private final TheseusButtons buttons = new TheseusButtons(() -> "screen");
     private TheseusClientOptions.TrackerAnchor selected;
     private int gridLeft;
     private int gridTop;
@@ -58,6 +59,7 @@ public final class TrackerPlacementScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        buttons.beginBuild();
         panelWidth = Math.max(1, Math.min(360, width - SCREEN_MARGIN * 2));
         int panelHeight = PANEL_PADDING + PANEL_HEADER_HEIGHT + 4 * CELL_HEIGHT
             + DONE_GAP + DONE_HEIGHT + PANEL_PADDING;
@@ -73,7 +75,7 @@ public final class TrackerPlacementScreen extends Screen {
             TheseusClientOptions.TrackerAnchor anchor = anchors[index];
             int column = index / 4;
             int row = index % 4;
-            addRenderableWidget(Widgets.button(widget -> {
+            addRenderableWidget(buttons.button(List.of("tracker-anchor", anchor), widget -> {
                 widget.withPosition(gridLeft + column * (cellWidth + 8), gridTop + row * cellHeight)
                     .withSize(cellWidth, cellHeight - 3);
                 Color normal = anchor == selected
@@ -89,18 +91,37 @@ public final class TrackerPlacementScreen extends Screen {
                 widget.withCallback(() -> select(anchor));
             }));
         }
-        Button done = Widgets.button(widget -> {
+        Button done = buttons.button("tracker-done", widget -> {
             widget.withPosition(gridLeft + panelWidth - 100 - PANEL_PADDING, doneY)
                 .withSize(100, DONE_HEIGHT);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.done")));
             widget.withCallback(this::closeToParent);
         });
         addRenderableWidget(done);
+        buttons.endBuild();
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        buttons.mouseReleased(event);
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean keyReleased(KeyEvent event) {
+        buttons.keyReleased(event);
+        return super.keyReleased(event);
+    }
+
+    @Override
+    public void removed() {
+        buttons.cancel();
+        super.removed();
     }
 
     @Override
@@ -123,6 +144,7 @@ public final class TrackerPlacementScreen extends Screen {
         int mouseY,
         float partialTick
     ) {
+        buttons.reconcile();
         int textLeft = gridLeft + PANEL_PADDING;
         graphics.text(font, getTitle(), textLeft, panelTop + 7, ClientThemeLoader.active().modals().title(), true);
         graphics.text(

@@ -261,8 +261,9 @@ final class QuestRuntimeMutations {
 
     static JsonObject authoredDocument(JsonObject source) {
         JsonObject document = source == null ? new JsonObject() : source.deepCopy();
-        List.of("progress", "unlocked", "complete", "claimed", "claimed_rewards", "pinned", "issues", "__chapters", "__editor_types")
+        List.of("progress", "unlocked", "complete", "claimed", "claimed_rewards", "pinned", "issues", "reward_eligible", "party_reward_source", "pending_rewards", "reward_claim_pending", "progress_scope", "progress_party", "__chapters", "__editor_types", "__party")
             .forEach(document::remove);
+        if (document.has("settings") && document.get("settings").isJsonObject()) document.getAsJsonObject("settings").remove("reward_audience");
         return document;
     }
 
@@ -587,21 +588,24 @@ final class QuestRuntimeMutations {
         }
 
         QuestProgressState state = runtime.progress(player, questId);
+        if ((scope.equals("quest") || scope.equals("task")) && !runtime.partyProgressReady(player)) {
+            return MutationResult.failure("Cannot reset tasks while OPAC party progress is unavailable");
+        }
         switch (scope) {
             case "quest" -> {
                 if (!entry.isBlank()) return MutationResult.failure("Quest reset does not accept an entry");
-                state.clearProgress();
+                runtime.resetTasks(player, quest, null, true);
                 runtime.changed(player);
-                return MutationResult.success("Reset quest progress for '" + quest.title() + "' (" + questId + ") for the current player");
+                return MutationResult.success("Reset tasks and reward claims for '" + quest.title() + "' (" + questId + "); shared quests reset for the whole OPAC party");
             }
             case "task" -> {
                 if (entry.isBlank()) return MutationResult.failure("Task reset requires a task path");
                 QuestDefinition.Task task = QuestRuntime.resolveTask(quest.tasks(), entry);
                 if (task == null) return MutationResult.failure("Unknown task path '" + entry + "' in quest '" + questId + "'");
-                state.resetTaskPath(entry);
+                runtime.resetTasks(player, quest, entry);
                 runtime.refreshCompositeProgress(player, quest);
                 runtime.changed(player);
-                return MutationResult.success("Reset task progress for '" + entry + "' in quest '" + questId + "' for the current player");
+                return MutationResult.success("Reset task progress for '" + entry + "' in quest '" + questId + "'; shared tasks reset for the whole OPAC party");
             }
             case "reward" -> {
                 if (entry.isBlank()) return MutationResult.failure("Reward reset requires a reward ID");
@@ -610,7 +614,7 @@ final class QuestRuntimeMutations {
                 }
                 state.unmarkRewardClaimed(entry);
                 runtime.changed(player);
-                return MutationResult.success("Reset reward progress for '" + entry + "' in quest '" + questId + "' for the current player");
+                return MutationResult.success("Reset reward receipt for '" + entry + "' in quest '" + questId + "'; the current player may claim it again if eligible");
             }
             default -> {
                 return MutationResult.failure("Unknown reset progress scope '" + scope + "'");
@@ -727,18 +731,30 @@ final class QuestRuntimeMutations {
     }
 
     void resetQuestProgress(String oldId, String newId) {
+        runtime.editLegacyPartyProgress(oldId, newId, true);
         runtime.progress.values().forEach(quests -> {
-            quests.remove(oldId);
-            if (newId != null) quests.remove(newId);
+            QuestProgressState state = quests.get(oldId);
+            if (state == null) return;
+            state.clearTasks();
+            if (newId != null && !oldId.equals(newId)) {
+                quests.remove(oldId);
+                quests.put(newId, state);
+            }
         });
         runtime.deferredProgress.values().forEach(quests -> {
-            quests.remove(oldId);
-            if (newId != null) quests.remove(newId);
+            JsonElement state = quests.get(oldId);
+            if (state == null) return;
+            if (state.isJsonObject()) state.getAsJsonObject().remove("tasks");
+            if (newId != null && !oldId.equals(newId)) {
+                quests.remove(oldId);
+                quests.put(newId, state);
+            }
         });
         runtime.saveProgress();
     }
 
     void migrateQuestProgress(String oldId, String newId) {
+        runtime.editLegacyPartyProgress(oldId, newId, false);
         runtime.progress.values().forEach(quests -> {
             QuestProgressState state = quests.remove(oldId);
             if (state != null) quests.put(newId, state);

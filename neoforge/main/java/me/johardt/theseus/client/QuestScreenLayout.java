@@ -1,7 +1,7 @@
 package me.johardt.theseus.client;
 
+import java.util.Arrays;
 import com.teamresourceful.resourcefullib.common.color.Color;
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.base.renderer.WidgetRenderer;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
@@ -179,17 +179,17 @@ final class QuestScreenLayout {
     }
 
     void addGraphNavigationWidgets(HeaderLayout header) {
-        screen.addScreenWidget(Widgets.button(widget -> {
+        screen.addScreenWidget(screen.buttons.button("display-menu", widget -> {
             widget.withPosition(header.helpX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
             widget.withRenderer(WidgetRenderers.center(
                 11,
                 11,
                 WidgetRenderers.text(Component.literal("⋮"))
             ));
-            widget.withCallback(() -> screen.actions.openDisplayMenu(header.helpX(), header.actionY() + HEADER_ROW_HEIGHT));
+            widget.withCallback(() -> screen.actions.openDisplayMenu(headerLayout().helpX(), headerLayout().actionY() + HEADER_ROW_HEIGHT));
             widget.withTooltip(Component.translatable("screen.theseus.display_menu.tooltip"));
         }));
-        if (!screen.authoring.open) screen.addScreenWidget(Widgets.button(widget -> {
+        if (!screen.authoring.open) screen.addScreenWidget(screen.buttons.button("graph-fit", widget -> {
                 widget.withPosition(header.fitX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
                 widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.f")));
                 widget.withCallback(this::fitGraphToContent);
@@ -201,7 +201,7 @@ final class QuestScreenLayout {
             && !screen.authoring.open) {
             QuestGraphLayout.CanvasBounds canvas = graphCanvasBounds();
             if (canvas.width() >= 22 && canvas.height() >= HEADER_ROW_HEIGHT) {
-                screen.addScreenWidget(Widgets.button(widget -> {
+                screen.addScreenWidget(screen.buttons.button("minimap-show", widget -> {
                     widget.withPosition(
                         (int) Math.round(canvas.maxX()) - 26,
                         (int) Math.round(canvas.maxY()) - 24
@@ -225,7 +225,7 @@ final class QuestScreenLayout {
             }
         }
         if (screen.mode.isAuthoring() && !screen.authoring.open) {
-            screen.addScreenWidget(Widgets.button(widget -> {
+            screen.addScreenWidget(screen.buttons.button("grid-toggle", widget -> {
                 widget.withPosition(header.gridX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
                 boolean visible = TheseusClientOptions.showGrid();
                 widget.withRenderer(WidgetRenderers.center(
@@ -242,7 +242,7 @@ final class QuestScreenLayout {
                 });
                 widget.withTooltip(Component.translatable(visible ? "gui.theseus.editor.hide_graph_grid" : "gui.theseus.editor.show_graph_grid"));
             }));
-            screen.addScreenWidget(Widgets.button(widget -> {
+            screen.addScreenWidget(screen.buttons.button("snap-toggle", widget -> {
                 widget.withPosition(header.snapX(), header.actionY()).withSize(22, HEADER_ROW_HEIGHT);
                 boolean enabled = TheseusClientOptions.snapToGrid();
                 widget.withRenderer(WidgetRenderers.center(
@@ -283,7 +283,7 @@ final class QuestScreenLayout {
         for (int index = 0; index < DetailTab.values().length; index++) {
             DetailTab tab = DetailTab.values()[index];
             int tabX = detailsLeft + 8 + index * tabWidth;
-            Button tabButton = Widgets.button(widget -> {
+            Button tabButton = screen.buttons.button(Arrays.asList("details-tab", screen.selectedQuestId, tab), widget -> {
                 widget.withPosition(tabX, 8).withSize(tabWidth - 3, 20);
                 widget.withRenderer(
                     WidgetRenderers.text(
@@ -303,7 +303,7 @@ final class QuestScreenLayout {
             });
             screen.addScreenWidget(tabButton);
         }
-        Button closeDetails = Widgets.button(widget -> {
+        Button closeDetails = screen.buttons.button(Arrays.asList("details-close", screen.selectedQuestId), widget -> {
             widget.withPosition(screen.guiWidth() - 27, 8).withSize(19, 20);
             widget.withRenderer(
                 WidgetRenderers.center(11, 11, WidgetRenderers.sprite(CLOSE_BUTTON))
@@ -316,7 +316,7 @@ final class QuestScreenLayout {
             widget.withTooltip(Component.translatable("gui.theseus.editor.close_quest_details"));
         });
         screen.addScreenWidget(closeDetails);
-        Button pin = Widgets.button(widget -> {
+        Button pin = screen.buttons.button(Arrays.asList("quest-pin", screen.selectedQuestId), widget -> {
             widget.withPosition(pinLeft, 8).withSize(19, 20);
             widget.withRenderer(
                 WidgetRenderers.text(
@@ -351,24 +351,24 @@ final class QuestScreenLayout {
                   );
         int actionWidth =
             submittable == null ? detailsWidth - 18 : (detailsWidth - 27) / 2;
-        Button claim = Widgets.button(widget -> {
+        Button claim = screen.buttons.button(Arrays.asList("quest-claim", screen.selectedQuestId), widget -> {
             widget
                 .withPosition(detailsLeft + 9, screen.guiHeight() - 36)
                 .withSize(actionWidth, 20);
             widget.withRenderer(
-                WidgetRenderers.text(Component.translatable("gui.theseus.editor.claim_rewards"))
+                WidgetRenderers.text(Component.translatable("gui.theseus.party_rewards.claim_yours"))
             );
             widget.withCallback(screen.actions::claimSelected);
             widget.active =
                 selected != null &&
-                selected.complete() &&
+                selected.rewardEligible() &&
                 !selected.claimed() &&
                 !screen.mutations.isPending() &&
                 screen.actions.canClaimRewards(selected);
             widget.withTooltip(Component.translatable("gui.theseus.editor.claim_rewards"));
             if (
                 selected != null &&
-                selected.complete() &&
+                selected.rewardEligible() &&
                 !selected.claimed() &&
                 !screen.actions.canClaimRewards(selected)
             ) {
@@ -379,7 +379,7 @@ final class QuestScreenLayout {
         });
         screen.addScreenWidget(claim);
         if (submittable != null) {
-            Button submit = Widgets.button(widget -> {
+            Button submit = screen.buttons.button(List.of("task-submit", selected.definition().id(), submittable.path()), widget -> {
                 widget
                     .withPosition(detailsLeft + 18 + actionWidth, screen.guiHeight() - 36)
                     .withSize(actionWidth, 20);
@@ -401,7 +401,7 @@ final class QuestScreenLayout {
         Component tooltip,
         Runnable callback
     ) {
-        return Widgets.button(widget -> {
+        return screen.buttons.button(List.of("editor-tool", icon), widget -> {
             widget.withPosition(x, 1).withSize(19, 20);
             Identifier texture = QuestScreenRenderer.sprite("heading/editor/" + icon + (selected ? "_selected" : ""));
             widget.withRenderer(WidgetRenderers.center(
@@ -489,9 +489,9 @@ final class QuestScreenLayout {
     }
 
     int canvasRight() {
-        return screen.detailsOpen || screen.authoring.open
-            ? screen.guiWidth() - detailsWidth()
-            : screen.guiWidth();
+        return screen.docks.building
+            ? (screen.detailsOpen || screen.authoring.open ? screen.guiWidth() - detailsWidth() : screen.guiWidth())
+            : screen.docks.rightEdge();
     }
 
     int graphCanvasRight() {
@@ -519,11 +519,7 @@ final class QuestScreenLayout {
     }
 
     boolean detailsDockContains(double mouseX, double mouseY) {
-        return (screen.detailsOpen || screen.authoring.open)
-            && mouseX >= screen.guiWidth() - detailsWidth()
-            && mouseX < screen.guiWidth()
-            && mouseY >= 0
-            && mouseY < screen.guiHeight();
+        return screen.docks.rightContains(mouseX, mouseY);
     }
 
     QuestGraphLayout.WorldBounds graphWorldBounds() {
@@ -560,7 +556,11 @@ final class QuestScreenLayout {
     }
 
     int sidebarWidth() {
-        if (!screen.sidebarOpen) return COLLAPSED_SIDEBAR_WIDTH;
+        if (!screen.docks.building) return screen.docks.leftEdge();
+        return screen.sidebarOpen ? sidebarContentWidth() : COLLAPSED_SIDEBAR_WIDTH;
+    }
+
+    int sidebarContentWidth() {
         return Math.max(120, Math.min(140, Math.round(screen.guiWidth() * 0.20f)));
     }
 

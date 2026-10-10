@@ -22,14 +22,14 @@ final class QuestPresentation {
 
     static Component status(boolean unlocked, boolean claimed, boolean complete) {
         if (!unlocked) return Component.translatable("quest.theseus.locked");
-        if (claimed) return Component.translatable("quest.theseus.completed_claimed");
+        if (complete && claimed) return Component.translatable("quest.theseus.completed_claimed");
         if (complete) return Component.translatable("quest.theseus.completed");
         return Component.translatable("quest.theseus.in_progress");
     }
 
     static int nodeStateColor(boolean unlocked, boolean claimed, boolean complete) {
         if (!unlocked) return 0xFF737B87;
-        if (claimed) return 0xFF55D86A;
+        if (complete && claimed) return 0xFF55D86A;
         if (complete) return 0xFFFFD966;
         return 0xFF4C9AFF;
     }

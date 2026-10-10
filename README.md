@@ -16,7 +16,7 @@ java -version
 ./gradlew clean build
 ```
 
-The release jar is `build/libs/theseus-neoforge-26.2-1.0.0.jar`. The separate
+The release jar is `build/libs/theseus-neoforge-26.2-1.1.0.jar`. The separate
 `-sources.jar` is not a game mod. To start a development client, run:
 
 ```sh
@@ -52,6 +52,7 @@ with the world. The quest screen is built into Theseus; Hermes is not required.
 - [Add-on extension guide](docs/EXTENSIONS.md)
 - [Backup and recovery](docs/BACKUP-RECOVERY.md)
 - [Known limitations](docs/LIMITATIONS.md)
+- [OPAC party rewards](docs/PARTY-REWARDS.md)
 - [Manual smoke test](smoke-test/README.md)
 
 ## Mod developers

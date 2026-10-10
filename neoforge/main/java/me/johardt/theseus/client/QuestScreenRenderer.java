@@ -33,12 +33,13 @@ final class QuestScreenRenderer {
     private static final double MIN_DEPENDENCY_TEXTURE_ZOOM = 0.75;
     private static final double DEPENDENCY_TEXTURE_MARKER_SPACING = 32.0;
     private static final int MAX_DEPENDENCY_TEXTURE_MARKERS_PER_PATH = 6;
+    private static final double DEPENDENCY_ARROW_PIXELS_PER_SECOND = 24.0;
     private static final double DEPENDENCY_STROKE_MARGIN = 3.0;
     private static final int CHAPTER_BACKGROUND_BOTTOM_TRIM = 18;
     private static final PathStyle GRAY_PATH = new PathStyle(0xB0111318, 0x80535A64, 0x776F7782);
-    private static final PathStyle UNLOCKED_PATH = new PathStyle(0xB0111318, 0x80636F66, 0x8876A77B);
-    private static final PathStyle SELECTED_INCOMPLETE_PATH = new PathStyle(0xFF8A6818, 0xDDFFD966, 0xFFFFD966);
-    private static final PathStyle COMPLETED_PATH = new PathStyle(0xFF1F702E, 0xDD55D86A, 0xFF55D86A);
+    private static final PathStyle UNLOCKED_PATH = new PathStyle(0xB0111318, 0x80636F66, 0xFFBAFFC4);
+    private static final PathStyle SELECTED_INCOMPLETE_PATH = new PathStyle(0xFF8A6818, 0xDDFFD966, 0xFFFFF4B0);
+    private static final PathStyle COMPLETED_PATH = new PathStyle(0xFF1F702E, 0xDD55D86A, 0xFFBAFFC4);
 
     private record PathStyle(int borderColor, int strokeColor, int arrowTint) {}
 
@@ -56,6 +57,8 @@ final class QuestScreenRenderer {
     ).stream().map(name -> sprite("textures/gui/quest_backgrounds/" + name + ".png")).toList();
 
     private final QuestScreen screen;
+    private final long arrowAnimationStarted = System.nanoTime();
+    private double arrowTravel;
 
     QuestScreenRenderer(QuestScreen screen) {
         this.screen = screen;
@@ -80,19 +83,32 @@ final class QuestScreenRenderer {
                     1,
                     fullBackgroundHeight - CHAPTER_BACKGROUND_BOTTOM_TRIM
                 );
-                graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    texture,
-                    backgroundX,
-                    backgroundY,
-                    0.0f,
-                    0.0f,
-                    backgroundWidth,
-                    backgroundHeight,
-                    backgroundWidth,
-                    fullBackgroundHeight,
-                    (chapterDisplay.backgroundOpacity() * 255 / 100 << 24) | 0x00FFFFFF
+                // Chapter backgrounds are square. Cover the viewport uniformly,
+                // then crop the centered overflow instead of stretching each axis.
+                int backgroundSize = Math.max(backgroundWidth, backgroundHeight);
+                int imageX = backgroundX + (backgroundWidth - backgroundSize) / 2;
+                int imageY = backgroundY + (backgroundHeight - backgroundSize) / 2;
+                graphics.enableScissor(
+                    backgroundX, backgroundY,
+                    backgroundX + backgroundWidth, backgroundY + backgroundHeight
                 );
+                try {
+                    graphics.blit(
+                        RenderPipelines.GUI_TEXTURED,
+                        texture,
+                        imageX,
+                        imageY,
+                        0.0f,
+                        0.0f,
+                        backgroundSize,
+                        backgroundSize,
+                        backgroundSize,
+                        backgroundSize,
+                        (chapterDisplay.backgroundOpacity() * 255 / 100 << 24) | 0x00FFFFFF
+                    );
+                } finally {
+                    graphics.disableScissor();
+                }
             } catch (RuntimeException ignored) { }
         }
         QuestGraphLayout.CanvasBounds canvas = screen.layout.graphCanvasBounds();
@@ -147,6 +163,7 @@ final class QuestScreenRenderer {
             || (activeOverlay == QuestModalHost.Modal.DISCARD_CONFIRMATION && screen.modalHost.contains(QuestModalHost.Modal.REWARD_EDITOR));
         boolean modalVisible = screen.modalHost.rendersOverlay();
         if (modalVisible) {
+            screen.docks.render(graphics, mouseX, mouseY, partialTick);
             drawBaseForeground(graphics, mouseX, mouseY);
             if (diagnosticsModal) {
                 screen.imports.drawDiagnosticsModal(graphics);
@@ -187,7 +204,8 @@ final class QuestScreenRenderer {
             }
             return;
         }
-        screen.parentExtractRenderState(graphics, mouseX, mouseY, partialTick);
+        screen.extractNonDockWidgets(graphics, mouseX, mouseY, partialTick);
+        screen.docks.render(graphics, mouseX, mouseY, partialTick);
         drawBaseForeground(graphics, mouseX, mouseY);
     }
 
@@ -249,6 +267,7 @@ final class QuestScreenRenderer {
         PathPoint start,
         PathPoint end,
         PathStyle style,
+        boolean animated,
         QuestGraphLayout.WorldBounds visibleWorld
     ) {
         double dx = end.x - start.x;
@@ -291,19 +310,21 @@ final class QuestScreenRenderer {
                 MAX_DEPENDENCY_TEXTURE_MARKERS_PER_PATH,
                 Math.max(1, visibleTileCount / tilesPerMarker)
             );
-            long markerStride = Math.max(1, visibleTileCount / (markerCount + 1L));
             for (int marker = 1; marker <= markerCount; marker++) {
-                long tileOffset = Math.min(visibleTileCount - 1, markerStride * marker);
-                long pathPixel = safeTilePixel(tiles.firstTile() + tileOffset);
+                long markerPixel = animated
+                    ? DependencyArrowLayout.offset(visibleLength, markerCount, marker, arrowTravel)
+                    : safeTilePixel(Math.min(visibleTileCount - 1,
+                        Math.max(1, visibleTileCount / (markerCount + 1L)) * marker));
+                long pathPixel = firstPixel + markerPixel;
                 int tileWidth = (int) Math.min(
                     DEPENDENCY_TILE_SIZE,
-                    tiles.pixelLength() - pathPixel
+                    endPixel - pathPixel
                 );
                 if (tileWidth <= 0) continue;
                 graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
                     DEPENDENCY_ARROW,
-                    (int) safeTilePixel(tileOffset),
+                    (int) markerPixel,
                     -2,
                     0.0f,
                     0.0f,
@@ -347,14 +368,14 @@ final class QuestScreenRenderer {
     }
 
     private void drawChapterName(GuiGraphicsExtractor graphics) {
-        if (!screen.mode.isAuthoring()) graphics.text(
-            screen.guiFont(),
-            Component.literal(screen.group),
-            screen.layout.sidebarWidth() + 10,
-            10,
-            0xFFB8C0CC,
-            false
-        );
+        if (screen.mode.isAuthoring()) return;
+        String label = screen.group;
+        if (screen.availableRewardsOnly) label += " · " + Component.translatable("gui.theseus.party_rewards.filter").getString();
+        if (!screen.snapshots.partyName().isEmpty()) label += " · " + Component.translatable("gui.theseus.party_rewards.context",
+            screen.snapshots.partyName(), screen.snapshots.partyMemberCount()).getString();
+        int availableWidth = Math.max(1, screen.layout.headerLayout().fitX() - screen.layout.sidebarWidth() - 16);
+        graphics.text(screen.guiFont(), Component.literal(screen.guiFont().plainSubstrByWidth(label, availableWidth)),
+            screen.layout.sidebarWidth() + 10, 10, 0xFFB8C0CC, false);
     }
 
     void drawBaseForeground(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -378,14 +399,6 @@ final class QuestScreenRenderer {
             }
             graphics.disableScissor();
         }
-        if (screen.sidebarOpen) graphics.text(
-            screen.guiFont(),
-            Component.literal("Theseus"),
-            8,
-            4,
-            0xFFFFFFFF,
-            true
-        );
         if (screen.mode.isAuthoring() && screen.mode.editorTool() == EditorTool.LINK) {
             graphics.text(
                 screen.guiFont(),
@@ -398,14 +411,28 @@ final class QuestScreenRenderer {
                 false
             );
         }
+        drawContextMenu(graphics, mouseX, mouseY);
+    }
+
+    void drawSidebarForeground(GuiGraphicsExtractor graphics) {
+        if (screen.sidebarOpen) graphics.text(
+            screen.guiFont(),
+            Component.literal("Theseus"),
+            8,
+            4,
+            0xFFFFFFFF,
+            true
+        );
         drawChapterScrollbar(graphics);
+    }
+
+    void drawDockForeground(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (screen.authoring.open) screen.authoringPanel.dockUi.drawCreateQuestDock(
             graphics, mouseX, mouseY, screen.editorMessage, screen.editorMessageSuccess
         );
         else if (screen.detailsOpen) screen.detailsPanel.render(
             graphics, screen.guiFont(), screen.guiWidth(), screen.guiHeight(), screen.layout.detailsWidth(), screen.actions.detailPanelModel(), mouseX, mouseY
         );
-        drawContextMenu(graphics, mouseX, mouseY);
     }
 
     void drawChapterScrollbar(GuiGraphicsExtractor graphics) {
@@ -420,7 +447,7 @@ final class QuestScreenRenderer {
         int maxScroll = screen.chapterListState.maxFirstVisibleRow();
         int thumbY = top + (trackHeight - thumbHeight) * screen.chapterListState.firstVisibleRow()
             / Math.max(1, maxScroll);
-        int x = Math.max(0, screen.layout.sidebarWidth() - 5);
+        int x = Math.max(0, screen.layout.sidebarContentWidth() - 5);
         graphics.fill(x, top, x + 2, bottom, 0x6649515E);
         graphics.fill(x, thumbY, x + 2, thumbY + thumbHeight,
             ClientThemeLoader.active().genericControls().accent());
@@ -497,8 +524,8 @@ final class QuestScreenRenderer {
         int sidebarWidth = screen.layout.sidebarWidth();
         graphics.fill(0, 0, sidebarWidth, screen.guiHeight(), 0xF020242B);
         graphics.verticalLine(sidebarWidth, 0, screen.guiHeight(), 0xFF49515E);
-        if (screen.detailsOpen || screen.authoring.open) {
-            int detailsLeft = screen.guiWidth() - screen.layout.detailsWidth();
+        if (screen.docks.rightEdge() < screen.guiWidth()) {
+            int detailsLeft = screen.docks.rightEdge();
             graphics.fill(detailsLeft, 0, screen.guiWidth(), screen.guiHeight(), 0xD020242B);
             graphics.verticalLine(detailsLeft, 0, screen.guiHeight(), 0xAA49515E);
         }
@@ -628,7 +655,7 @@ final class QuestScreenRenderer {
         graphics.fill(left, top, left + 240, top + 110, 0xFF20242B);
         graphics.outline(left, top, 240, 110, 0xFF8A929F);
         graphics.text(screen.guiFont(), Component.translatable("gui.theseus.editor.confirm_delete_quest"), left + 12, top + 12, 0xFFFFFFFF, true);
-        graphics.textWithWordWrap(screen.guiFont(), Component.translatable("gui.theseus.editor.this_deletes_the_quest_file_and_resets_its_player_progress"), left + 12, top + 32, 216, 0xFFFFAAAA, false);
+        graphics.textWithWordWrap(screen.guiFont(), Component.translatable("gui.theseus.party_rewards.delete_quest_body"), left + 12, top + 32, 216, 0xFFFFAAAA, false);
     }
 
     void drawProgressResetConfirmation(GuiGraphicsExtractor graphics) {
@@ -647,9 +674,9 @@ final class QuestScreenRenderer {
         Component detail = target == null
             ? Component.translatable("gui.theseus.editor.no_reset_target")
             : switch (target.scope()) {
-                case "quest" -> Component.translatable("gui.theseus.editor.reset_quest_progress_body", target.questTitle());
-                case "task" -> Component.translatable("gui.theseus.editor.reset_task_progress_body", target.displayLabel(), target.entryId(), target.questTitle());
-                case "reward" -> Component.translatable("gui.theseus.editor.reset_reward_progress_body", target.displayLabel(), target.entryId(), target.questTitle());
+                case "quest" -> Component.translatable("gui.theseus.shared_progress.reset_quest_body", target.questTitle());
+                case "task" -> Component.translatable("gui.theseus.party_progress.reset_task_body", target.displayLabel(), target.entryId(), target.questTitle());
+                case "reward" -> Component.translatable("gui.theseus.party_rewards.reset_reward_body", target.displayLabel(), target.entryId(), target.questTitle());
                 default -> Component.translatable("gui.theseus.editor.reset_selected_progress_body");
         };
         graphics.text(screen.guiFont(), title, left + 12, top + 12, 0xFFFFFFFF, true);
@@ -778,6 +805,8 @@ final class QuestScreenRenderer {
         QuestSurfaceLayout.Layout surface,
         QuestGraphLayout.WorldBounds visibleWorld
     ) {
+        arrowTravel = (System.nanoTime() - arrowAnimationStarted) / 1_000_000_000.0
+            * DEPENDENCY_ARROW_PIXELS_PER_SECOND / screen.graphViewport.state().zoom();
         Map<String, ClientQuest> questsById = new HashMap<>();
         for (ClientQuest quest : screen.quests) {
             questsById.put(quest.definition().id(), quest);
@@ -807,7 +836,7 @@ final class QuestScreenRenderer {
                 double dy = tip.y() - start.y();
                 double length = Math.hypot(dx, dy);
                 if (length < 4.0) continue;
-                drawTexturedPath(graphics, start, tip, style, visibleWorld);
+                drawTexturedPath(graphics, start, tip, style, dependency.equals(screen.selectedQuestId), visibleWorld);
             }
         }
     }
@@ -847,6 +876,7 @@ final class QuestScreenRenderer {
             new PathPoint(sourceCenter.x(), sourceCenter.y()),
             new PathPoint(mouseX, mouseY),
             UNLOCKED_PATH,
+            false,
             visibleWorld
         );
     }
@@ -864,7 +894,7 @@ final class QuestScreenRenderer {
             if (node == null) continue;
             QuestGraphLayout.NodeBounds bounds = node.bounds();
             QuestBackground background = questBackground(quest.definition());
-            int frame = quest.claimed() ? 3 : quest.complete() ? 2 : quest.unlocked() ? 1 : 0;
+            int frame = !quest.unlocked() ? 0 : quest.complete() ? quest.claimed() ? 3 : 2 : 1;
             drawQuestBackground(graphics, node, background.texture(), frame, 0xFFFFFFFF);
             if (hoverEnabled && node.contains(mouseX, mouseY)) {
                 drawQuestBackground(graphics, node, background.texture(), 4, 0xFFFFFFFF);

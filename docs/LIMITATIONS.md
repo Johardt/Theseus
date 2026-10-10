@@ -1,6 +1,6 @@
 # Known limitations
 
-- Theseus 1.0.0 targets Minecraft 26.2 on NeoForge. There is no Fabric or Forge
+- Theseus 1.1.0 targets Minecraft 26.2 on NeoForge. There is no Fabric or Forge
   build.
 - The editor imports JSON quest files. It does not import quest-pack archives
   or convert FTB/HQM packs.
@@ -18,5 +18,10 @@
   progress is stored in the world save.
 - Theseus does not schedule or retain backups. Use the
   [backup and recovery guide](BACKUP-RECOVERY.md).
+- OPAC integration supports its built-in parties and shares reward eligibility.
+  It does not share task progress or prerequisite unlocks, integrate external
+  OPAC party providers, or provide once-per-party rewards or a pack-wide default.
+- Interrupted command/add-on reward grants require operator review; arbitrary
+  side effects cannot be delivered transactionally with the progress file.
 - Full compatibility with every Heracles release, add-on, and converter is not
   guaranteed. Validate imported quests and test them on a copy of the world.

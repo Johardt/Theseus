@@ -1,9 +1,10 @@
 package me.johardt.theseus.client;
 
+import java.util.Arrays;
+import java.util.function.Consumer;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import earth.terrarium.olympus.client.components.Widgets;
 import earth.terrarium.olympus.client.components.base.renderer.WidgetRenderer;
 import earth.terrarium.olympus.client.components.buttons.Button;
 import earth.terrarium.olympus.client.components.renderers.WidgetRenderers;
@@ -51,6 +52,7 @@ final class QuestAuthoringPanel {
     final Set<String> serverTaskTypes;
     final Set<String> serverRewardTypes;
     final Host host;
+    private Object draftIdentity = new Object();
     DetailTab createQuestTab = DetailTab.OVERVIEW;
     int draftOverviewScrollY;
     LayoutWidget<GridLayout> draftOverviewScrollContainer;
@@ -144,6 +146,7 @@ final class QuestAuthoringPanel {
     }
 
     void resetOverviewScroll() {
+        draftIdentity = new Object();
         draftOverviewScrollY = 0;
         draftOverviewScrollContainer = null;
     }
@@ -171,7 +174,7 @@ final class QuestAuthoringPanel {
     }
 
     void addRawInspectorButton(int x, int y, int width, Runnable open) {
-        host.addWidget(Widgets.button(widget -> {
+        host.addWidget(button("raw-inspector-open", widget -> {
             widget.withPosition(x, y).withSize(width, 24);
             widget.withRenderer(WidgetRenderers.text(Component.translatable("gui.theseus.editor.raw_json")));
             widget.withCallback(open);
@@ -206,13 +209,21 @@ final class QuestAuthoringPanel {
         };
     }
 
+    Button button(Object identity, Consumer<Button> configure) {
+        return host.button(Arrays.asList(
+            draftIdentity, authoring.editingTask, authoring.editingReward, authoring.editingNestedReward, identity
+        ), configure);
+    }
+
     interface Host {
+        Button button(Object identity, Consumer<Button> configure);
         void addWidget(AbstractWidget widget);
         int detailsWidth();
         QuestDraftValidation.RegistryLookup registryLookup();
         String draftValidationError();
         boolean validCreateQuestDraft();
         boolean mutationPending();
+        default boolean partyAvailable() { return false; }
         void dispatch(Action action);
     }
 

@@ -1,5 +1,7 @@
 package me.johardt.theseus.client;
 
+import earth.terrarium.olympus.client.components.buttons.Button;
+import java.util.function.Consumer;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
@@ -107,6 +109,7 @@ public final class QuestScreen extends Screen {
     String editorMessage = "";
     boolean editorMessageSuccess;
     boolean clipboardMutationPending;
+    boolean availableRewardsOnly;
     EditBox pasteIdField;
     final QuestMutationCoordinator mutations;
     final QuestModalHost modalHost;
@@ -146,6 +149,7 @@ public final class QuestScreen extends Screen {
     QuestModalHost.ProgressResetTarget progressResetTarget;
 
     final QuestClientSnapshot snapshots;
+    final QuestDockPresentation docks = new QuestDockPresentation(this);
     final QuestScreenLayout layout = new QuestScreenLayout(this);
     final QuestScreenWidgets widgets = new QuestScreenWidgets(this);
     final QuestScreenEditor editor = new QuestScreenEditor(this);
@@ -153,12 +157,15 @@ public final class QuestScreen extends Screen {
     final QuestScreenActions actions = new QuestScreenActions(this);
     final QuestScreenInput input = new QuestScreenInput(this);
     final QuestScreenImports imports = new QuestScreenImports(this);
+    final TheseusButtons buttons = new TheseusButtons(this::buttonLayer);
+
+    private Object buttonLayer() { return modalHost.inputLifetime(); }
 
     int guiWidth() { return width; }
     int guiHeight() { return height; }
     net.minecraft.client.gui.Font guiFont() { return font; }
     Minecraft guiMinecraft() { return minecraft; }
-    <T extends net.minecraft.client.gui.components.AbstractWidget> T addScreenWidget(T widget) { return addRenderableWidget(widget); }
+    <T extends net.minecraft.client.gui.components.AbstractWidget> T addScreenWidget(T widget) { docks.add(widget); return addRenderableWidget(widget); }
     java.util.List<? extends net.minecraft.client.gui.components.events.GuiEventListener> screenChildren() { return children(); }
     net.minecraft.client.gui.components.events.GuiEventListener screenFocused() { return getFocused(); }
     void setScreenInitialFocus(net.minecraft.client.gui.components.events.GuiEventListener target) { setInitialFocus(target); }
@@ -226,8 +233,13 @@ public final class QuestScreen extends Screen {
     }
 
     QuestScreen(QuestClientSnapshot snapshots, QuestScreen previous) {
+        this(snapshots, previous, true);
+    }
+
+    private QuestScreen(QuestClientSnapshot snapshots, QuestScreen previous, boolean preserveDockMotion) {
         super(Component.translatable("gui.theseus.editor.theseus_quests"));
         this.snapshots = snapshots;
+        this.availableRewardsOnly = previous != null && previous.availableRewardsOnly;
         this.quests = snapshots.quests();
         this.chapters = snapshots.chapters();
         this.chapterDisplays = snapshots.chapterDisplays();
@@ -293,6 +305,7 @@ public final class QuestScreen extends Screen {
             previous == null ? DetailTab.OVERVIEW : previous.detailTab;
         this.detailsOpen = previous != null && previous.detailsOpen;
         this.sidebarOpen = previous == null || previous.sidebarOpen;
+        if (previous != null && preserveDockMotion) docks.inherit(previous.docks);
         this.descriptionEditorValue = previous == null ? "" : previous.descriptionEditorValue;
         this.descriptionPreviewScroll = previous == null ? 0 : previous.descriptionPreviewScroll;
         this.editorMessage = previous == null ? "" : previous.editorMessage;
@@ -332,9 +345,31 @@ public final class QuestScreen extends Screen {
         rebuildWidgets();
     }
 
+    QuestScreen copyDockVisual() {
+        QuestScreen copy = new QuestScreen(snapshots, this, false);
+        copy.width = width;
+        copy.height = height;
+        copy.authoringPanel.setViewport(font, width, height);
+        return copy;
+    }
+
+    void extractNonDockWidgets(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        for (var child : children()) {
+            if (child instanceof net.minecraft.client.gui.components.AbstractWidget widget
+                && !docks.owns(widget)) widget.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        }
+    }
+
     @Override
     protected void init() {
-        widgets.initialize();
+        docks.beginBuild();
+        buttons.beginBuild();
+        try {
+            widgets.initialize();
+        } finally {
+            buttons.endBuild();
+            docks.endBuild();
+        }
     }
 
     @Override
@@ -379,6 +414,8 @@ public final class QuestScreen extends Screen {
         int mouseY,
         float partialTick
     ) {
+        docks.sample();
+        buttons.reconcile();
         renderer.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -388,11 +425,27 @@ public final class QuestScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        docks.sample();
         return input.keyPressed(event);
     }
 
     @Override
+    public boolean keyReleased(KeyEvent event) {
+        docks.sample();
+        buttons.keyReleased(event);
+        return super.keyReleased(event);
+    }
+
+    @Override
+    public void removed() {
+        buttons.cancel();
+        docks.clear();
+        super.removed();
+    }
+
+    @Override
     public boolean charTyped(CharacterEvent event) {
+        docks.sample();
         return input.charTyped(event);
     }
 
@@ -417,11 +470,14 @@ public final class QuestScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        docks.sample();
         return input.mouseClicked(event, doubleClick);
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        buttons.mouseReleased(event);
+        docks.sample();
         return input.mouseReleased(event);
     }
 
@@ -431,6 +487,7 @@ public final class QuestScreen extends Screen {
         double dragX,
         double dragY
     ) {
+        docks.sample();
         return input.mouseDragged(event, dragX, dragY);
     }
 
@@ -441,12 +498,18 @@ public final class QuestScreen extends Screen {
         double scrollX,
         double scrollY
     ) {
+        docks.sample();
         return input.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     private final class AuthoringPanelHost implements QuestAuthoringPanel.Host {
+        @Override public Button button(
+            Object identity, Consumer<Button> configure
+        ) {
+            return buttons.button(identity, configure);
+        }
         @Override public void addWidget(net.minecraft.client.gui.components.AbstractWidget widget) {
-            QuestScreen.this.addRenderableWidget(widget);
+            QuestScreen.this.addScreenWidget(widget);
         }
         @Override public int detailsWidth() { return QuestScreen.this.layout.detailsWidth(); }
         @Override public QuestDraftValidation.RegistryLookup registryLookup() {
@@ -455,6 +518,7 @@ public final class QuestScreen extends Screen {
         @Override public String draftValidationError() { return QuestScreen.this.editor.draftValidationError(); }
         @Override public boolean validCreateQuestDraft() { return QuestScreen.this.editor.validCreateQuestDraft(); }
         @Override public boolean mutationPending() { return mutations.isPending(); }
+        @Override public boolean partyAvailable() { return snapshots.partyAvailable(); }
         @Override public void dispatch(QuestAuthoringPanel.Action action) {
             if (action instanceof QuestAuthoringPanel.RebuildWidgets) QuestScreen.this.rebuildWidgets();
             else if (action instanceof QuestAuthoringPanel.OpenPicker open) {
