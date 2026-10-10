@@ -26,6 +26,41 @@ class PartyProgressTest {
     @TempDir Path directory;
 
     @Test
+    void resettingWholeQuestAllowsPartyMembersToClaimAgain() throws Exception {
+        Fixture f = fixture("party", xpRewards());
+        f.runtime.triggerDummy(null, "finish");
+        assertTrue(f.runtime.claim(null, "quest"));
+        f.world.player = BOB;
+        assertTrue(f.runtime.claim(null, "quest"));
+        f.runtime.progress(BOB, "quest").beginRewardGrant("interrupted");
+        assertTrue(f.runtime.resetProgressResult(null, json("{\"scope\":\"quest\",\"quest\":\"quest\"}")).success());
+        assertTrue(f.runtime.progress(ALICE, "quest").claimedRewards().isEmpty());
+        assertTrue(f.runtime.progress(BOB, "quest").claimedRewards().isEmpty());
+        assertTrue(f.runtime.progress(BOB, "quest").pendingRewards().isEmpty());
+        assertFalse(f.runtime.claim(null, "quest"));
+        f.runtime.triggerDummy(null, "finish");
+        assertTrue(f.runtime.claim(null, "quest"));
+        f.world.player = ALICE;
+        assertTrue(f.runtime.claim(null, "quest"));
+    }
+
+    @Test
+    void resettingIndividualQuestClearsOnlyItsPlayersRewardClaims() throws Exception {
+        Fixture f = fixture("self", xpRewards());
+        f.runtime.triggerDummy(null, "finish");
+        assertTrue(f.runtime.claim(null, "quest"));
+        f.world.player = BOB;
+        f.runtime.triggerDummy(null, "finish");
+        assertTrue(f.runtime.claim(null, "quest"));
+        assertTrue(f.runtime.resetProgressResult(null, json("{\"scope\":\"quest\",\"quest\":\"quest\"}")).success());
+        assertTrue(f.runtime.progress(BOB, "quest").claimedRewards().isEmpty());
+        assertFalse(f.runtime.isComplete(null, f.quest()));
+        assertFalse(f.runtime.progress(ALICE, "quest").claimedRewards().isEmpty());
+        f.runtime.triggerDummy(null, "finish");
+        assertTrue(f.runtime.claim(null, "quest"));
+    }
+
+    @Test
     void completingSharedQuestNotifiesOtherOnlineMembersExactlyOnce() throws Exception {
         Fixture f = fixture("party", xpRewards());
         ServerPlayer bob = playerIdentity();

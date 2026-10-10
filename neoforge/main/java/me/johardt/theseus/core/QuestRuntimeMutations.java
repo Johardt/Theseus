@@ -594,9 +594,9 @@ final class QuestRuntimeMutations {
         switch (scope) {
             case "quest" -> {
                 if (!entry.isBlank()) return MutationResult.failure("Quest reset does not accept an entry");
-                runtime.resetTasks(player, quest, null);
+                runtime.resetTasks(player, quest, null, true);
                 runtime.changed(player);
-                return MutationResult.success("Reset tasks for '" + quest.title() + "' (" + questId + "); receipts and completion history are preserved; shared tasks reset for the whole OPAC party");
+                return MutationResult.success("Reset tasks and reward claims for '" + quest.title() + "' (" + questId + "); shared quests reset for the whole OPAC party");
             }
             case "task" -> {
                 if (entry.isBlank()) return MutationResult.failure("Task reset requires a task path");

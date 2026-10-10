@@ -101,6 +101,8 @@ Task resets preserve receipts, pins, and completion history, but rewards
 require the reset tasks to be completed again. Resetting shared tasks affects
 current party members; individual tasks affect only the current player.
 Retained achievements of former members can be reconciled again if they rejoin.
+The editor's "Reset quest progress" also clears reward receipts and interrupted-grant
+markers for the affected players, allowing rewards to be claimed again after completion.
 Quest task/reward edits reset affected counters across saved players while
 retaining receipts. Renaming moves retained records to the new quest ID.
 

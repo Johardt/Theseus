@@ -138,7 +138,7 @@
     "gui.theseus.party_progress.inactive": "Party sharing inactive — requires an OPAC party",
     "gui.theseus.party_progress.reset_task_body": "Clear progress for task '%s' (%s) in '%s'? Shared tasks reset for the whole OPAC party; individual tasks reset for the current player.",
     "gui.theseus.shared_progress.locked_rewards": "Locked rewards — complete the prerequisite quests to claim.",
-    "gui.theseus.shared_progress.reset_quest_body": "Clear tasks for '%s'? Reward receipts, completion history, and pins are preserved. Shared tasks reset for the current OPAC party; individual tasks reset for the current player. Rewards require completing the tasks again.",
+    "gui.theseus.shared_progress.reset_quest_body": "Clear tasks and reward claims for '%s'? Shared quests reset for the current OPAC party; individual quests reset for the current player. Rewards can be claimed again after completing the tasks. Pins are preserved.",
     "gui.theseus.party_progress.personal": "Individual progress",
     "gui.theseus.party_progress.tasks_individual": "You will have to complete these tasks on your own",
     "gui.theseus.party_progress.tasks_shared": "Share progress with your party members",

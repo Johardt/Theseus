@@ -708,12 +708,20 @@ public final class QuestRuntime {
     }
 
     void resetTasks(ServerPlayer player, QuestDefinition quest, String path) {
+        resetTasks(player, quest, path, false);
+    }
+
+    void resetTasks(ServerPlayer player, QuestDefinition quest, String path, boolean resetRewards) {
         PartyLookup.Party party = progressParty(world.playerId(player), quest);
         Set<UUID> members = party == null ? Set.of(world.playerId(player)) : party.members();
         for (UUID member : members) {
             QuestProgressState state = progress(member, quest.id());
             if (path == null) state.clearTasks();
             else state.resetTaskPath(path);
+            if (resetRewards) {
+                state.clearProgress();
+                state.pendingRewards().forEach(state::unmarkRewardClaimed);
+            }
             // Reset composite parents too, so an explicit reset can decrease their summaries.
             if (path != null) {
                 String parent = path;

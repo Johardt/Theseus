@@ -43,7 +43,7 @@ Unknown runtime task or reward types need a Theseus add-on handler.
   preserving receipts, pins, and completion history. Reset tasks must be
   completed again before claiming rewards.
   Renaming moves the retained state to the new ID. Explicit operator reward
-  resets allow another payout; ordinary task/quest resets do not.
+  resets and explicit whole-quest resets allow another payout; single-task resets do not.
 - Progress files migrate from the legacy UUID-keyed root to a version-4
   `version`/`players` document. Back up before upgrading or downgrading.
 - `individual_progress` follows Heracles: false shares tasks through OPAC;
