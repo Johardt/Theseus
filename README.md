@@ -1,6 +1,6 @@
 # Theseus
 
-Theseus is a tree-style quest mod for Minecraft 26.2 on NeoForge. It is an
+Theseus is a tree-style quest mod for Minecraft 26.2 on Fabric and NeoForge. It is an
 independent fork of Heracles. It is not affiliated with or supported by the
 original Heracles maintainers.
 
@@ -16,11 +16,20 @@ java -version
 ./gradlew clean build
 ```
 
-The release jar is `build/libs/theseus-neoforge-26.2-1.1.0.jar`. The separate
-`-sources.jar` is not a game mod. To start a development client, run:
+The build produces both release jars:
+
+- NeoForge: `build/libs/theseus-neoforge-26.2-1.2.3.jar`
+- Fabric: `fabric/build/libs/theseus-fabric-26.2-1.2.3.jar`
+
+Install the jar for your loader along with Resourceful Lib. Fabric also requires
+Fabric API. Olympus is bundled in both jars; Resourceful Config, OPAC, JEI, and
+REI are optional integrations. The separate `-sources.jar` files are not game mods.
+
+To start a development client, choose a loader:
 
 ```sh
-./gradlew runClient
+./gradlew :runClient          # NeoForge
+./gradlew :fabric:runClient   # Fabric
 ```
 
 ## Use in game
@@ -58,9 +67,22 @@ with the world. The quest screen is built into Theseus; Hermes is not required.
 ## Mod developers
 
 The project does not configure a Maven publishing repository. Use the release
-jar as a mod in a NeoForge development instance. The public extension points
+jar as a mod in a development instance for the corresponding loader. The public extension points
 and a registration example are in the [add-on guide](docs/EXTENSIONS.md).
 
 Odysseus is a separate Project Odyssey tool for converting FTB and HQM quest
 packs to the original Heracles format. Conversion to Theseus may need manual
 changes.
+
+## Source layout
+
+`common/src/main/java` contains the quest engine, payloads, UI, and integrations
+shared by both loaders. Assets stay in `common/src/main/resources/assets`.
+`neoforge/main` and `fabric/src/main` contain loader entrypoints, event hooks,
+registration, and platform adapters. Both builds compile the shared sources
+against their own Minecraft environment. Shared tests run with the NeoForge
+test bootstrap through the root `test` task.
+
+`./gradlew build` builds both loaders and runs the shared tests. Use
+`./gradlew :fabric:build` for only the Fabric jar. `-Popac` and
+`-PrecipeViewer=rei` (or `jei`) enable optional integrations in development runs.

@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        maven("https://maven.fabricmc.net/")
         gradlePluginPortal()
     }
 }
@@ -9,3 +10,5 @@ plugins {
 }
 
 rootProject.name = "theseus"
+
+include("fabric")

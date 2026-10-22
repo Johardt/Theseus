@@ -5,7 +5,6 @@ import me.johardt.theseus.Theseus;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +18,7 @@ public final class ClientThemeLoader extends SimplePreparableReloadListener<Clie
         Theseus.MOD_ID,
         "theme.json"
     );
-    private static final Identifier LISTENER_ID = Identifier.fromNamespaceAndPath(
+    public static final Identifier LISTENER_ID = Identifier.fromNamespaceAndPath(
         Theseus.MOD_ID,
         "client_theme"
     );
@@ -35,9 +34,6 @@ public final class ClientThemeLoader extends SimplePreparableReloadListener<Clie
         return ACTIVE.get();
     }
 
-    public static void register(AddClientReloadListenersEvent event) {
-        event.addListener(LISTENER_ID, INSTANCE);
-    }
 
     @Override
     protected @NotNull ClientTheme prepare(

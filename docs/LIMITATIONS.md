@@ -1,7 +1,6 @@
 # Known limitations
 
-- Theseus 1.1.0 targets Minecraft 26.2 on NeoForge. There is no Fabric or Forge
-  build.
+- Theseus 1.1.0 targets Minecraft 26.2 on Fabric and NeoForge.
 - The editor imports JSON quest files. It does not import quest-pack archives
   or convert FTB/HQM packs.
 - There is no separate JSON export command. Copy quest files from the server

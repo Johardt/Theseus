@@ -19,7 +19,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import me.johardt.theseus.platform.Platform;
 import static me.johardt.theseus.client.QuestDraftValidation.*;
 import static me.johardt.theseus.client.QuestEditorCatalog.*;
 import static me.johardt.theseus.client.QuestScreen.*;
@@ -343,7 +343,7 @@ final class QuestScreenEditor {
         }
         screen.diagnostics = List.of();
         screen.modalHost.closeAll();
-        ClientPacketDistributor.sendToServer(new QuestNetwork.EditorMutationPayload(pending.requestId(), mutation));
+        Platform.sendToServer(new QuestNetwork.EditorMutationPayload(pending.requestId(), mutation));
     }
 
     void onClose() {

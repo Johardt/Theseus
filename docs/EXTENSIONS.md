@@ -1,6 +1,7 @@
 # Add-on extension guide
 
-Theseus add-ons are NeoForge mods. Register runtime handlers during common mod
+Theseus add-ons use the same loader as Theseus (Fabric or NeoForge).
+Register runtime handlers during common mod
 initialization, before a server starts. Use namespaced IDs owned by the add-on.
 
 ## Register task and reward handlers
@@ -22,8 +23,8 @@ optional notification string. Keep validation and execution rules in the
 add-on. Theseus does not define fields for add-on-owned JSON.
 
 The task and reward interfaces are in
-[`TaskEngine.java`](../neoforge/main/java/me/johardt/theseus/core/TaskEngine.java)
-and [`RewardEngine.java`](../neoforge/main/java/me/johardt/theseus/core/RewardEngine.java).
+[`TaskEngine.java`](../common/src/main/java/me/johardt/theseus/core/TaskEngine.java)
+and [`RewardEngine.java`](../common/src/main/java/me/johardt/theseus/core/RewardEngine.java).
 
 ## Register editor metadata
 
@@ -71,5 +72,5 @@ Reward claims require the server to have the reward handler.
 ## Example
 
 The repository contains a registration example and contract test under
-[`neoforge/test/java/me/johardt/theseus/addonexample`](../neoforge/test/java/me/johardt/theseus/addonexample/).
+[`common/src/test/java/me/johardt/theseus/addonexample`](../common/src/test/java/me/johardt/theseus/addonexample/).
 See also the [example README](../examples/third-party-addon/README.md).

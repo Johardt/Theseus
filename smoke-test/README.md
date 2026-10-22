@@ -33,25 +33,27 @@ Also test startup without OPAC. Full behavior is in [shared quests](../docs/PART
 
 ## Requirements
 
-Use Java 25, Minecraft 26.2, and NeoForge 26.2.0.86 or newer. Resourceful Lib
+Use Java 25, Minecraft 26.2, and either NeoForge 26.2.0.86+ or Fabric Loader 0.19.3+
+with Fabric API for 26.2. Resourceful Lib
 5.0 or newer is required. The release jar includes Olympus. Use the same Theseus
 jar on the client and server.
 
 ## 1. Build and start a real packaged run
 
-Build the release artifact and use the non-sources JAR in a NeoForge 26.2
-instance (client and, for the dedicated-server pass below, server):
+Build the release artifact and use the non-sources JAR in a Minecraft 26.2
+instance using the matching loader (client and, for the dedicated-server pass below, server):
 
 ```sh
 ./gradlew clean build
 ```
 
-The artifact is:
+The artifacts are:
 
-`build/libs/theseus-neoforge-26.2-1.1.0.jar`
+- NeoForge: `build/libs/theseus-neoforge-26.2-1.1.0.jar`
+- Fabric: `fabric/build/libs/theseus-fabric-26.2-1.1.0.jar`
 
-Copy that JAR and Resourceful Lib into the instance's `mods/` directory,
-launch NeoForge, create a test world, and continue with the steps below. In a
+Repeat this smoke test with each loader. Copy the matching JAR and Resourceful Lib into the instance's `mods/` directory,
+launch the instance, create a test world, and continue with the steps below. In a
 packaged instance the runtime quest directory is
 `<instance>/config/theseus/quests`; the fixtures can stay anywhere on your
 desktop because the picker reads them directly.
@@ -62,7 +64,8 @@ Use Java 25 and run the normal verification build:
 
 ```sh
 ./gradlew clean build
-./gradlew runClient
+./gradlew :runClient          # NeoForge
+./gradlew :fabric:runClient   # Fabric
 ```
 
 For a clean profile, close Minecraft and move the existing dev config out of
@@ -168,7 +171,8 @@ Run a server and client from separate terminals:
 
 ```sh
 ./gradlew runServer
-./gradlew runClient
+./gradlew :runClient          # NeoForge
+./gradlew :fabric:runClient   # Fabric
 ```
 
 Connect the client to the local server, repeat sections 2–5, and watch the

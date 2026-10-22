@@ -1,14 +1,14 @@
 package me.johardt.theseus.core;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import me.johardt.theseus.platform.Platform;
 
-/** NeoForge packet adapter for {@link QuestSync}. */
+/** Packet adapter for {@link QuestSync}. */
 public final class PacketQuestSync implements QuestSync {
 
     @Override
     public void snapshot(ServerPlayer player, String json, boolean open) {
-        PacketDistributor.sendToPlayer(
+        Platform.sendToPlayer(
             player,
             new QuestNetwork.SyncPayload(json, open)
         );
@@ -21,7 +21,7 @@ public final class PacketQuestSync implements QuestSync {
         String title,
         String detail
     ) {
-        PacketDistributor.sendToPlayer(
+        Platform.sendToPlayer(
             player,
             new QuestNetwork.NotificationPayload(kind, title, detail)
         );

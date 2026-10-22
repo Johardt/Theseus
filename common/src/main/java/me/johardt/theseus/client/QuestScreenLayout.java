@@ -19,7 +19,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import me.johardt.theseus.platform.Platform;
 import static me.johardt.theseus.client.QuestDraftValidation.*;
 import static me.johardt.theseus.client.QuestEditorCatalog.*;
 import static me.johardt.theseus.client.QuestScreen.*;
@@ -326,7 +326,7 @@ final class QuestScreenLayout {
                 ).withColor(Color.parse("#FFFFFF"))
             );
             widget.withCallback(() -> {
-                if (selected != null) ClientPacketDistributor.sendToServer(
+                if (selected != null) Platform.sendToServer(
                     new QuestNetwork.ActionPayload(
                         "pin",
                         selected.definition().id()

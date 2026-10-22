@@ -24,25 +24,20 @@ jobs:
           java-version: "25"
           cache: gradle
 
-      - name: Build and run checks
+      - name: Build and run checks for both loaders
         run: ./gradlew --no-daemon clean check build
 
-      - name: Select release jar
-        id: package
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(sed -n 's/^modVersion=//p' gradle.properties | tail -n 1)"
-          MINECRAFT_VERSION="$(sed -n 's/^minecraftVersion=//p' gradle.properties | tail -n 1)"
-          JAR="build/libs/theseus-neoforge-${MINECRAFT_VERSION}-${VERSION}.jar"
-          test -f "$JAR"
-          echo "jar_path=$JAR" >> "$GITHUB_OUTPUT"
+      - name: Verify both release jars
+        run: python3 scripts/verify-jars.py
 
-      - name: Upload release jar for verification
+      - name: Upload release jars for verification
         uses: actions/upload-artifact@v7
         with:
-          name: theseus-neoforge-jar
-          path: ${{ steps.package.outputs.jar_path }}
+          name: theseus-jars
+          path: |
+            build/libs/theseus-neoforge-*.jar
+            fabric/build/libs/theseus-fabric-*.jar
+            !**/*-sources.jar
           if-no-files-found: error
           retention-days: 7
 
@@ -56,72 +51,25 @@ jobs:
       - name: Check out release source
         uses: actions/checkout@v7
 
-      - name: Download built jar
+      - name: Download built jars
         uses: actions/download-artifact@v8
         with:
-          name: theseus-neoforge-jar
+          name: theseus-jars
           path: release-artifact
 
-      - name: Verify version, loader metadata, and jar contents
+      - name: Verify version and both loader jars
         id: verify
         shell: bash
         run: |
           set -euo pipefail
           VERSION="$(sed -n 's/^modVersion=//p' gradle.properties | tail -n 1)"
-          MINECRAFT_VERSION="$(sed -n 's/^minecraftVersion=//p' gradle.properties | tail -n 1)"
-          NEOFORGE_VERSION="$(sed -n 's/^neoForgeVersion=//p' gradle.properties | tail -n 1)"
-          JAR="release-artifact/theseus-neoforge-${MINECRAFT_VERSION}-${VERSION}.jar"
-
           if [[ "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
             echo "Tag $GITHUB_REF_NAME does not match modVersion $VERSION" >&2
             exit 1
           fi
-          test -f "$JAR"
-
-          python3 - "$JAR" "$VERSION" "$MINECRAFT_VERSION" "$NEOFORGE_VERSION" <<'PY'
-          import sys
-          import tomllib
-          import zipfile
-
-          jar_path, version, minecraft, neoforge = sys.argv[1:]
-          required = {
-              "META-INF/neoforge.mods.toml",
-              "me/johardt/theseus/Theseus.class",
-              "assets/theseus/lang/en_us.json",
-              "config/theseus/groups.txt",
-              "config/theseus/quests/getting_started/welcome.json",
-              "config/theseus/quests/getting_started/compatibility.json",
-          }
-
-          with zipfile.ZipFile(jar_path) as archive:
-              names = set(archive.namelist())
-              missing = sorted(required - names)
-              if missing:
-                  raise SystemExit("Jar is missing required contents: " + ", ".join(missing))
-
-              metadata = tomllib.loads(archive.read("META-INF/neoforge.mods.toml").decode("utf-8"))
-              if metadata.get("modLoader") != "javafml":
-                  raise SystemExit("Jar does not declare the JavaFML loader")
-              if not metadata.get("loaderVersion", "").startswith("[4,"):
-                  raise SystemExit("Jar has an unexpected loader version range")
-
-              mod = next((entry for entry in metadata.get("mods", []) if entry.get("modId") == "theseus"), None)
-              if mod is None or mod.get("version") != version:
-                  raise SystemExit("Jar mod ID or version does not match gradle.properties")
-
-              dependencies = metadata.get("dependencies", {}).get("theseus", [])
-              by_id = {entry.get("modId"): entry for entry in dependencies}
-              if by_id.get("minecraft", {}).get("versionRange") != f"[{minecraft}]":
-                  raise SystemExit("Jar Minecraft dependency does not match gradle.properties")
-          if by_id.get("neoforge", {}).get("versionRange") != f"[{neoforge},)":
-              raise SystemExit("Jar NeoForge dependency does not match gradle.properties")
-          if by_id.get("resourcefullib", {}).get("type") != "required":
-              raise SystemExit("Jar does not declare Resourceful Lib as required")
-
-          print(f"Verified {jar_path}: Theseus {version}, Minecraft {minecraft}, NeoForge {neoforge}")
-          PY
-
-          echo "jar_path=$JAR" >> "$GITHUB_OUTPUT"
+          mkdir -p release-jars
+          find release-artifact -type f -name '*.jar' -exec cp {} release-jars/ \;
+          python3 scripts/verify-jars.py release-jars
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub release
@@ -130,6 +78,6 @@ jobs:
           VERSION: ${{ steps.verify.outputs.version }}
         run: |
           gh release create "v$VERSION" \
-            "${{ steps.verify.outputs.jar_path }}" \
-            --title "Theseus $VERSION for NeoForge" \
+            release-jars/*.jar \
+            --title "Theseus $VERSION for Fabric and NeoForge" \
             --generate-notes

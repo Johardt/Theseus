@@ -15,8 +15,7 @@ import me.johardt.theseus.core.QuestMutation;
 import me.johardt.theseus.core.QuestNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
-import net.neoforged.fml.loading.FMLPaths;
+import me.johardt.theseus.platform.Platform;
 import static me.johardt.theseus.client.QuestDraftValidation.*;
 import static me.johardt.theseus.client.QuestEditorCatalog.*;
 import static me.johardt.theseus.client.QuestScreen.*;
@@ -84,7 +83,7 @@ final class QuestScreenActions {
 
     void submitTask(ClientQuest quest, TaskRef task) {
         if (quest == null || task == null) return;
-        ClientPacketDistributor.sendToServer(new QuestNetwork.ActionPayload(
+        Platform.sendToServer(new QuestNetwork.ActionPayload(
             "submit",
             quest.definition().id() + "|" + task.path()
         ));
@@ -215,7 +214,7 @@ final class QuestScreenActions {
             );
         }
         payload.add("selections", selections);
-        ClientPacketDistributor.sendToServer(
+        Platform.sendToServer(
             new QuestNetwork.ActionPayload("claim", GSON.toJson(payload))
         );
     }
@@ -314,7 +313,7 @@ final class QuestScreenActions {
 
     void toggleQuestPinned(ClientQuest quest) {
         if (quest == null || !quest.unlocked()) return;
-        ClientPacketDistributor.sendToServer(new QuestNetwork.ActionPayload("pin", quest.definition().id()));
+        Platform.sendToServer(new QuestNetwork.ActionPayload("pin", quest.definition().id()));
     }
 
     void openQuestEditorFromMenu(ClientQuest quest) {
@@ -363,7 +362,7 @@ final class QuestScreenActions {
         screen.pendingQuestFileId = quest.definition().id();
         screen.editorMessage = "Requesting quest file…";
         screen.editorMessageSuccess = false;
-        ClientPacketDistributor.sendToServer(new QuestNetwork.OpenQuestFilePayload(
+        Platform.sendToServer(new QuestNetwork.OpenQuestFilePayload(
             screen.pendingQuestFileRequestId,
             screen.pendingQuestFileId
         ));
@@ -386,7 +385,7 @@ final class QuestScreenActions {
             return;
         }
         LocalQuestFileOpener.Result opened = screen.questFileOpener.open(
-            FMLPaths.CONFIGDIR.get().resolve(Theseus.MOD_ID).resolve("quests"),
+            Platform.configDir().resolve(Theseus.MOD_ID).resolve("quests"),
             result.relativePath()
         );
         screen.editorMessage = opened.success()

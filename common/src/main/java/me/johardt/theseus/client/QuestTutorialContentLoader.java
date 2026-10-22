@@ -4,7 +4,6 @@ import me.johardt.theseus.Theseus;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +15,7 @@ public final class QuestTutorialContentLoader extends SimplePreparableReloadList
         Theseus.MOD_ID,
         "tutorial.md"
     );
-    private static final Identifier LISTENER_ID = Identifier.fromNamespaceAndPath(
+    public static final Identifier LISTENER_ID = Identifier.fromNamespaceAndPath(
         Theseus.MOD_ID,
         "client_tutorial"
     );
@@ -24,9 +23,6 @@ public final class QuestTutorialContentLoader extends SimplePreparableReloadList
 
     private QuestTutorialContentLoader() {}
 
-    public static void register(AddClientReloadListenersEvent event) {
-        event.addListener(LISTENER_ID, INSTANCE);
-    }
 
     @Override
     protected @NotNull String prepare(ResourceManager manager, ProfilerFiller profiler) {

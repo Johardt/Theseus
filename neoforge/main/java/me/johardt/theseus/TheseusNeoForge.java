@@ -1,6 +1,5 @@
 package me.johardt.theseus;
 
-import com.mojang.logging.LogUtils;
 import me.johardt.theseus.core.QuestCommands;
 import me.johardt.theseus.core.QuestNetwork;
 import me.johardt.theseus.core.QuestRuntime;
@@ -23,19 +22,13 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.slf4j.Logger;
 
-/**
- * NeoForge 26.2 bootstrap entrypoint.
- *
- * <p>The quest implementation is intentionally reintroduced incrementally from the retained
- * 1.21 sources as its Minecraft and library APIs are ported.</p>
- */
+/** NeoForge lifecycle and quest progression event adapter. */
 @Mod(Theseus.MOD_ID)
-public final class Theseus {
-    public static final String MOD_ID = "theseus";
-    public static final Logger LOGGER = LogUtils.getLogger();
+public final class TheseusNeoForge {
+    private static final Logger LOGGER = Theseus.LOGGER;
     private QuestRuntime runtime;
 
-    public Theseus(IEventBus modBus) {
+    public TheseusNeoForge(IEventBus modBus) {
         TheseusItems.register(modBus);
         modBus.addListener(this::onRegisterPayloadHandlers);
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
@@ -66,7 +59,7 @@ public final class Theseus {
     }
 
     private void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
-        QuestNetwork.register(event, this::runtime);
+        QuestNetwork.register(new NeoForgeNetworkRegistrar(event), this::runtime);
     }
 
     private void onServerStopping(ServerStoppingEvent event) {

@@ -18,7 +18,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.LevelResource;
-import net.neoforged.fml.loading.FMLPaths;
+import me.johardt.theseus.platform.Platform;
 
 public final class QuestRuntime {
     private final QuestRuntimeMutations mutations = new QuestRuntimeMutations(this);
@@ -105,7 +105,7 @@ public final class QuestRuntime {
         RewardEngine rewards = lockRewardHandlers();
         ServerQuestWorld world = new ServerQuestWorld(
             server,
-            FMLPaths.CONFIGDIR.get()
+            Platform.configDir()
         );
         long catalogStarted = System.nanoTime();
         QuestCatalog catalog = world.loadCatalog();
@@ -127,7 +127,7 @@ public final class QuestRuntime {
             ),
             world,
             new PacketQuestSync(),
-            net.neoforged.fml.ModList.get().isLoaded("openpartiesandclaims")
+            Platform.isModLoaded("openpartiesandclaims")
                 ? new me.johardt.theseus.compat.opac.OpacPartyLookup(server)
                 : PartyLookup.NONE
         );

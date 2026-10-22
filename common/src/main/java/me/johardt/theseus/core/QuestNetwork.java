@@ -7,18 +7,22 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import me.johardt.theseus.platform.Platform;
+
 
 public final class QuestNetwork {
 
     private QuestNetwork() {}
 
+    public interface Registrar {
+        <T extends CustomPacketPayload> void playToClient(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec);
+        <T extends CustomPacketPayload> void playToServer(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec, java.util.function.BiConsumer<T, ServerPlayer> handler);
+    }
+
     public static void register(
-        RegisterPayloadHandlersEvent event,
+        Registrar registrar,
         Supplier<QuestRuntime> runtime
     ) {
-        var registrar = event.registrar("1");
         registrar.playToClient(SyncPayload.TYPE, SyncPayload.STREAM_CODEC);
         registrar.playToClient(
             NotificationPayload.TYPE,
@@ -29,15 +33,14 @@ public final class QuestNetwork {
         registrar.playToServer(
             EditorMutationPayload.TYPE,
             EditorMutationPayload.STREAM_CODEC,
-            (payload, context) -> {
-                ServerPlayer player = (ServerPlayer) context.player();
+            (payload, player) -> {
                 QuestRuntime.MutationResult result;
                 try {
                     result = runtime.get().applyEditorMutationLazy(player, payload::mutation);
                 } catch (RuntimeException exception) {
                     result = QuestRuntime.MutationResult.failure(exception.getMessage() == null ? "Invalid quest data" : exception.getMessage());
                 }
-                PacketDistributor.sendToPlayer(player, new EditorResultPayload(
+                Platform.sendToPlayer(player, new EditorResultPayload(
                     payload.requestId(),
                     result.success(),
                     truncate(result.message(), EditorResultPayload.MAX_MESSAGE_LENGTH),
@@ -48,10 +51,9 @@ public final class QuestNetwork {
         registrar.playToServer(
             OpenQuestFilePayload.TYPE,
             OpenQuestFilePayload.STREAM_CODEC,
-            (payload, context) -> {
-                ServerPlayer player = (ServerPlayer) context.player();
+            (payload, player) -> {
                 QuestRuntime.QuestFileResult result = runtime.get().openQuestFileResult(player, payload.questId());
-                PacketDistributor.sendToPlayer(player, new OpenQuestFileResultPayload(
+                Platform.sendToPlayer(player, new OpenQuestFileResultPayload(
                     payload.requestId(),
                     result.success(),
                     truncate(result.message(), OpenQuestFileResultPayload.MAX_MESSAGE_LENGTH),
@@ -62,8 +64,7 @@ public final class QuestNetwork {
         registrar.playToServer(
             ActionPayload.TYPE,
             ActionPayload.STREAM_CODEC,
-            (payload, context) -> {
-                ServerPlayer player = (ServerPlayer) context.player();
+            (payload, player) -> {
                 QuestRuntime questRuntime = runtime.get();
                 switch (payload.action()) {
                     case "open" -> questRuntime.sync(player, true);

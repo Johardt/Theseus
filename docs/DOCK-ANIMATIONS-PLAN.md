@@ -41,11 +41,11 @@ The previous running-client verification was limited by the computer-control too
 
 ## Relevant source seams
 
-- [Layout and dock bounds](../neoforge/main/java/me/johardt/theseus/client/QuestScreenLayout.java)
-- [Mixed screen/dock rendering](../neoforge/main/java/me/johardt/theseus/client/QuestScreenRenderer.java)
-- [Widget construction and sidebar toggle](../neoforge/main/java/me/johardt/theseus/client/QuestScreenWidgets.java)
-- [Dock and graph input routing](../neoforge/main/java/me/johardt/theseus/client/QuestScreenInput.java)
-- [Details presentation and manual picking](../neoforge/main/java/me/johardt/theseus/client/QuestDetailsPanel.java)
-- [Authoring dock and nested layout](../neoforge/main/java/me/johardt/theseus/client/QuestAuthoringPanelDock.java)
-- [Draft teardown](../neoforge/main/java/me/johardt/theseus/client/QuestScreenEditor.java)
-- [Held-button lifetime](../neoforge/main/java/me/johardt/theseus/client/TheseusButtons.java)
+- [Layout and dock bounds](../common/src/main/java/me/johardt/theseus/client/QuestScreenLayout.java)
+- [Mixed screen/dock rendering](../common/src/main/java/me/johardt/theseus/client/QuestScreenRenderer.java)
+- [Widget construction and sidebar toggle](../common/src/main/java/me/johardt/theseus/client/QuestScreenWidgets.java)
+- [Dock and graph input routing](../common/src/main/java/me/johardt/theseus/client/QuestScreenInput.java)
+- [Details presentation and manual picking](../common/src/main/java/me/johardt/theseus/client/QuestDetailsPanel.java)
+- [Authoring dock and nested layout](../common/src/main/java/me/johardt/theseus/client/QuestAuthoringPanelDock.java)
+- [Draft teardown](../common/src/main/java/me/johardt/theseus/client/QuestScreenEditor.java)
+- [Held-button lifetime](../common/src/main/java/me/johardt/theseus/client/TheseusButtons.java)
