@@ -18,13 +18,13 @@ java {
 }
 
 sourceSets.main {
-    java.setSrcDirs(listOf("neoforge/main/java"))
+    java.setSrcDirs(listOf("common/src/main/java", "neoforge/main/java"))
     resources.setSrcDirs(listOf("common/src/main/resources", "neoforge/main/resources", "examples/theseus-demo"))
 }
 
 sourceSets.test {
-    java.setSrcDirs(listOf("neoforge/test/java"))
-    resources.setSrcDirs(listOf("neoforge/test/resources"))
+    java.setSrcDirs(listOf("common/src/test/java", "neoforge/test/java"))
+    resources.setSrcDirs(listOf("common/src/test/resources"))
 }
 
 repositories {
@@ -71,6 +71,7 @@ dependencies {
         "moddev/artifacts/minecraft-patched-${property("neoForgeVersion")}-merged.jar"
     )))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("mezz.jei:jei-26.1.2-common-api:${property("jeiVersion")}")
 }
 
 neoForge {
@@ -139,3 +140,6 @@ publishing {
         }
     }
 }
+
+// Both loader distributions are produced by the usual root build.
+tasks.build { dependsOn(":fabric:build") }

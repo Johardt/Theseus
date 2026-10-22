@@ -51,13 +51,8 @@ public final class ResourcefulConfigBridge {
 
     public static boolean isAvailable() {
         try {
-            Class<?> loader = Class.forName("net.neoforged.fml.loading.FMLLoader");
-            Object current = loader.getMethod("getCurrent").invoke(null);
-            Object loadingModList = current.getClass().getMethod("getLoadingModList").invoke(current);
-            return loadingModList.getClass()
-                .getMethod("getModFileById", String.class)
-                .invoke(loadingModList, MOD_ID) != null;
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError exception) {
+            return me.johardt.theseus.platform.Platform.isModLoaded(MOD_ID);
+        } catch (RuntimeException | LinkageError exception) {
             LOGGER.fine("Resourceful Config is not available during client initialization: " + exception);
             return false;
         }

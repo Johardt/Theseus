@@ -4,43 +4,27 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.InputConstants;
 import me.johardt.theseus.Theseus;
-import me.johardt.theseus.TheseusItems;
-import me.johardt.theseus.client.theme.ClientThemeLoader;
 import me.johardt.theseus.core.QuestNetwork;
+import me.johardt.theseus.platform.Platform;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.InteractionResult;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
-import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(value = Theseus.MOD_ID, dist = Dist.CLIENT)
 public final class TheseusClient {
 
-    private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(
+    public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(
         Identifier.fromNamespaceAndPath(Theseus.MOD_ID, "quests")
     );
-    private static final KeyMapping OPEN_QUESTS = new KeyMapping(
+    public static final KeyMapping OPEN_QUESTS = new KeyMapping(
         "key.theseus.open_quests",
         InputConstants.Type.KEYSYM,
         72,
         CATEGORY
     );
-    private static final KeyMapping TOGGLE_TRACKER = new KeyMapping(
+    public static final KeyMapping TOGGLE_TRACKER = new KeyMapping(
         "key.theseus.toggle_tracker",
         InputConstants.Type.KEYSYM,
         74,
@@ -57,37 +41,26 @@ public final class TheseusClient {
     /** Opens the quest screen through the normal server-backed flow. */
     public static void openQuestScreen() {
         if (Minecraft.getInstance().player != null) {
-            ClientPacketDistributor.sendToServer(
+            Platform.sendToServer(
                 new QuestNetwork.ActionPayload("open", "")
             );
         }
     }
 
-    public TheseusClient(IEventBus modBus) {
-        TheseusClientOptions.load(FMLPaths.GAMEDIR.get());
+    public static void initialize(java.nio.file.Path gameDir) {
+        TheseusClientOptions.load(gameDir);
         ResourcefulConfigBridge.registerIfAvailable();
         trackerCollapsed = TheseusClientOptions.trackerCollapsed();
-        modBus.addListener(this::registerKeys);
-        modBus.addListener(this::registerPayloadHandlers);
-        modBus.addListener(this::registerGuiLayers);
-        modBus.addListener(ClientThemeLoader::register);
-        modBus.addListener(QuestTutorialContentLoader::register);
-        NeoForge.EVENT_BUS.addListener(this::clientTick);
-        NeoForge.EVENT_BUS.addListener(this::onQuestBookUse);
-        NeoForge.EVENT_BUS.addListener(this::clientLoggedIn);
-        NeoForge.EVENT_BUS.addListener(this::clientLoggedOut);
     }
 
-    private void registerKeys(RegisterKeyMappingsEvent event) {
-        event.registerCategory(CATEGORY);
-        event.register(OPEN_QUESTS);
-        event.register(TOGGLE_TRACKER);
+    public interface PayloadRegistrar {
+        <T extends net.minecraft.network.protocol.common.custom.CustomPacketPayload> void register(
+            net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<T> type,
+            java.util.function.Consumer<T> handler);
     }
 
-    private void registerPayloadHandlers(
-        RegisterClientPayloadHandlersEvent event
-    ) {
-        event.register(QuestNetwork.SyncPayload.TYPE, (payload, context) -> {
+    public static void registerPayloadHandlers(PayloadRegistrar event) {
+        event.register(QuestNetwork.SyncPayload.TYPE, payload -> {
             JsonObject incoming = JsonParser.parseString(payload.json()).getAsJsonObject();
             QuestClientSnapshot.Kind kind = QuestClientSnapshot.kindOf(incoming);
             if (kind == QuestClientSnapshot.Kind.CHAPTER) {
@@ -113,7 +86,7 @@ public final class TheseusClient {
         });
         event.register(
             QuestNetwork.NotificationPayload.TYPE,
-            (payload, context) -> {
+            payload -> {
                 if (payload.kind().equals("complete")) {
                     Minecraft.getInstance().getSoundManager().play(
                         SimpleSoundInstance.forUI(QUEST_COMPLETE_SOUND, 1.0F)
@@ -132,28 +105,23 @@ public final class TheseusClient {
                 );
             }
         );
-        event.register(QuestNetwork.EditorResultPayload.TYPE, (payload, context) -> {
+        event.register(QuestNetwork.EditorResultPayload.TYPE, payload -> {
             if (Minecraft.getInstance().screen instanceof QuestScreen screen) {
                 screen.handleEditorResult(payload);
             }
         });
-        event.register(QuestNetwork.OpenQuestFileResultPayload.TYPE, (payload, context) -> {
+        event.register(QuestNetwork.OpenQuestFileResultPayload.TYPE, payload -> {
             if (Minecraft.getInstance().screen instanceof QuestScreen screen) {
                 screen.handleOpenQuestFileResult(payload);
             }
         });
     }
 
-    private void registerGuiLayers(RegisterGuiLayersEvent event) {
-        event.registerAbove(
-            VanillaGuiLayers.CHAT,
-            Identifier.fromNamespaceAndPath(Theseus.MOD_ID, "quest_tracker"),
-            (graphics, delta) ->
-                QuestHud.render(graphics, snapshots.raw(), TheseusClientOptions.trackerCollapsed())
-        );
+    public static void renderHud(net.minecraft.client.gui.GuiGraphicsExtractor graphics) {
+        QuestHud.render(graphics, snapshots.raw(), TheseusClientOptions.trackerCollapsed());
     }
 
-    private void clientTick(ClientTickEvent.Post event) {
+    public static void clientTick() {
         while (OPEN_QUESTS.consumeClick()) {
             openQuestScreen();
         }
@@ -163,21 +131,13 @@ public final class TheseusClient {
         }
     }
 
-    private void onQuestBookUse(PlayerInteractEvent.RightClickItem event) {
-        if (event.getLevel().isClientSide() && event.getItemStack().getItem() == TheseusItems.QUEST_BOOK.get()) {
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            event.setCanceled(true);
-            openQuestScreen();
-        }
-    }
-
-    private void clientLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
+    public static void clientLoggedOut(net.minecraft.network.Connection connection) {
         snapshots = new QuestClientSnapshot();
         if (!(Minecraft.getInstance().screen instanceof QuestScreen screen)) {
             clearDisconnectedEditor();
             return;
         }
-        String server = serverKey(event.getConnection());
+        String server = serverKey(connection);
         if (server == null) {
             clearDisconnectedEditor();
             return;
@@ -187,9 +147,9 @@ public final class TheseusClient {
         disconnectedServer = server;
     }
 
-    private void clientLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
+    public static void clientLoggedIn(net.minecraft.network.Connection connection) {
         if (disconnectedEditor != null
-            && !java.util.Objects.equals(disconnectedServer, serverKey(event.getConnection()))) {
+            && !java.util.Objects.equals(disconnectedServer, serverKey(connection))) {
             clearDisconnectedEditor();
         }
     }

@@ -5,7 +5,8 @@
 | Part | Supported target | Notes |
 | --- | --- | --- |
 | Minecraft | 26.1.2 | The mod metadata accepts this version only. |
-| Loader | NeoForge 26.1.2.104 or newer | The release is built against 26.1.2.104. |
+| Loader | NeoForge 26.1.2.104+ or Fabric Loader 0.19.3+ | Use the jar for your loader; Fabric requires Fabric API for 26.1.2. |
+| Fabric API | 0.155.3+26.1.2 or newer for 26.1.2 | Required with the Fabric jar. |
 | Java | 25 | Use Java 25 for Gradle and the game. |
 | Resourceful Lib | 4.0.1 or newer | Required on the client and server. The build uses 4.0.1. |
 | Olympus | 1.8.4 or newer | Required on the client and included in the release jar. The build uses 1.8.4. |
@@ -14,9 +15,9 @@
 | REI | 26.1 or newer | Optional client integration. The build uses 26.1.819. |
 | Open Parties and Claims | 0.31.6 or newer for 26.1.2 | Optional server integration for its built-in parties; not required on Theseus clients. |
 
-The release file is
-`theseus-neoforge-26.1.2-1.1.0.jar`. Do not install the separate
-`-sources.jar` file as a mod. Theseus has no Fabric or Forge build.
+The release files are `theseus-neoforge-26.1.2-1.1.0.jar` and
+`theseus-fabric-26.1.2-1.1.0.jar`. Install the jar for your loader. Do not install
+the separate `-sources.jar` files as mods.
 
 ## Quest data compatibility
 
@@ -32,7 +33,7 @@ Unknown runtime task or reward types need a Theseus add-on handler.
 ## Intentional changes in this fork
 
 - The mod ID and artifact name use `theseus`.
-- This release targets Minecraft 26.1.2 on NeoForge and uses Java 25.
+- This release targets Minecraft 26.1.2 on Fabric and NeoForge and uses Java 25.
 - The quest screen is part of Theseus. Hermes is not required.
 - Quest definitions live under `config/theseus/quests`. Player progress lives
   in the Minecraft world's `data/theseus_progress.json` file.

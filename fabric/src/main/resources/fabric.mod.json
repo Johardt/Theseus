@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "theseus",
+  "version": "${version}",
+  "name": "Theseus",
+  "description": "Tree-style quests for Minecraft. An independent fork of Heracles.",
+  "authors": ["Jobert", "original Heracles by ThatGravyBoat and contributors"],
+  "contact": { "sources": "https://github.com/Johardt/Theseus", "issues": "https://github.com/Johardt/Theseus/issues" },
+  "license": "MIT",
+  "icon": "assets/theseus/theseus.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["me.johardt.theseus.TheseusFabric"],
+    "client": ["me.johardt.theseus.client.TheseusFabricClient"],
+    "jei_mod_plugin": ["me.johardt.theseus.client.compat.recipe.jei.TheseusJeiModPlugin"],
+    "rei_client": ["me.johardt.theseus.client.compat.recipe.rei.TheseusReiClientPlugin"]
+  },
+  "mixins": ["theseus-fabric.mixins.json"],
+  "depends": {
+    "fabricloader": ">=${fabricLoaderVersion}",
+    "minecraft": "${minecraftVersion}",
+    "java": ">=25",
+    "fabric-api": ">=${fabricApiVersion}",
+    "resourcefullib": ">=4.0.1"
+  },
+  "suggests": { "resourcefulconfig": ">=4.0.1", "openpartiesandclaims": ">=0.31.6", "roughlyenoughitems": "*", "jei": "*" }
+}

@@ -30,7 +30,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import me.johardt.theseus.platform.Platform;
 import static me.johardt.theseus.client.QuestDraftValidation.*;
 import static me.johardt.theseus.client.QuestEditorCatalog.*;
 
@@ -330,7 +330,7 @@ public final class QuestScreen extends Screen {
 
     void requestChapter(String chapter) {
         if (snapshots.requestChapter(chapter)) {
-            ClientPacketDistributor.sendToServer(new QuestNetwork.ActionPayload("load_chapter", chapter));
+            Platform.sendToServer(new QuestNetwork.ActionPayload("load_chapter", chapter));
         }
     }
 
